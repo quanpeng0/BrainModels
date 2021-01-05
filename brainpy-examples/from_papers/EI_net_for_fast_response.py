@@ -13,7 +13,7 @@ Implementation of the paper：
 import brainpy as bp
 import numpy as np
 
-bp.profile.set(jit=True, device='cpu', numerical_method='exponential')
+bp.profile.set(jit=True, numerical_method='exponential')
 
 num = 10000
 num_inh = int(num * 0.2)
@@ -43,7 +43,7 @@ JII = -1.
 
 def get_neu(tau):
     neu_ST = bp.types.NeuState(
-        {'V': 0, 'sp': 0., 'inp': 0.},
+        {'V': 0, 'spike': 0., 'input': 0.},
     )
 
     @bp.integrate
@@ -51,14 +51,14 @@ def get_neu(tau):
         return (-V + Isyn) / tau
 
     def update(ST, _t):
-        V = int_f(ST['V'], _t, ST['inp'])
+        V = int_f(ST['V'], _t, ST['input'])
         if V >= V_threshold:
-            ST['sp'] = 1.
+            ST['spike'] = 1.
             V = V_reset
         else:
-            ST['sp'] = 0.
+            ST['spike'] = 0.
         ST['V'] = V
-        ST['inp'] = 0.
+        ST['input'] = 0.
 
     return bp.NeuType(name='LIF',
                       ST=neu_ST,
@@ -72,25 +72,30 @@ def get_neu(tau):
 
 
 def get_syn(tau):
-    syn_ST = bp.types.SynState(['s', 'g', 'w'])
+    ST= bp.types.SynState(['s', 'g', 'w'])
 
     @bp.integrate
     def ints(s, t):
         return - s / tau
 
-    def update(ST, _t, pre):
+    def update(ST, _t, pre, pre2syn):
         s = ints(ST['s'], _t)
-        s += pre['sp']
+
+        for i in range(pre['spike'].shape[0]):
+            if pre['spike'][i] > 0.:
+                syn_ids = pre2syn[i]
+                s[syn_ids] += 1.
         ST['s'] = s
         ST['g'] = ST['w'] * s
 
-    def output(ST, post):
-        post['inp'] += ST['g']
+    def output(ST, post, post_slice_syn):
+        for post_id in range(post_slice_syn.shape[0]):
+            pos = post_slice_syn[post_id]
+            post['input'][post_id] += np.sum(ST['g'][pos[0]: pos[1]])
 
     return bp.SynType(name='alpha_synapse',
-                      ST=syn_ST,
-                      steps=(update, output),
-                      mode='scalar')
+                      ST=ST,
+                      steps=(update, output))
 
 
 # -------
@@ -98,11 +103,11 @@ def get_syn(tau):
 # -------
 
 E_neu = get_neu(tau_E)
-E_group = bp.NeuGroup(E_neu, geometry=num_exc, monitors=['sp'])
+E_group = bp.NeuGroup(E_neu, geometry=num_exc, monitors=['spike'])
 E_group.ST['V'] = np.random.random(num_exc) * (V_threshold - V_reset) + V_reset
 
 I_neu = get_neu(tau_I)
-I_group = bp.NeuGroup(I_neu, geometry=num_inh, monitors=['sp'])
+I_group = bp.NeuGroup(I_neu, geometry=num_inh, monitors=['spike'])
 I_group.ST['V'] = np.random.random(num_inh) * (V_threshold - V_reset) + V_reset
 
 E_syn = get_syn(tau_Es)
@@ -125,8 +130,8 @@ EI_conn.ST['w'] = JEI
 
 net = bp.Network(E_group, I_group, IE_conn, EE_conn, II_conn, EI_conn)
 net.run(duration=100.,
-        inputs=[(E_group, 'ST.inp', f_E * np.sqrt(num) * mu_f),
-                (I_group, 'ST.inp', f_I * np.sqrt(num) * mu_f)],
+        inputs=[(E_group, 'ST.input', f_E * np.sqrt(num) * mu_f),
+                (I_group, 'ST.input', f_I * np.sqrt(num) * mu_f)],
         report=True)
 
 # --------------
@@ -136,13 +141,13 @@ net.run(duration=100.,
 fig, gs = bp.visualize.get_figure(5, 1, 2, 10)
 
 bp.visualize.raster_plot(net.ts,
-                         E_group.mon.sp,
+                         E_group.mon.spike,
                          ax=fig.add_subplot(gs[:4, 0]),
                          xlim=(0, 100),
                          show=False)
 
 bp.visualize.raster_plot(net.ts,
-                         I_group.mon.sp,
+                         I_group.mon.spike,
                          ax=fig.add_subplot(gs[4, 0]),
                          xlim=(0, 100),
                          show=True)
