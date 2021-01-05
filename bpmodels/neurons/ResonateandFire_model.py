@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
-import numpy as np
 import sys
 
-def get_ResonateandFire(b = -1., omega = 10., V_th = 1., V_reset = 1., x_reset = 0., mode='scalar'):
+import brainpy as bp
+
+
+def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., mode='scalar'):
     """Resonate-and-fire neuron model.
         
     .. math::
@@ -79,13 +80,12 @@ def get_ResonateandFire(b = -1., omega = 10., V_th = 1., V_reset = 1., x_reset =
     )
 
     @bp.integrate
-    def int_x(x, _t, V):  #input--internal
+    def int_x(x, _t, V):  # input--internal
         return b * x - omega * V
 
-    @bp.integrate        
-    def int_V(V, _t, x):  #V
+    @bp.integrate
+    def int_V(V, _t, x):  # V
         return omega * x + b * V
-
 
     def update(ST, _t):
         # update variables
@@ -102,16 +102,15 @@ def get_ResonateandFire(b = -1., omega = 10., V_th = 1., V_reset = 1., x_reset =
             ST['t_last_spike'] = _t
         ST['x'] = x
         ST['V'] = V
-    
+
     def reset(ST):
         ST['input'] = 0.
 
-    
     if mode == 'scalar':
         return bp.NeuType(name='RF_neuron',
                           ST=ST,
                           steps=(update, reset),
-                          mode=mode)   
+                          mode=mode)
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     elif mode == 'matrix':

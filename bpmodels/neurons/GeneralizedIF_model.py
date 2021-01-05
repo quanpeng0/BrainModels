@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
-import numpy as np
 import sys
 
-def get_GeneralizedIF(V_rest = -70., V_reset = -70., V_th_inf = -50., V_th_reset = -60.,
-                      R = 20., C = 1., tau = 20., a = 0., b = 0.01, 
-                      k1 = 0.2, k2 = 0.02, R1 = 0., R2 = 1., A1 = 0., A2 = 0.,
-                      noise=0., mode='scalar'):
+import brainpy as bp
+
+
+def get_GeneralizedIF(V_rest=-70., V_reset=-70.,
+                      V_th_inf=-50., V_th_reset=-60.,
+                      R=20., tau=20., a=0., b=0.01,
+                      k1=0.2, k2=0.02, R1=0., R2=1., A1=0., A2=0.,
+                      mode='scalar'):
     """
     Generalized Integrate-and-Fire model (GeneralizedIF model).
     
@@ -88,23 +90,23 @@ def get_GeneralizedIF(V_rest = -70., V_reset = -70., V_th_inf = -50., V_th_reset
         {'V': -70., 'input': 0., 'spike': 0., 'V_th': -50.,
          'I1': 0., 'I2': 0.}
     )
-    
+
     @bp.integrate
     def int_I1(I1, t):
         return - k1 * I1
-        
+
     @bp.integrate
     def int_I2(I2, t):
         return - k2 * I2
-        
+
     @bp.integrate
     def int_V_th(V_th, t, V):
-        return a * (V- V_rest) - b * (V_th - V_th_inf)
-    
+        return a * (V - V_rest) - b * (V_th - V_th_inf)
+
     @bp.integrate
     def int_V(V, t, I_ext, I1, I2):
-        return ( - (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau
-        
+        return (- (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau
+
     def update(ST, _t):
         ST['spike'] = 0
         I1 = int_I1(ST['I1'], _t)
@@ -122,7 +124,7 @@ def get_GeneralizedIF(V_rest = -70., V_reset = -70., V_th_inf = -50., V_th_reset
         ST['V_th'] = V_th
         ST['V'] = V
         ST['input'] = 0.
-    
+
     if mode == 'scalar':
         return bp.NeuType(name='GeneralizedIF_neuron',
                           ST=ST,

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+import sys
+
 import brainpy as bp
 import numpy as np
-import sys
 
 
 def get_MorrisLecar(noise=0., V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_Leak=-60.,

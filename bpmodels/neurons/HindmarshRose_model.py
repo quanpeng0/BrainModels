@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
-import numpy as np
 import sys
 
-def get_HindmarshRose(a = 1., b = 3., c = 1., d = 5., r = 0.01, s = 4., V_rest = -1.6, mode='scalar'):
+import brainpy as bp
+
+
+def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, mode='scalar'):
     """
     Hindmarsh-Rose neuron model.
 
@@ -58,7 +59,7 @@ def get_HindmarshRose(a = 1., b = 3., c = 1., d = 5., r = 0.01, s = 4., V_rest =
     """
 
     ST = bp.types.NeuState(
-        {'V':-1.6, 'y':-10., 'z':0., 'input': 0}
+        {'V': -1.6, 'y': -10., 'z': 0., 'input': 0}
     )
 
     @bp.integrate
@@ -72,7 +73,7 @@ def get_HindmarshRose(a = 1., b = 3., c = 1., d = 5., r = 0.01, s = 4., V_rest =
     @bp.integrate
     def int_z(z, t, V):
         return r * (s * (V - V_rest) - z)
-    
+
     def update(ST, _t):
         V = int_V(ST['V'], _t, ST['y'], ST['z'], ST['input'])
         y = int_y(ST['y'], _t, ST['V'])
@@ -80,11 +81,10 @@ def get_HindmarshRose(a = 1., b = 3., c = 1., d = 5., r = 0.01, s = 4., V_rest =
         ST['V'] = V
         ST['y'] = y
         ST['z'] = z
-    
+
     def reset(ST):
         ST['input'] = 0
-    
-    
+
     if mode == 'scalar':
         return bp.NeuType(name="HindmarshRose_neuron",
                           ST=ST,

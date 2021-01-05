@@ -1,10 +1,13 @@
-import brainpy as bp
-import numpy as np
+# -*- coding: utf-8 -*-
+
 import sys
 
-def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30., 
-            a_0 = .07, V_c = -50, R=1., C=10.,
-            tau=10., t_refractory=0., noise=0., mode='scalar'):
+import brainpy as bp
+
+
+def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
+              a_0=.07, V_c=-50, R=1., tau=10.,
+              t_refractory=0., noise=0., mode='scalar'):
     """Quadratic Integrate-and-Fire neuron model.
         
     .. math::
@@ -69,14 +72,13 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
     elif mode != 'scalar':
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
-
     ST = bp.types.NeuState(
         {'V': 0, 'input': 0, 'spike': 0, 'refractory': 0, 't_last_spike': -1e7}
     )
 
     @bp.integrate
-    def int_V(V, t, I_ext):  
-        return (a_0* (V - V_rest)*(V-V_c) + R * I_ext) / tau, noise / tau
+    def int_V(V, t, I_ext):
+        return (a_0 * (V - V_rest) * (V - V_c) + R * I_ext) / tau, noise / tau
 
     def update(ST, _t):
         ST['spike'] = 0
@@ -96,4 +98,4 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
     return bp.NeuType(name='QuaIF_neuron',
                       ST=ST,
                       steps=update,
-                      mode=mode)    
+                      mode=mode)
