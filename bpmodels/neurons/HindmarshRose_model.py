@@ -62,15 +62,15 @@ def get_HindmarshRose(a = 1., b = 3., c = 1., d = 5., r = 0.01, s = 4., V_rest =
     )
 
     @bp.integrate
-    def int_V(V, _t, y, z, I_ext):
+    def int_V(V, t, y, z, I_ext):
         return y - a * V * V * V + b * V * V - z + I_ext
 
     @bp.integrate
-    def int_y(y, _t, V):
+    def int_y(y, t, V):
         return c - d * V * V - y
 
     @bp.integrate
-    def int_z(z, _t, V):
+    def int_z(z, t, V):
         return r * (s * (V - V_rest) - z)
     
     def update(ST, _t):

@@ -62,28 +62,26 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
     )
 
     @bp.integrate
-    def int_V(V, _t, I_ext):  # integrate u(t)
+    def int_V(V, t, I_ext):  # integrate u(t)
         return (- (V - V_rest) + delta_T * np.exp((V - V_T) / delta_T) + R * I_ext) / tau, noise / tau
 
     def update(ST, _t):
         # update variables
         ST['spike'] = 0
-        ST['refractory'] = True if _t - ST['t_last_spike'] <= t_refractory else False
-        if not ST['refractory']:
+        ST['refractory'] = 1. if _t - ST['t_last_spike'] <= t_refractory else 0.
+        if ST['refractory'] > 0.:
             V = int_V(ST['V'], _t, ST['input'])
             if V >= V_th:
                 V = V_reset
                 ST['spike'] = 1
                 ST['t_last_spike'] = _t
             ST['V'] = V
-            
-    def reset(ST):
-        ST['input'] = 0.
+        ST['input'] = 0.  # reset input here or it will be brought to next step
 
     if mode == 'scalar':
         return bp.NeuType(name='ExpIF_neuron',
                           ST=ST,
-                          steps=(update, reset),
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
