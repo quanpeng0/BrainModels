@@ -9,7 +9,7 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'vector'):
 
     .. math::
 
-        I_{syn}&=\\bar{g}_{syn} s (V-E_{syn})
+        I(t)&=\\bar{g} s(t) (V-E_{syn})
 
         \\frac{d s}{d t}&=-\\frac{s}{\\tau_{decay}}+\\sum_{k} \\delta(t-t_{j}^{k})
 

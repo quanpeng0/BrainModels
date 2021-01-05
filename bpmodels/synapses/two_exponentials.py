@@ -2,7 +2,7 @@
 import brainpy as bp
 import numpy as np
 
-def get_two_exponentials(g_max=1., E=-60., tau_d=3., tau_r=1.):
+def get_two_exponentials(g_max=1., E=-60., tau_decay=8., tau_rise=1.):
     '''
     two_exponentials synapse model.
 
@@ -10,8 +10,8 @@ def get_two_exponentials(g_max=1., E=-60., tau_d=3., tau_r=1.):
 
         I_{syn}(t) &= g_{syn} (t) (V(t)-E_{syn})
 
-        g_{syn} (t) &= \\sum \\bar{g}_{syn} \\frac{\\tau_d \\tau_r} {\\tau_d - \\tau_r} 
-        (exp(- \\frac{t-t_f}{\\tau_d}) - exp(- \\frac{t-t_f}{\\tau_r}))
+        g_{syn} (t) &= \\sum \\bar{g}_{syn} \\frac{\\tau_decay \\tau_rise} {\\tau_decay - \\tau_rise} 
+        (exp(- \\frac{t-t_f}{\\tau_decay}) - exp(- \\frac{t-t_f}{\\tau_rise}))
 
     ST refers to synapse state, members of ST are listed below:
 
@@ -29,8 +29,8 @@ def get_two_exponentials(g_max=1., E=-60., tau_d=3., tau_r=1.):
     Args:
         g_max (float): The peak conductance change in µmho (µS).
         E (float): The reversal potential for the synaptic current.
-        tau_r (float): The time to peak of the conductance change.
-        tau_d (float): The decay time of the synapse.
+        tau_rise (float): The time to peak of the conductance change.
+        tau_decay (float): The decay time of the synapse.
 
     Returns:
         bp.Neutype: return description of two_exponentials synapse model.
@@ -54,8 +54,8 @@ def get_two_exponentials(g_max=1., E=-60., tau_d=3., tau_r=1.):
         for pre_idx in np.where(pre['spike'] > 0.)[0]:
             syn_idx = pre2syn[pre_idx]
             ST['t_last_pre_spike'][syn_idx] = _t
-        c = (tau_d * tau_r) / (tau_d - tau_r)
-        g = g_max * c * (np.exp(-(_t-ST['t_last_pre_spike']) / tau_d)-np.exp(-(_t-ST['t_last_pre_spike']) / tau_r))
+        c = (tau_decay * tau_rise) / (tau_decay - tau_rise)
+        g = g_max * c * (np.exp(-(_t-ST['t_last_pre_spike']) / tau_decay)-np.exp(-(_t-ST['t_last_pre_spike']) / tau_rise))
         ST['g'] = g
 
     @bp.delayed
@@ -63,7 +63,7 @@ def get_two_exponentials(g_max=1., E=-60., tau_d=3., tau_r=1.):
         I_syn = np.zeros(len(post2syn), dtype=np.float_)
         for post_id, syn_ids in enumerate(post2syn):
             I_syn[post_id] = np.sum(ST['g'][syn_ids]*(post['V'] - E))
-        post['input'] -= I_syn
+        post['input'] += I_syn
 
     return bp.SynType(name='two_exponentials_synapse',
                       ST=ST, requires=requires,

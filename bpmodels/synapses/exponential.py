@@ -5,13 +5,13 @@ import numpy as np
 
 def get_exponential(tau_decay=8., mode='scalar'):
     '''
-    Exponential decay synapse model.
+    Exponential decay synapse model (current-based).
 
     .. math::
 
-        I_{syn}(t) &= w s (t)
+        & I(t) = w s (t)
 
-        \\frac{d s}{d t}&=-\\frac{s}{\\tau_{decay}}+\\sum_{k} \\delta(t-t_{j}^{k})
+        & \\frac{d s}{d t} = -\\frac{s}{\\tau_{decay}}+\\sum_{k} \\delta(t-t_{j}^{k})
 
 
     ST refers to synapse state, members of ST are listed below:
