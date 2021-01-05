@@ -51,27 +51,16 @@ def get_Oja(gamma = 0.005, w_max = 1., w_min = 0., mode = 'vector'):
     )
     
     @bp.integrate
-    def int_w(w, _t, r_pre, r_post):
-        dw = gamma * (r_post * r_pre - np.square(r_post) * w)
+    def int_w(w, t, r_pre, r_post):
+        dw = gamma * (r_post * r_pre - r_post * r_post * w)
         return dw
 
-    def update(ST, _t, pre, post, post2syn, post2pre):
-        for post_id, post_r in enumerate(post['r']):
-            syn_ids = post2syn[post_id]
-            pre_ids = post2pre[post_id]
-            pre_r = pre['r'][pre_ids]
-            w = ST['w'][syn_ids]
-            output = np.dot(w, pre_r)
-            output += post_r
-            w = int_w(w, _t, pre_r, output)
-            ST['w'][syn_ids] = w
-            ST['output_save'][syn_ids] = output
-    
-    @bp.delayed
-    def output(ST, pre, post, post2syn):
-        for post_id, _ in enumerate(post['r']):
-            syn_ids = post2syn[post_id]
-            post['r'][post_id] += ST['output_save'][syn_ids[0]]
+    def update(ST, _t, pre, post, post2pre, post2syn):
+        for i in range(len(post2pre)):
+            pre_ids = post2pre[i]
+            syn_ids = post2syn[i]
+            post['r'] = np.sum(ST['w'][syn_ids] * pre['r'][pre_ids])
+            ST['w'][syn_ids] = int_w(ST['w'][syn_ids], _t,  pre['r'][pre_ids], post['r'][i])
     
     if mode == 'scalar':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
@@ -79,7 +68,7 @@ def get_Oja(gamma = 0.005, w_max = 1., w_min = 0., mode = 'vector'):
         return bp.SynType(name='Oja_synapse',
                           ST=ST,
                           requires=requires,
-                          steps=(update, output),
+                          steps=update,
                           mode=mode)
     elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
