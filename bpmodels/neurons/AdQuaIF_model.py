@@ -1,11 +1,12 @@
 import brainpy as bp
 import sys
 
-def get_AdQuaIF(a = 1, b = .1, a_0 = .07,  
-                    V_c = -50, V_rest=-65., V_reset=-68., V_th=-30.,
-                    R=1., C=10.,
-                    tau=10., tau_w = 10., 
-                    t_refractory=0., noise=0., mode='scalar'):
+
+def get_AdQuaIF(a=1, b=.1, a_0=.07,
+                V_c=-50, V_rest=-65., V_reset=-68., V_th=-30.,
+                R=1., C=10.,
+                tau=10., tau_w=10.,
+                t_refractory=0., noise=0., mode='scalar'):
     """Adaptive Quadratic Integrate-and-Fire neuron model.
         
     .. math::
@@ -70,18 +71,17 @@ def get_AdQuaIF(a = 1, b = .1, a_0 = .07,
     elif mode != 'scalar':
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
-
     ST = bp.types.NeuState(
-        {'V': 0, 'w':0, 'input': 0, 'spike': 0, 'refractory': 0, 't_last_spike': -1e7}
+        {'V': 0, 'w': 0, 'input': 0, 'spike': 0, 'refractory': 0, 't_last_spike': -1e7}
     )
 
     @bp.integrate
-    def int_V(V, _t, w, I_ext):  
-        return (a_0* (V - V_rest)*(V-V_c) - R * w + R * I_ext) / tau, noise / tau
+    def int_V(V, _t_, w, I_ext):
+        return (a_0 * (V - V_rest) * (V - V_c) - R * w + R * I_ext) / tau, noise / tau
 
     @bp.integrate
-    def int_w(w, _t, V):
-        return (a* (V - V_rest)-w) / tau_w, noise / tau_w
+    def int_w(w, _t_, V):
+        return (a * (V - V_rest) - w) / tau_w, noise / tau_w
 
     def update(ST, _t):
         ST['spike'] = 0
@@ -105,4 +105,4 @@ def get_AdQuaIF(a = 1, b = .1, a_0 = .07,
     return bp.NeuType(name='AdQuaIF_neuron',
                       ST=ST,
                       steps=(update, reset),
-                      mode=mode)    
+                      mode=mode)
