@@ -1,10 +1,15 @@
-import brainpy as bp
-import numpy as np
+# -*- coding: utf-8 -*-
+
 import sys
 
-def get_WilsonCowan(c1 = 12., c2 = 4., c3 = 13., c4 = 11.,
-                    k_e = 1., k_i = 1.,tau_e = 1., tau_i = 1., r_e = 1., r_i = 1.,
-                    slope_e = 1.2, slope_i = 1., theta_e = 2.8, theta_i = 4., mode='scalar'):
+import brainpy as bp
+import numpy as np
+
+
+def get_WilsonCowan(c1=12., c2=4., c3=13., c4=11.,
+                    k_e=1., k_i=1., tau_e=1., tau_i=1., r_e=1., r_i=1.,
+                    slope_e=1.2, slope_i=1., theta_e=2.8, theta_i=4.,
+                    mode='scalar'):
     """
     Wilson-Cowan firing rate neuron model.
 
@@ -75,12 +80,12 @@ def get_WilsonCowan(c1 = 12., c2 = 4., c3 = 13., c4 = 11.,
     @bp.integrate
     def int_a_e(a_e, t, a_i, I_ext_e):
         return (- a_e + (k_e - r_e * a_e) *
-                mysigmoid(c1 * a_e - c2* a_i + I_ext_e, slope_e, theta_e))/tau_e
+                mysigmoid(c1 * a_e - c2 * a_i + I_ext_e, slope_e, theta_e)) / tau_e
 
     @bp.integrate
     def int_a_i(a_i, t, a_e, I_ext_i):
         return (- a_i + (k_i - r_i * a_i) *
-                mysigmoid(c3 * a_e - c4 * a_i + I_ext_i, slope_i, theta_i))/tau_i
+                mysigmoid(c3 * a_e - c4 * a_i + I_ext_i, slope_i, theta_i)) / tau_i
 
     def update(ST, _t):
         a_e = int_a_e(ST['a_e'], _t, ST['a_i'], ST['input_e'])

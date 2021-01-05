@@ -1,11 +1,15 @@
+# -*- coding: utf-8 -*-
+
+
+import sys
+
 import brainpy as bp
 import numpy as np
-import sys
 
 
 def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
                V_T=-59.9, delta_T=3.48, a=1., b=1,
-               R=1, C=10., tau=10., tau_w=30.,
+               R=1, tau=10., tau_w=30.,
                t_refractory=0., noise=0., mode='scalar'):
     """Adaptive Exponential Integrate-and-Fire neuron model.
     

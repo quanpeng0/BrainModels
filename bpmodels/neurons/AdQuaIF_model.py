@@ -1,11 +1,13 @@
-import brainpy as bp
+# -*- coding: utf-8 -*-
+
 import sys
+
+import brainpy as bp
 
 
 def get_AdQuaIF(a=1, b=.1, a_0=.07,
                 V_c=-50, V_rest=-65., V_reset=-68., V_th=-30.,
-                R=1., C=10.,
-                tau=10., tau_w=10.,
+                R=1., tau=10., tau_w=10.,
                 t_refractory=0., noise=0., mode='scalar'):
     """Adaptive Quadratic Integrate-and-Fire neuron model.
         
