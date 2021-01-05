@@ -6,7 +6,7 @@ import sys
 
 def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
     """
-    GABAa conductance-based synapse model (differential form).
+    GABAa conductance-based synapse model.
 
     .. math::
         
