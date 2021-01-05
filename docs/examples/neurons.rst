@@ -5,7 +5,6 @@ Neurons
    :maxdepth: 1
    :caption: Neurons
    
-   neurons/LIF_model
    neurons/ExpIF_model
    neurons/GeneralizedIF_model
    neurons/AdIF_model

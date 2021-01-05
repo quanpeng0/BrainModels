@@ -31,9 +31,6 @@ The prior goal of ``BrainPy-Models`` is to free users from repeatly implementing
    :maxdepth: 2
    :caption: Examples
    
-   examples/neurons
-   examples/synapses
-   examples/learning_rules
    examples/networks
    examples/from_papers
    examples/dynamics_analysis
