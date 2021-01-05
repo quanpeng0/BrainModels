@@ -73,12 +73,12 @@ def get_WilsonCowan(c1 = 12., c2 = 4., c3 = 13., c4 = 11.,
         return 1 / (1 + np.exp(- a * (x - theta))) - 1 / (1 + np.exp(a * theta))
 
     @bp.integrate
-    def int_a_e(a_e, _t, a_i, I_ext_e):
+    def int_a_e(a_e, t, a_i, I_ext_e):
         return (- a_e + (k_e - r_e * a_e) *
                 mysigmoid(c1 * a_e - c2* a_i + I_ext_e, slope_e, theta_e))/tau_e
 
     @bp.integrate
-    def int_a_i(a_i, _t, a_e, I_ext_i):
+    def int_a_i(a_i, t, a_e, I_ext_i):
         return (- a_i + (k_i - r_i * a_i) *
                 mysigmoid(c3 * a_e - c4 * a_i + I_ext_i, slope_i, theta_i))/tau_i
 
@@ -87,16 +87,13 @@ def get_WilsonCowan(c1 = 12., c2 = 4., c3 = 13., c4 = 11.,
         a_i = int_a_i(ST['a_i'], _t, ST['a_e'], ST['input_i'])
         ST['a_e'] = a_e
         ST['a_i'] = a_i
-
-    def reset(ST):
         ST['input_e'] = 0
         ST['input_i'] = 0
 
-    
     if mode == 'scalar':
         return bp.NeuType(name='WilsonCowan_neuron',
                           ST=ST,
-                          steps=(update, reset),
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))

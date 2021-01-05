@@ -59,7 +59,7 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
     )
 
     @bp.integrate
-    def int_V(V, _t, I_ext):  # integrate u(t)
+    def int_V(V, t, I_ext):  # integrate u(t)
         return (- (V - V_rest) + R * I_ext) / tau, noise / tau
 
     def update(ST, _t):
@@ -75,15 +75,13 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
                 ST['spike'] = 1
                 ST['t_last_spike'] = _t
             ST['V'] = V
-    
-    def reset(ST):
-        ST['input'] = 0.
+        ST['input'] = 0. # reset input here or it will be brought to next step
 
     
     if mode == 'scalar':
         return bp.NeuType(name='LIF_neuron',
                           ST=ST,
-                          steps=(update, reset),
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
