@@ -184,6 +184,7 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                     ST['spike'] = True
                 ST['V'] = V
                 ST['u'] = u
+                ST['input'] = 0.
     else:
 
         def update(ST, _t):
@@ -196,16 +197,14 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                 ST['spike'] = True
             ST['V'] = V
             ST['u'] = u
-
-    def reset(ST):
-        ST['input'] = 0.
+            ST['input'] = 0.
 
 
 
     if mode == 'scalar':
         return bp.NeuType(name='Izhikevich_neuron',
                           ST=ST,
-                          steps=(update, reset),
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))

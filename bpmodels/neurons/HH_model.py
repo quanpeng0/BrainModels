@@ -95,25 +95,25 @@ def get_HH (noise=NOISE, V_th = V_THRESHOLD, C = C, E_Na = E_NA, E_K = E_K,
     
     
     @bp.integrate
-    def int_m(m, _t, V):
+    def int_m(m, t, V):
         alpha = 0.1 * (V + 40) / (1 - np.exp(-(V + 40) / 10))
         beta = 4.0 * np.exp(-(V + 65) / 18)
         return alpha * (1 - m) - beta * m
     
     @bp.integrate
-    def int_h(h, _t, V):
+    def int_h(h, t, V):
         alpha = 0.07 * np.exp(-(V + 65) / 20.)
         beta = 1 / (1 + np.exp(-(V + 35) / 10))
         return alpha * (1 - h) - beta * h
     
     @bp.integrate
-    def int_n(n, _t, V):
+    def int_n(n, t, V):
         alpha = 0.01 * (V + 55) / (1 - np.exp(-(V + 55) / 10))
         beta = 0.125 * np.exp(-(V + 65) / 80)
         return alpha * (1 - n) - beta * n
     
     @bp.integrate
-    def int_V(V, _t, m, h, n, I_ext):
+    def int_V(V, t, m, h, n, I_ext):
         I_Na = (g_Na * np.power(m, 3.0) * h) * (V - E_Na)
         I_K = (g_K * np.power(n, 4.0))* (V - E_K)
         I_leak = g_leak * (V - E_leak)
@@ -132,11 +132,10 @@ def get_HH (noise=NOISE, V_th = V_THRESHOLD, C = C, E_Na = E_NA, E_K = E_K,
         ST['m'] = m
         ST['h'] = h
         ST['n'] = n
-
-    def reset(ST):
+        # reset current
         ST['input'] = 0.   
     
     return bp.NeuType(name='HH_neuron', 
                       ST=ST, 
-                      steps=(update, reset), 
+                      steps=update, 
                       mode = 'vector')

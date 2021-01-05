@@ -69,17 +69,17 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
     )
 
     @bp.integrate
-    def int_V(V, _t, w, I_ext):  # integrate u(t)
+    def int_V(V, t, w, I_ext):  # integrate u(t)
         return (- (V - V_rest) + delta_T * np.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau, noise / tau
 
     @bp.integrate
-    def int_w(w, _t, V):
+    def int_w(w, t, V):
         return (a * (V - V_rest)-w) / tau_w, noise / tau_w
 
     def update(ST, _t):
         ST['spike'] = 0
-        ST['refractory'] = True if _t - ST['t_last_spike'] <= t_refractory else False
-        if not ST['refractory']:
+        ST['refractory'] = 1. if _t - ST['t_last_spike'] <= t_refractory else 0.
+        if ST['refractory']==0:
             w = int_w(ST['w'], _t, ST['V'])
             V = int_V(ST['V'], _t, w, ST['input'])
             if V >= V_th:
@@ -89,15 +89,14 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
                 ST['t_last_spike'] = _t
             ST['V'] = V
             ST['w'] = w
-            
-    def reset(ST):
+        # reset input
         ST['input'] = 0.
 
     
     if mode == 'scalar':
         return bp.NeuType(name='AdExIF_neuron',
                           ST=ST,
-                          steps=(update, reset),
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))

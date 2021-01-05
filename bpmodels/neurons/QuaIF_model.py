@@ -75,7 +75,7 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
     )
 
     @bp.integrate
-    def int_V(V, _t, I_ext):  
+    def int_V(V, t, I_ext):  
         return (a_0* (V - V_rest)*(V-V_c) + R * I_ext) / tau, noise / tau
 
     def update(ST, _t):
@@ -90,11 +90,10 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
                 ST['spike'] = 1
                 ST['t_last_spike'] = _t
             ST['V'] = V
-
-    def reset(ST):
+        # reset input
         ST['input'] = 0.
 
     return bp.NeuType(name='QuaIF_neuron',
                       ST=ST,
-                      steps=(update, reset),
+                      steps=update,
                       mode=mode)    

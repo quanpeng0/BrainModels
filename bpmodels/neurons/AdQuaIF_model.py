@@ -76,11 +76,11 @@ def get_AdQuaIF(a = 1, b = .1, a_0 = .07,
     )
 
     @bp.integrate
-    def int_V(V, _t, w, I_ext):  
+    def int_V(V, t, w, I_ext):  
         return (a_0* (V - V_rest)*(V-V_c) - R * w + R * I_ext) / tau, noise / tau
 
     @bp.integrate
-    def int_w(w, _t, V):
+    def int_w(w, t, V):
         return (a* (V - V_rest)-w) / tau_w, noise / tau_w
 
     def update(ST, _t):
@@ -98,11 +98,10 @@ def get_AdQuaIF(a = 1, b = .1, a_0 = .07,
                 ST['t_last_spike'] = _t
             ST['V'] = V
             ST['w'] = w
-
-    def reset(ST):
+        # reset input
         ST['input'] = 0.
 
     return bp.NeuType(name='AdQuaIF_neuron',
                       ST=ST,
-                      steps=(update, reset),
+                      steps=update,
                       mode=mode)    
