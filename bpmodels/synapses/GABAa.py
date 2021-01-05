@@ -64,11 +64,19 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
         return - s / tau_decay
     
     if mode=='scalar':
+
         def update(ST, _t, pre):
             s = int_s(ST['s'], _t)
             s += pre['spike']
             ST['s'] = s
+
+        @bp.delayed
+        def output(ST, _t, post):
+            I_syn = - g_max * ST['s'] * (post['V'] - E)
+            post['input'] += I_syn
+
     elif mode=='vector':
+
         def update(ST, pre, pre2syn):
             s = int_s(ST['s'], 0.)
             for pre_id in np.where(pre['spike'] > 0.)[0]:
@@ -77,13 +85,6 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
             ST['s'] = s
             ST['g'] = g_max * s
 
-
-    if mode=='scalar':
-        @bp.delayed
-        def output(ST, _t, post):
-            I_syn = - g_max * ST['s'] * (post['V'] - E)
-            post['input'] += I_syn
-    elif mode=='vector':
         @bp.delayed
         def output(ST, post, post2syn):
             post_cond = np.zeros(len(post2syn), dtype=np.float_)
@@ -117,7 +118,7 @@ def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., m
         
         I_{syn}&= - \\bar{g}_{max} s (V - E)
 
-        \\frac{d r}{d t}&=\\alpha[T]^2(1-s) - \\beta s
+        \\frac{d s}{d t}&=\\alpha[T](1-s) - \\beta s
         
     ST refers to synapse state, members of ST are listed below:
     

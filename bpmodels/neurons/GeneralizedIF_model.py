@@ -68,8 +68,8 @@ def get_GeneralizedIF(V_rest = -70., V_reset = -70., V_th_inf = -50., V_th_reset
         b (float): Coefficient describes V_th update.
         k1 (float): Constant pf I1.
         k2 (float): Constant of I2.
-        R1 (float): Free parameter.
-        R2 (float): Free parameter.
+        R1 (float): Free parameter. Describes dependence of I_1 reset value on I_1 value before spiking.
+        R2 (float): Free parameter. Describes dependence of I_2 reset value on I_2 value before spiking.
         A1 (float): Free parameter.
         A2 (float): Free parameter.
         noise (float): noise.   
@@ -86,23 +86,23 @@ def get_GeneralizedIF(V_rest = -70., V_reset = -70., V_th_inf = -50., V_th_reset
 
     ST = bp.types.NeuState(
         {'V': -70., 'input': 0., 'spike': 0., 'V_th': -50.,
-         'I1': 0., 'I2': 0., 't_last_spike': -1e7}
+         'I1': 0., 'I2': 0.}
     )
     
     @bp.integrate
-    def int_I1(I1, _t):
+    def int_I1(I1, t):
         return - k1 * I1
         
     @bp.integrate
-    def int_I2(I2, _t):
+    def int_I2(I2, t):
         return - k2 * I2
         
     @bp.integrate
-    def int_V_th(V_th, _t, V):
+    def int_V_th(V_th, t, V):
         return a * (V- V_rest) - b * (V_th - V_th_inf)
     
     @bp.integrate
-    def int_V(V, _t, I_ext, I1, I2):
+    def int_V(V, t, I_ext, I1, I2):
         return ( - (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau
         
     def update(ST, _t):
@@ -117,20 +117,16 @@ def get_GeneralizedIF(V_rest = -70., V_reset = -70., V_th_inf = -50., V_th_reset
             I2 = R2 * I2 + A2
             V_th = max(V_th, V_th_reset)
             ST['spike'] = 1
-            ST['t_last_spike'] = _t
         ST['I1'] = I1
         ST['I2'] = I2
         ST['V_th'] = V_th
         ST['V'] = V
-    
-    def reset(ST):
         ST['input'] = 0.
-
     
     if mode == 'scalar':
         return bp.NeuType(name='GeneralizedIF_neuron',
                           ST=ST,
-                          steps=(update, reset),
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
