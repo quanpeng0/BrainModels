@@ -66,8 +66,6 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
 
     if mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     elif mode != 'scalar':
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
