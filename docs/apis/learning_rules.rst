@@ -9,6 +9,5 @@ bpmodels.learning_rules
     :toctree: _autosummary
 
     get_STDP1
-    get_STDP2
     get_BCM
 	get_Oja
