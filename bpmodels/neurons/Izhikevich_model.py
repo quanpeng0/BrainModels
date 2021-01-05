@@ -173,39 +173,38 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
 
     if np.any(t_refractory > 0.):
 
-        def update(ST, _t_):
-            if (_t_ - ST['t_last_spike']) > t_refractory:
-                V = int_V(ST['V'], _t_, ST['u'], ST['input'])
-                u = int_u(ST['u'], _t_, ST['V'])
+        def update(ST, _t):
+            if (_t - ST['t_last_spike']) > t_refractory:
+                V = int_V(ST['V'], _t, ST['u'], ST['input'])
+                u = int_u(ST['u'], _t, ST['V'])
                 if V >= V_th:
                     V = c
                     u += d
-                    ST['t_last_spike'] = _t_
+                    ST['t_last_spike'] = _t
                     ST['spike'] = True
                 ST['V'] = V
                 ST['u'] = u
+                ST['input'] = 0.
     else:
 
-        def update(ST, _t_):
-            V = int_V(ST['V'], _t_, ST['u'], ST['input'])
-            u = int_u(ST['u'], _t_, ST['V'])
+        def update(ST, _t):
+            V = int_V(ST['V'], _t, ST['u'], ST['input'])
+            u = int_u(ST['u'], _t, ST['V'])
             if V >= V_th:
                 V = c
                 u += d
-                ST['t_last_spike'] = _t_
+                ST['t_last_spike'] = _t
                 ST['spike'] = True
             ST['V'] = V
             ST['u'] = u
-
-    def reset(ST):
-        ST['input'] = 0.
+            ST['input'] = 0.
 
 
 
     if mode == 'scalar':
         return bp.NeuType(name='Izhikevich_neuron',
-                          requires={'ST': ST},
-                          steps=(update, reset),
+                          ST=ST,
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))

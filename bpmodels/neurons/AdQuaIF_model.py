@@ -76,33 +76,32 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
     )
 
     @bp.integrate
-    def int_V(V, _t_, w, I_ext):
-        return (a_0 * (V - V_rest) * (V - V_c) - R * w + R * I_ext) / tau, noise / tau
+    def int_V(V, t, w, I_ext):
+        return (a_0* (V - V_rest)*(V-V_c) - R * w + R * I_ext) / tau, noise / tau
 
     @bp.integrate
-    def int_w(w, _t_, V):
-        return (a * (V - V_rest) - w) / tau_w, noise / tau_w
+    def int_w(w, t, V):
+        return (a* (V - V_rest)-w) / tau_w, noise / tau_w
 
-    def update(ST, _t_):
+    def update(ST, _t):
         ST['spike'] = 0
-        if _t_ - ST['t_last_spike'] <= t_refractory:
+        if _t - ST['t_last_spike'] <= t_refractory:
             ST['refractory'] = 1.
         else:
             ST['refractory'] = 0.
-            w = int_w(ST['w'], _t_, ST['V'])
-            V = int_V(ST['V'], _t_, w, ST['input'])
+            w = int_w(ST['w'], _t, ST['V'])
+            V = int_V(ST['V'], _t, w, ST['input'])
             if V >= V_th:
                 V = V_reset
                 w += b
                 ST['spike'] = 1
-                ST['t_last_spike'] = _t_
+                ST['t_last_spike'] = _t
             ST['V'] = V
             ST['w'] = w
-
-    def reset(ST):
+        # reset input
         ST['input'] = 0.
 
     return bp.NeuType(name='AdQuaIF_neuron',
-                      requires=dict(ST=ST),
-                      steps=(update, reset),
-                      mode=mode)
+                      ST=ST,
+                      steps=update,
+                      mode=mode)    
