@@ -2,10 +2,11 @@ import brainpy as bp
 import numpy as np
 import sys
 
-def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30., 
-              V_T=-59.9, delta_T=3.48, a=1., b=1,
-              R=1, C=10., tau=10., tau_w = 30.,
-              t_refractory=0., noise=0., mode='scalar'):
+
+def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
+               V_T=-59.9, delta_T=3.48, a=1., b=1,
+               R=1, C=10., tau=10., tau_w=30.,
+               t_refractory=0., noise=0., mode='scalar'):
     """Adaptive Exponential Integrate-and-Fire neuron model.
     
     .. math::
@@ -64,44 +65,37 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
                inputs." Journal of Neuroscience 23.37 (2003): 11628-11640.
     """
 
-    ST = bp.types.NeuState(
-        {'V': 0, 'w':0, 'input': 0, 'spike': 0, 'refractory': 0, 't_last_spike': -1e7}
-    )
+    ST = bp.types.NeuState('V', 'w', 'input', 'spike', 'refractory', t_last_spike=-1e7)
 
     @bp.integrate
-    def int_V(V, _t_, w, I_ext):  # integrate u(t)
+    def int_V(V, t, w, I_ext):  # integrate u(t)
         return (- (V - V_rest) + delta_T * np.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau, noise / tau
 
     @bp.integrate
-    def int_w(w, _t_, V):
-        return (a * (V - V_rest)-w) / tau_w, noise / tau_w
+    def int_w(w, t, V):
+        return (a * (V - V_rest) - w) / tau_w, noise / tau_w
 
-    def update(ST, _t_):
+    def update(ST, _t):
         ST['spike'] = 0
-        ST['refractory'] = True if _t_ - ST['t_last_spike'] <= t_refractory else False
-        if not ST['refractory']:
-            w = int_w(ST['w'], _t_, ST['V'])
-            V = int_V(ST['V'], _t_, w, ST['input'])
+        ST['refractory'] = 1. if _t - ST['t_last_spike'] <= t_refractory else 0.
+        if ST['refractory'] > 0.:
+            w = int_w(ST['w'], _t, ST['V'])
+            V = int_V(ST['V'], _t, w, ST['input'])
             if V >= V_th:
                 V = V_reset
                 w += b
                 ST['spike'] = 1
-                ST['t_last_spike'] = _t_
+                ST['t_last_spike'] = _t
             ST['V'] = V
             ST['w'] = w
-            
-    def reset(ST):
         ST['input'] = 0.
 
-    
     if mode == 'scalar':
         return bp.NeuType(name='AdExIF_neuron',
-                          requires=dict(ST=ST),
-                          steps=(update, reset),
+                          ST=ST,
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

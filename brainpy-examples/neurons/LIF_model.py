@@ -12,11 +12,10 @@ duration = 100.  # simulate duration
 bp.profile.set(jit=True, dt=dt, merge_steps=True)
 
 # define neuron type
-LIF_neuron = bpmodels.neurons.get_LIF()
+LIF_neuron = bpmodels.neurons.get_LIF(mode='vector')
 
 # build neuron group
 neu = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'refractory', "spike", "t_last_spike"])
-neu.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
 neu.pars['V_rest'] = np.random.randint(0, 2, size=(10,))
 neu.pars['tau'] = np.random.randint(5, 10, size=(10,))
 neu.pars['noise'] = 1.

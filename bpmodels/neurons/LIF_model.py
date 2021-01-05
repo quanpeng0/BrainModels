@@ -2,6 +2,8 @@
 
 import brainpy as bp
 import sys
+import numpy as np
+
 
 def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
             tau=10., t_refractory=5., noise=0., mode='scalar'):
@@ -10,7 +12,17 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
     .. math::
 
         \\tau \\frac{d V}{d t}=-(V-V_{rest}) + RI(t)
-    
+
+    **Neuron Parameters**
+
+
+
+
+
+
+    **Neuron State**
+
+
     ST refers to neuron state, members of ST are listed below:
     
     =============== ================= =========================================================
@@ -75,17 +87,33 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
                 ST['spike'] = 1
                 ST['t_last_spike'] = _t
             ST['V'] = V
-        ST['input'] = 0. # reset input here or it will be brought to next step
+        ST['input'] = 0.  # reset input here or it will be brought to next step
 
-    
     if mode == 'scalar':
         return bp.NeuType(name='LIF_neuron',
                           ST=ST,
                           steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
+
+        def update(ST, _t):
+            V = int_V(ST['V'], _t, ST['input'])
+            is_ref = _t - ST['t_last_spike'] < t_refractory
+            V = np.where(is_ref, ST['V'], V)
+            is_spike = V > V_th
+            spike_idx = np.where(is_spike)[0]
+            if len(spike_idx):
+                V[spike_idx] = V_reset
+                is_ref[spike_idx] = 1.
+                ST['t_last_spike'][spike_idx] = _t
+            ST['V'] = V
+            ST['spike'] = is_spike
+            ST['refractory'] = is_ref
+            ST['input'] = 0.
+
+        return bp.NeuType(name='LIF',
+                         ST=ST,
+                         steps=update,
+                         mode='vector')
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
