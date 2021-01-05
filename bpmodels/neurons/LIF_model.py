@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-import sys
 import numpy as np
 
 

@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
-import matplotlib.pyplot as plt
-import brainpy as bp
-import numpy as np
 import sys
 
-def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th=30., type=None, mode='scalar'):
+import brainpy as bp
+import numpy as np
 
+
+def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th=30., type=None, mode='scalar'):
     '''
     The Izhikevich neuron model.
 
@@ -101,7 +101,7 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
     '''
 
     ST = bp.types.NeuState(
-           {'V': -65., 'u': 1., 'input': 0., 'spike': 0., 't_last_spike': -1e7}
+        {'V': -65., 'u': 1., 'input': 0., 'spike': 0., 't_last_spike': -1e7}
     )
 
     if type in ['tonic', 'tonic spiking']:
@@ -199,8 +199,6 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
 
     def reset(ST):
         ST['input'] = 0.
-
-
 
     if mode == 'scalar':
         return bp.NeuType(name='Izhikevich_neuron',
