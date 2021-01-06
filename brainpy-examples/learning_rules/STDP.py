@@ -5,12 +5,12 @@ import brainpy as bp
 import numpy as np
 import bpmodels
 from bpmodels.neurons import get_LIF
-from bpmodels.learning_rules import get_STDP1, get_STDP2
+from bpmodels.learning_rules import get_STDP
 
 duration = 550.
 dt = 0.02
 bp.profile.set(jit=True, dt = dt, merge_steps = True, show_code = False)
-STDP_syn = get_STDP1()
+STDP_syn = get_STDP()
 
 # set params
 delta_t = [-20, -15, -10, -8, -6, -4, -3, 
