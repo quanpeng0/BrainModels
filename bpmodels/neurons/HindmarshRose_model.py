@@ -5,7 +5,7 @@ import sys
 import brainpy as bp
 
 
-def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, mode='scalar'):
+def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise = 0., mode='scalar'):
     """
     Hindmarsh-Rose neuron model.
 
@@ -64,7 +64,7 @@ def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, mode='s
 
     @bp.integrate
     def int_V(V, t, y, z, I_ext):
-        return y - a * V * V * V + b * V * V - z + I_ext
+        return y - a * V * V * V + b * V * V - z + I_ext, noise
 
     @bp.integrate
     def int_y(y, t, V):
@@ -81,18 +81,14 @@ def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, mode='s
         ST['V'] = V
         ST['y'] = y
         ST['z'] = z
-
-    def reset(ST):
         ST['input'] = 0
 
     if mode == 'scalar':
         return bp.NeuType(name="HindmarshRose_neuron",
                           ST=ST,
-                          steps=(update, reset),
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

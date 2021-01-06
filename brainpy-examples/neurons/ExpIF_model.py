@@ -15,7 +15,6 @@ Exp_LIF_neuron = bpmodels.neurons.get_ExpIF(noise = 1.)
 
 # build neuron group
 neu = bp.NeuGroup(Exp_LIF_neuron, geometry=(10,), monitors=['V'])
-neu.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
 neu.pars['V_rest'] = np.random.randint(-65, -63, size=(10,))
 neu.pars['tau'] = np.random.randint(5, 10, size=(10,))
 

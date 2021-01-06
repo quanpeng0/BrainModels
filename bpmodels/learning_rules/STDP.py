@@ -4,10 +4,10 @@ import brainpy as bp
 import numpy as np
 import sys
 
-def get_STDP1(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10., 
+def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10., 
               w_min = 0., w_max = 20., delta_A_s = 0.5, delta_A_t = 0.5, mode='vector'):
     """
-    Spike-time dependent plasticity (in differential form).
+    Spike-time dependent plasticity.
     
     .. math::
 
@@ -92,15 +92,15 @@ def get_STDP1(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10.,
     )
 
     @bp.integrate
-    def int_A_s(A_s, _t):
+    def int_A_s(A_s, t):
         return -A_s / tau_s
 
     @bp.integrate
-    def int_A_t(A_t, _t):
+    def int_A_t(A_t, t):
         return -A_t / tau_t
 
     @bp.integrate
-    def int_g(g, _t):
+    def int_g(g, t):
         return -g / tau_decay
 
     if mode=='scalar':

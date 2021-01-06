@@ -102,7 +102,5 @@ def get_WilsonCowan(c1=12., c2=4., c3=13., c4=11.,
                           mode=mode)
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

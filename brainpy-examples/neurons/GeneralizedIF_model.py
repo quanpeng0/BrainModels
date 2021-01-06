@@ -15,7 +15,6 @@ GIF_neuron = get_GeneralizedIF(noise=1.)
 
 # build neuron group
 neu = bp.NeuGroup(GIF_neuron, geometry=(10,), monitors=['V', 'V_th', 'input'])
-neu.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
     
 # simulate
 mode = "hyperpolarization_induced_bursting"
@@ -127,20 +126,12 @@ else:
 
 # paint
 ts = neu.mon.ts
-fig, gs = bp.visualize.get_figure(2, 1, 4, 8)
+fig, gs = bp.visualize.get_figure(1, 1, 4, 8)
 fig.add_subplot(gs[0, 0])
 plt.plot(ts, neu.mon.V[:, 0], label='V')
 plt.plot(ts, neu.mon.V_th[:, 0], label='V_th')
 plt.xlabel('Time (ms)')
 plt.ylabel('Membrane potential')
-plt.xlim(-0.1, ts[-1] + 0.1)
-plt.legend()
-
-# paint
-fig.add_subplot(gs[1, 0])
-plt.plot(ts, neu.mon.input[:, 0], label='input')
-plt.xlabel('Time (ms)')
-plt.ylabel('External input')
 plt.xlim(-0.1, ts[-1] + 0.1)
 plt.legend()
 

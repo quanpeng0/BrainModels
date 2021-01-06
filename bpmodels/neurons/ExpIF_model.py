@@ -39,7 +39,7 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
         V_rest (float): Resting potential.
         V_reset (float): Reset potential after spike.
         V_th (float): Threshold potential of spike.
-        V_T (float): Threshold potential of steady/non-steady.
+        V_T (float): Threshold potential of generating action potential.
         delta_T (float): Spike slope factor.
         R (float): Membrane resistance.
         C (float): Membrane capacitance.
@@ -69,7 +69,10 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
         # update variables
         ST['spike'] = 0
         ST['refractory'] = 1. if _t - ST['t_last_spike'] <= t_refractory else 0.
-        if ST['refractory'] > 0.:
+        if _t - ST['t_last_spike'] <= t_refractory:
+            ST['refractory'] = 1.
+        else:
+            ST['refractory'] = 0.
             V = int_V(ST['V'], _t, ST['input'])
             if V >= V_th:
                 V = V_reset
@@ -84,8 +87,6 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
                           steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

@@ -15,7 +15,6 @@ RF_neuron = bpmodels.neurons.get_ResonateandFire()
 
 # build neuron group
 neu = bp.NeuGroup(RF_neuron, geometry=(10,), monitors=['x', 'V', 'spike'])
-neu.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
 
 # create input
 current = bp.inputs.spike_current([0.1],
