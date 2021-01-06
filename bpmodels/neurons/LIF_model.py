@@ -33,6 +33,9 @@ noise         0.        /        noise.
 
 mode          'scalar'  /        Data structure of ST members.
 ============= ========= ======== =========================================
+        
+    Returns:
+        bp.Neutype: return description of LIF model.
 
     **Neuron State**
 
@@ -61,19 +64,6 @@ mode          'scalar'  /        Data structure of ST members.
     
     V_rest=0., V_reset=-5., V_th=20., R=1.,
             tau=10., t_refractory=5., noise=0., mode='scalar'
-    
-    Args:
-        V_rest 0. mV Resting potential.
-        V_reset -5. mV Reset potential after spike.
-        V_th 20. mV Threshold potential of spike.
-        R 1. / Membrane resistance.
-        tau 10. / Membrane time constant. Compute by R * C.
-        t_refractory 5. ms Refractory period length.(ms)
-        noise 0. / noise.
-        mode 'scalar' / Data structure of ST members.
-        
-    Returns:
-        bp.Neutype: return description of LIF model.
         
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
