@@ -94,7 +94,7 @@ def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base = False
 
     elif mode == 'vector':
         requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post2syn']=bp.types.ListConn(help='Post-synaptic neuron index -> synapse index')
+        requires['post_slice_syn']=bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             s = int_s(ST['s'], _t)
@@ -106,12 +106,16 @@ def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base = False
             ST['g'] = g_max * s
 
         @bp.delayed
-        def output(ST, post, post2syn):
-            for post_id, syn_id in enumerate(post2syn):
-                if co_base:
-                    post['input'][post_id] += np.sum(ST['g'][syn_id])* (post['V'] - E)
-                else:
-                    post['input'][post_id] += np.sum(ST['g'][syn_id])
+        def output(ST, post, post_slice_syn):
+            num_post = post_slice_syn.shape[0]
+            g = np.zeros(num_post, dtype=np.float_)
+            for post_id in range(num_post):
+                pos = post_slice_syn[post_id]
+                g[post_id] = np.sum(ST['g'][pos[0]: pos[1]])
+            if co_base:
+                post['input'] += g * (post['V'] - E)
+            else:
+                post['input'] += g 
 
     elif mode == 'matrix':
         requires['conn_mat']=bp.types.MatConn()

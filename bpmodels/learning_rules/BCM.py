@@ -88,7 +88,7 @@ def get_BCM(learning_rate=0.005, w_max=2., w_min = 0., r_0 = 0., mode='matrix'):
             for post_id , post_r_i in enumerate(post['r']):
                 if post_r_i < r_0:
                     post['r'][post_id] = post_r_i
-                elif post2syn[post_id].size > 0 and post2pre[post_id].size > 0:
+                elif post2syn[post_id].size > 0:
                     # mapping
                     syn_ids = post2syn[post_id]
                     pre_ids = post2pre[post_id]

@@ -103,7 +103,7 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
 
     elif mode == 'vector':
         requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post2syn']=bp.types.ListConn(help='Post-synaptic neuron index -> synapse index')
+        requires['post_slice_syn']=bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             u = int_u(ST['u'], _t)
@@ -118,10 +118,12 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
             ST['g'] = ST['w'] * ST['u'] * ST['x']
 
         @bp.delayed
-        def output(ST, post, post2syn):
-            g = np.zeros(len(post2syn), dtype=np.float_)
-            for post_id, syn_ids in enumerate(post2syn):
-                g[post_id] = np.sum(ST['g'][syn_ids])
+        def output(ST, post, post_slice_syn):
+            num_post = post_slice_syn.shape[0]
+            g = np.zeros(num_post, dtype=np.float_)
+            for post_id in range(num_post):
+                pos = post_slice_syn[post_id]
+                g[post_id] = np.sum(ST['g'][pos[0]: pos[1]])
                 post['input'] += g
 
     elif mode == 'matrix':

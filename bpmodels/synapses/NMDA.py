@@ -109,7 +109,7 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
 
     elif mode == 'vector':
         requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post2syn']=bp.types.ListConn(help='Post-synaptic neuron index -> synapse index')
+        requires['post_slice_syn']=bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             for pre_id in range(len(pre2syn)):
@@ -123,13 +123,15 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
             ST['g'] = g_max * s
 
         @bp.delayed
-        def output(ST, post, post2syn):
-            g = np.zeros(len(post2syn), dtype=np.float_)
-            for post_id, syn_ids in enumerate(post2syn):
-                g[post_id] = np.sum(ST['g'][syn_ids])    
-            I_syn = g * (post['V'] - E)
+        def output(ST, post, post_slice_syn):
             g_inf = 1 + cc_Mg / beta * np.exp(-alpha * post['V'])
-            post['input'] -= I_syn * g_inf
+            
+            num_post = post_slice_syn.shape[0]
+            g = np.zeros(num_post, dtype=np.float_)
+            for post_id in range(num_post):
+                pos = post_slice_syn[post_id]
+                g[post_id] = np.sum(ST['g'][pos[0]: pos[1]])  
+            post['input'] -= g * (post['V'] - E) / g_inf
 
     elif mode == 'matrix':
         requires['conn_mat']=bp.types.MatConn()
@@ -145,9 +147,8 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
         @bp.delayed
         def output(ST, post):
             g = np.sum(ST['g'], axis=0)
-            I_syn = g * (post['V'] - E)
             g_inf = 1 + cc_Mg / beta * np.exp(-alpha * post['V'])
-            post['input'] -= I_syn * g_inf
+            post['input'] -= g * (post['V'] - E) / g_inf
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

@@ -76,7 +76,7 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
 
     elif mode == 'vector':
         requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post2syn']=bp.types.ListConn(help='Post-synaptic neuron index -> synapse index')
+        requires['post_slice_syn']=bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             s = ints(ST['s'], _t)
@@ -88,10 +88,12 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
             ST['g'] = g_max * s
 
         @bp.delayed
-        def output(ST, post, post2syn):
-            g = np.zeros(len(post2syn), dtype=np.float_)
-            for post_id, syn_ids in enumerate(post2syn):
-                g[post_id] = np.sum(ST['g'][syn_ids])
+        def output(ST, post, post_slice_syn):
+            num_post = post_slice_syn.shape[0]
+            g = np.zeros(num_post, dtype=np.float_)
+            for post_id in range(num_post):
+                pos = post_slice_syn[post_id]
+                g[post_id] = np.sum(ST['g'][pos[0]: pos[1]])
             post['input'] -= g * (post['V'] - E)
 
     elif mode == 'matrix':
@@ -204,8 +206,7 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
 
     elif mode == 'vector':
         requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post2syn']=bp.types.ListConn(help='Post-synaptic neuron index -> synapse index')
-
+        requires['post_slice_syn']=bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             for i in np.where(pre['spike'] > 0.)[0]:
@@ -217,10 +218,12 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
             ST['g'] = g_max * s
 
         @bp.delayed
-        def output(ST, post, post2syn):
-            g = np.zeros(len(post2syn), dtype=np.float_)
-            for post_id, syn_ids in enumerate(post2syn):
-                g[post_id] = np.sum(ST['g'][syn_ids])
+        def output(ST, post, post_slice_syn):
+            num_post = post_slice_syn.shape[0]
+            g = np.zeros(num_post, dtype=np.float_)
+            for post_id in range(num_post):
+                pos = post_slice_syn[post_id]
+                g[post_id] = np.sum(ST['g'][pos[0]: pos[1]])
             post['input'] -= g * (post['V'] - E)
 
 
