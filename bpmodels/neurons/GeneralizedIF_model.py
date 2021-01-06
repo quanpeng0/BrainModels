@@ -9,6 +9,7 @@ def get_GeneralizedIF(V_rest=-70., V_reset=-70.,
                       V_th_inf=-50., V_th_reset=-60.,
                       R=20., tau=20., a=0., b=0.01,
                       k1=0.2, k2=0.02, R1=0., R2=1., A1=0., A2=0.,
+                      noise = 0.,
                       mode='scalar'):
     """
     Generalized Integrate-and-Fire model (GeneralizedIF model).
@@ -105,7 +106,7 @@ def get_GeneralizedIF(V_rest=-70., V_reset=-70.,
 
     @bp.integrate
     def int_V(V, t, I_ext, I1, I2):
-        return (- (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau
+        return (- (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau, noise / tau
 
     def update(ST, _t):
         ST['spike'] = 0
@@ -131,8 +132,6 @@ def get_GeneralizedIF(V_rest=-70., V_reset=-70.,
                           steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

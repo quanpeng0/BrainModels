@@ -80,11 +80,11 @@ def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., mode=
     )
 
     @bp.integrate
-    def int_x(x, _t, V):  # input--internal
+    def int_x(x, t, V):  # input--internal
         return b * x - omega * V
 
     @bp.integrate
-    def int_V(V, _t, x):  # V
+    def int_V(V, t, x):  # V
         return omega * x + b * V
 
     def update(ST, _t):
@@ -102,18 +102,14 @@ def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., mode=
             ST['t_last_spike'] = _t
         ST['x'] = x
         ST['V'] = V
-
-    def reset(ST):
         ST['input'] = 0.
 
     if mode == 'scalar':
         return bp.NeuType(name='RF_neuron',
                           ST=ST,
-                          steps=(update, reset),
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

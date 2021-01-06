@@ -181,7 +181,7 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                     V = c
                     u += d
                     ST['t_last_spike'] = _t
-                    ST['spike'] = True
+                    ST['spike'] = 1.
                 ST['V'] = V
                 ST['u'] = u
                 ST['input'] = 0.
@@ -194,7 +194,7 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                 V = c
                 u += d
                 ST['t_last_spike'] = _t
-                ST['spike'] = True
+                ST['spike'] = 1.
             ST['V'] = V
             ST['u'] = u
             ST['input'] = 0.
@@ -205,8 +205,6 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                           steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
