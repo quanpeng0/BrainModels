@@ -32,6 +32,46 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10.,
         A_{target}&= A_{target} + \\Delta A_{target}
         
         w&= min([w+A_{source}]^+, w_{max})
+        
+    **Learning Rule Parameters**
+    
+    ============= ============== ======== =================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -----------------------------------------------------------------
+    g_max         0.1            \        Maximum conductance.
+
+    E             0.             \        Reversal potential.
+
+    tau_decay     10.            ms       Time constant of decay.
+
+    tau_s         10.            ms       Time constant of source neuron 
+    
+                                          (i.e. pre-synaptic neuron)
+
+    tau_t         10.            ms       Time constant of target neuron 
+    
+                                          (i.e. post-synaptic neuron)
+
+    w_min         0.             \        Minimal possible synapse weight.
+
+    w_max         20.            \        Maximal possible synapse weight.
+
+    delta_A_s     0.5            \        Change on source neuron traces elicited by 
+    
+                                          a source neuron spike.
+
+    delta_A_t     0.5            \        Change on target neuron traces elicited by 
+    
+                                          a target neuron spike.
+
+    mode          'vector'       \        Data structure of ST members.
+    ============= ============== ======== =================================================================
+        
+    Returns:
+        bp.Syntype: return description of STDP.
+
+    
+    **Learning Rule State**
 
     ST refers to synapse state (note that STDP learning rule can be implemented as synapses),
     members of ST are listed below:
@@ -50,21 +90,6 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10.,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-    
-    Args:
-        g_max (float): Maximum conductance.
-        E (float): Reversal potential.
-        tau_decay (float): Time constant of decay.
-        tau_s (float): Time constant of source neuron (i.e. pre-synaptic neuron)
-        tau_t (float): Time constant of target neuron (i.e. post-synaptic neuron)
-        w_min (float): Minimal possible synapse weight.
-        w_max (float): Maximal possible synapse weight.
-        delta_A_s (float): Change on source neuron traces elicited by a source neuron spike.
-        delta_A_t (float): Change on target neuron traces elicited by a target neuron spike.
-        mode (str): Data structure of ST members.
-        
-    Returns:
-        bp.Syntype: return description of STDP.
         
     References:
         .. [1] Stimberg, Marcel, et al. "Equation-oriented specification of neural models for

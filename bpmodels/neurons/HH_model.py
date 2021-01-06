@@ -15,6 +15,7 @@ V_THRESHOLD = 20.
 
 NOISE = 1.
 
+
 def get_HH(noise=NOISE, V_th=V_THRESHOLD, C=C, E_Na=E_NA, E_K=E_K,
            E_leak=E_LEAK, g_Na=G_NA, g_K=G_K, g_leak=G_LEAK,
            mode='vector'):

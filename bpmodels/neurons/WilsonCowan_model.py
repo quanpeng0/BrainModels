@@ -27,6 +27,56 @@ def get_WilsonCowan(c1=12., c2=4., c3=13., c4=11.,
                         \\mathcal{S}_i(c_3 a_e(t) - c_4 a_i(t) + I_{ext_j}(t))
 
         &\\mathcal{S}(x) = \\frac{1}{1 + exp(- a(x - \\theta))} - \\frac{1}{1 + exp(a\\theta)} 
+    
+    **Neuron Parameters**
+    
+    ============= ============== ======== ========================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ------------------------------------------------------------------------
+    c1            12.            \        Weight from E-neurons to E-neurons.
+
+    c2            4.             \        Weight from I-neurons to E-neurons.
+
+    c3            13.            \        Weight from E-neurons to I-neurons.
+
+    c4            11.            \        Weight from I-neurons to I-neurons.
+
+    k_e           1.             \        Model parameter, control E-neurons' 
+    
+                                          refractory period together with r_e.
+
+    k_i           1.             \        Model parameter, control I-neurons' 
+    
+                                          refractory period together with r_i.
+
+    tau_e         1.             \        Time constant of E-neurons' activity.
+
+    tau_i         1.             \        Time constant of I-neurons' activity.
+
+    r_e           1.             \        Model parameter, control E-neurons' 
+    
+                                          refractory period together with k_e.
+
+    r_i           1.             \        Model parameter, control I-neurons' 
+    
+                                          refractory period together with k_i.
+
+    slope_e       1.2            \        E-neurons' sigmoid function slope parameter.
+
+    slope_i       1.             \        I-neurons' sigmoid function slope parameter.
+
+    theta_e       1.8            \        E-neurons' sigmoid function phase parameter.
+
+    theta_i       4.             \        I-neurons' sigmoid function phase parameter.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ========================================================================
+
+    Returns:
+        bp.Neutype: return description of Wilson Cowan model.
+
+
+    **Neuron State**
 
     ST refers to neuron state, members of ST are listed below:
     
@@ -44,23 +94,6 @@ def get_WilsonCowan(c1=12., c2=4., c3=13., c4=11.,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        c1 (float): Weight from E-neurons to E-neurons.
-        c2 (float): Weight from I-neurons to E-neurons.
-        c3 (float): Weight from E-neurons to I-neurons.
-        c4 (float): Weight from I-neurons to I-neurons.
-        k_e (float): Model parameter, control E-neurons' refractory period together with r_e.
-        k_i (float): Model parameter, control I-neurons' refractory period together with r_i.
-        tau_e (float): Time constant of E-neurons' activity.
-        tau_i (float): Time constant of I-neurons' activity.
-        r_e (float): Model parameter, control E-neurons' refractory period together with k_e.
-        r_i (float): Model parameter, control I-neurons' refractory period together with k_i.
-        slope_e (float): E-neurons' sigmoid function slope parameter.
-        slope_i (float): I-neurons' sigmoid function slope parameter.
-        theta_e (float): E-neurons' sigmoid function phase parameter.
-        theta_i (float): I-neurons' sigmoid function phase parameter.
-        mode (str): Data structure of ST members.
 
     References:
         .. [1] Wilson, Hugh R., and Jack D. Cowan. "Excitatory and inhibitory 
