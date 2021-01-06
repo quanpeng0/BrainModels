@@ -9,6 +9,27 @@ def get_Oja(gamma = 0.005, w_max = 1., w_min = 0., mode = 'vector'):
     .. math::
         
         \\frac{d w_{ij}}{dt} = \\gamma(\\upsilon_i \\upsilon_j - w_{ij}\\upsilon_i ^ 2)
+        
+        
+    **Learning Rule Parameters**
+    
+    ============= ============== ======== ================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- --------------------------------
+    gamma         0.005          \        Learning rate.
+
+    w_max         1.             \        Maximal possible synapse weight.
+
+    w_min         0.             \        Minimal possible synapse weight.
+
+    mode          'vector'       \        Data structure of ST members.
+    ============= ============== ======== ================================
+
+    Returns:
+        bp.Syntype: return description of synapse with Oja's rule.
+        
+    
+    **Learning Rule State**
     
     ST refers to synapse state (note that Oja learning rule can be implemented as synapses),
     members of ST are listed below:
@@ -23,16 +44,7 @@ def get_Oja(gamma = 0.005, w_max = 1., w_min = 0., mode = 'vector'):
     ================ ================= =========================================================
     
     Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-    
-    Args:
-        gamma(float): Learning rate.
-        w_max (float): Maximal possible synapse weight.
-        w_min (float): Minimal possible synapse weight.
-        mode (str): Data structure of ST members.
-        
-    Returns:
-        bp.Syntype: return description of synapse with Oja's rule.
+    though some of them represent other data types (such as boolean).        
         
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 

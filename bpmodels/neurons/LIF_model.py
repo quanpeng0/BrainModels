@@ -14,25 +14,25 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
 
     **Neuron Parameters**
 
-============= ========= ======== =========================================
-**Parameter** **Value** **Unit** **Explanation**
-------------- --------- -------- -----------------------------------------
-V_rest        0.        mV       Resting potential.
+    ============= ============== ======== =========================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -----------------------------------------
+    V_rest        0.             mV       Resting potential.
 
-V_reset       -5.       mV       Reset potential after spike.
+    V_reset       -5.            mV       Reset potential after spike.
 
-V_th          20.       mV       Threshold potential of spike.
+    V_th          20.            mV       Threshold potential of spike.
 
-R             1.        /        Membrane resistance.
+    R             1.             /        Membrane resistance.
 
-tau           10.       /        Membrane time constant. Compute by R * C.
+    tau           10.            /        Membrane time constant. Compute by R * C.
 
-t_refractory  5.        ms       Refractory period length.(ms)
+    t_refractory  5.             ms       Refractory period length.(ms)
 
-noise         0.        /        noise.
+    noise         0.             /        noise.
 
-mode          'scalar'  /        Data structure of ST members.
-============= ========= ======== =========================================
+    mode          'scalar'       /        Data structure of ST members.
+    ============= ============== ======== =========================================
         
     Returns:
         bp.Neutype: return description of LIF model.
@@ -61,9 +61,6 @@ mode          'scalar'  /        Data structure of ST members.
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-    
-    V_rest=0., V_reset=-5., V_th=20., R=1.,
-            tau=10., t_refractory=5., noise=0., mode='scalar'
         
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 

@@ -20,7 +20,41 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
         \\text{if}  v \\geq 30  \\text{mV}, \\text{then}
         \\begin{cases} v \\leftarrow c \\\\ u \\leftarrow u+d \\end{cases}
 
+    **Neuron Parameters**
+    
+    ============= ============== ======== ================================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- --------------------------------------------------------------------------------
+    type          None           \        The neuron spiking type.
 
+    a             0.02           \        It determines the time scale of the recovery variable :math:`u`.
+
+    b             0.2            \        It describes the sensitivity of the recovery variable :math:`u` to 
+                                          
+                                          the sub-threshold fluctuations of the membrane potential :math:`v`.
+
+    c             -65.           \        It describes the after-spike reset value of the membrane
+                                          
+                                          potential :math:`v` caused by the fast high-threshold :math:`K^{+}` conductance.
+
+    d             8.             \        It describes after-spike reset of the recovery variable :math:`u` 
+                                          
+                                          caused by slow high-threshold :math:`Na^{+}` and :math:`K^{+}` conductance.
+
+    t_refractory  0.             ms       Refractory period length. [ms]
+
+    noise         0.             \        The noise fluctuation.
+
+    V_th          30.            mV       The membrane potential threshold.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ================================================================================
+
+    Returns:
+        bp.Neutype: return description of Izhikevich model.
+
+
+    **Neuron State**
     ST refers to neuron state, members of ST are listed below:
     
     =============== ======== ================== ===========================================
@@ -41,29 +75,6 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).    
-
-    Args:
-        type (str): The neuron spiking type.
-        a (float): It determines the time scale of the recovery variable :math:`u`.
-        b (float): It describes the sensitivity of the recovery variable :math:`u` to the sub-threshold fluctuations of the membrane potential :math:`v`.
-        c (float): It describes the after-spike reset value of the membrane potential :math:`v` caused by the fast high-threshold :math:`K^{+}` conductance.
-        d (float): It describes after-spike reset of the recovery variable :math:`u` caused by slow high-threshold :math:`Na^{+}` and :math:`K^{+}` conductance.
-        t_refractory (float): Refractory period length. [ms]
-        noise(float): The noise fluctuation.
-        V_th (float): The membrane potential threshold.
-        mode (str): Data structure of ST members.
-
-    Returns:
-        bp.Neutype: return description of Izhikevich model.
-
-
-    References:
-        .. [1] Izhikevich, Eugene M. "Simple model of spiking neurons." IEEE
-               Transactions on neural networks 14.6 (2003): 1569-1572.
-
-        .. [2] Izhikevich, Eugene M. "Which model to use for cortical spiking neurons?." 
-               IEEE transactions on neural networks 15.5 (2004): 1063-1070.
-
 
     Parameters of spiking types:
         
@@ -98,6 +109,13 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
         inhibition-induced spiking   -0.02   -1.00   -60      8
         inhibition-induced bursting  -0.026  -1.00   -45      0
         =========================== ======= ======= ======= =======
+
+    References:
+        .. [1] Izhikevich, Eugene M. "Simple model of spiking neurons." IEEE
+               Transactions on neural networks 14.6 (2003): 1569-1572.
+
+        .. [2] Izhikevich, Eugene M. "Which model to use for cortical spiking neurons?." 
+               IEEE transactions on neural networks 15.5 (2004): 1063-1070.
     '''
 
     ST = bp.types.NeuState(

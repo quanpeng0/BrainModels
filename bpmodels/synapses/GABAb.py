@@ -21,8 +21,47 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
     - [R] is the fraction of activated receptor.
     - [T] is the transmitter concentration.
     
-    ST refers to synapse state, members of ST are listed below:
+    **Synapse Parameters**
     
+    ============= ============== ======== ============================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ----------------------------------------------------------------------------
+    g_max         0.02           \        Maximum synapse conductance.
+
+    E             -95.           mV       Reversal potential of synapse.
+
+    k1            0.18           \        Activating rate constant of G protein catalyzed 
+    
+                                          by activated GABAb receptor.
+
+    k2            0.034          \        De-activating rate constant of G protein.
+
+    k3            0.09           \        Activating rate constant of GABAb receptor.
+
+    k4            0.0012         \        De-activating rate constant of GABAb receptor.
+
+    kd            100.           \        Dissociation rate constant of the binding of 
+    
+                                          G protein on K+ channels.
+
+    T             0.5            \        Transmitter concentration when synapse is 
+    
+                                          triggered by a pre-synaptic spike.
+
+    T_duration    0.3            \        Transmitter concentration duration time 
+    
+                                          after being triggered.
+
+    mode          'vector'       \        Data structure of ST members.
+    ============= ============== ======== ============================================================================
+
+    Returns:
+        bp.SynType: return description of GABAb synapse model.
+
+    
+    **Synapse State**
+    
+    ST refers to synapse state, members of ST are listed below:
     
     ================ ================= =========================================================
     **Member name**  **Initial Value** **Explanation**
@@ -38,20 +77,6 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        g_max (float): Maximum synapse conductance.
-        E (float): Reversal potential of synapse.
-        k1 (float): Activating rate constant of G protein catalyzed by activated GABAb receptor.
-        k2 (float): De-activating rate constant of G protein.
-        k3 (float): Activating rate constant of GABAb receptor.
-        k4 (float): De-activating rate constant of GABAb receptor.
-        T (float): Transmitter concentration when synapse is triggered by a pre-synaptic spike.
-        T_duration (float): Transmitter concentration duration time after being triggered.
-        mode (str): Data structure of ST members.
-
-    Returns:
-        bp.SynType: return description of GABAb synapse model.
         
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
@@ -160,6 +185,52 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
     - [G] is the concentration of activated G-protein (μM).
     - [T] is the transmitter concentration.
     
+    **Synapse Parameters**
+    
+    ============= ============== ======== ============================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ----------------------------------------------------------------------------
+    g_max         0.02           \        Maximum synapse conductance.
+
+    E             -95.           mV       Reversal potential of synapse.
+
+    k1            0.66           \        Activating rate constant of G protein 
+    
+                                          catalyzed by activated GABAb receptor.
+
+    k2            0.02           \        De-activating rate constant of G protein.
+
+    k3            0.0053         \        Activating rate constant of GABAb receptor.
+
+    k4            0.017          \        De-activating rate constant of GABAb receptor.
+
+    k5            8.3e-5         \        Activating rate constant of G protein 
+    
+                                          catalyzed by activated GABAb receptor.
+
+    k6            7.9e-3         \        De-activating rate constant of activated G protein.
+
+    kd            100.           \        Dissociation rate constant of the binding of 
+    
+                                          G protein on K+ channels.
+
+    T             0.5            \        Transmitter concentration when synapse 
+    
+                                          is triggered by a pre-synaptic spike.
+
+    T_duration    0.5            \        Transmitter concentration duration time 
+    
+                                          after being triggered.
+
+    mode          'vector'       \        Data structure of ST members.
+    ============= ============== ======== ============================================================================
+
+    Returns:
+        bp.SynType: return decription of GABAb synapse model.
+
+    
+    **Synapse State**
+    
     ST refers to synapse state, members of ST are listed below:
     
     ================ ================= =========================================================
@@ -178,23 +249,6 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        g_max (float): Maximum synapse conductance.
-        E (float): Reversal potential of synapse.
-        k1 (float): Activating rate constant of GABAb receptor.
-        k2 (float): De-activating rate constant of GABAb receptor.
-        k3 (float): Activating rate constant of desensitized GABAb receptor.
-        k4 (float): Desensitizing rate constant of activated GABAb receptor. 
-        k5 (float): Activating rate constant of G protein catalyzed by activated GABAb receptor.
-        k6 (float): De-activating rate constant of activated G protein.
-        kd (float): Dissociation constant of the binding of G protein on K+ channels.
-        T (float): Transmitter concentration when synapse is triggered by a pre-synaptic spike.
-        T_duration (float): Transmitter concentration duration time after being triggered.
-        mode (str): Data structure of ST members.
-
-    Returns:
-        bp.SynType: return decription of GABAb synapse model.
     
     References:
         .. [1] Destexhe, Alain, et al. "G-protein activation kinetics and 

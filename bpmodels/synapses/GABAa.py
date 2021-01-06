@@ -14,6 +14,27 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
 
         \\frac{d s}{d t}&=-\\frac{s}{\\tau_{decay}}+\\sum_{k}\\delta(t-t-{j}^{k})
 
+
+    **Synapse Parameters**
+    
+    ============= ============== ======== =======================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ---------------------------------------
+    g_max         0.4            \        Maximum synapse conductance.
+
+    E             -80.           \        Reversal potential of synapse.
+
+    tau_decay     6.             ms       Time constant of gating variable decay.
+
+    mode          'vector'       \        Data structure of ST members.
+    ============= ============== ======== =======================================
+
+    Returns:
+        bp.SynType: return description of GABAa synapse model.
+        
+    
+    **Synapse State**
+
     ST refers to synapse state, members of ST are listed below:
     
     =============== ================= =========================================================
@@ -26,15 +47,6 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        g_max (float): Maximum synapse conductance.
-        E (float): Reversal potential of synapse.
-        tau_decay (float): Time constant of gating variable decay.
-        mode (str): Data structure of ST members.
-
-    Returns:
-        bp.SynType: return description of GABAa synapse model.
     
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
@@ -120,6 +132,36 @@ def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., m
 
         \\frac{d s}{d t}&=\\alpha[T](1-s) - \\beta s
         
+    **Synapse Parameters**
+    
+    ============= ============== ======== ============================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ----------------------------------------------------------------------------
+    g_max         0.04           \        Maximum synapse conductance.
+
+    E             -80.           \        Reversal potential of synapse.
+
+    alpha         0.53           \        Opening rate constant of ion channel.
+
+    beta          0.18           \        Closing rate constant of ion channel.
+
+    T             1.             \        Transmitter concentration when synapse 
+    
+                                          is triggered by a pre-synaptic spike.
+
+    T_duration    1.             \        Transmitter concentration duration time 
+    
+                                          after being triggered.
+
+    mode          'vector'       \        Data structure of ST members.
+    ============= ============== ======== ============================================================================
+
+    Returns:
+        bp.SynType: return description of GABAa synapse model.
+
+    
+    **Synapse State**
+        
     ST refers to synapse state, members of ST are listed below:
     
     ================ ================= =========================================================
@@ -134,18 +176,6 @@ def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., m
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        g_max (float): Maximum synapse conductance.
-        E (float): Reversal potential of synapse.
-        alpha (float): Opening rate constant of ion channel.
-        beta (float): Closing rate constant of ion channel.
-        T (float): Transmitter concentration when synapse is triggered by a pre-synaptic spike.
-        T_duration (float): Transmitter concentration duration time after being triggered.
-        mode (str): Data structure of ST members.
-
-    Returns:
-        bp.SynType: return description of GABAa synapse model.
 
     References:
         .. [1] Destexhe, Alain, and Denis Paré. "Impact of network activity

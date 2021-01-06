@@ -12,6 +12,39 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
     
         \\tau\\frac{d V}{d t}= - (V-V_{rest}) + \\Delta_T e^{\\frac{V-V_T}{\\Delta_T}} + RI(t)
     
+    **Neuron Parameters**
+    
+    ============= ============== ======== ===================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ---------------------------------------------------
+    V_rest        -65.           mV       Resting potential.
+
+    V_reset       -68.           mV       Reset potential after spike.
+
+    V_th          -30.           mV       Threshold potential of spike.
+
+    V_T           -59.9          mV       Threshold potential of generating action potential.
+
+    delta_T       3.48           \        Spike slope factor.
+
+    R             10.            \        Membrane resistance.
+
+    C             1.             \        Membrane capacitance.
+
+    tau           10.            \        Membrane time constant. Compute by R * C.
+
+    t_refractory  1.7            \        Refractory period length.
+
+    noise         0.             \        noise.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ===================================================
+
+    Returns:
+        bp.Neutype: return description of ExpIF model.
+
+    **Neuron State**    
+    
     ST refers to neuron state, members of ST are listed below:
     
     =============== ================= =========================================================
@@ -34,22 +67,6 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-        
-    Args:
-        V_rest (float): Resting potential.
-        V_reset (float): Reset potential after spike.
-        V_th (float): Threshold potential of spike.
-        V_T (float): Threshold potential of generating action potential.
-        delta_T (float): Spike slope factor.
-        R (float): Membrane resistance.
-        C (float): Membrane capacitance.
-        tau (float): Membrane time constant. Compute by R * C.
-        t_refractory (int): Refractory period length.
-        noise (float): noise.
-        mode (str): Data structure of ST members.
-        
-    Returns:
-        bp.Neutype: return description of ExpIF model.
     
     References:
         .. [1] Fourcaud-Trocmé, Nicolas, et al. "How spike generation 

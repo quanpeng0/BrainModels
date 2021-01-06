@@ -16,6 +16,33 @@ def get_MorrisLecar(noise=0., V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_Leak=-60.
 
         &\\frac{dW}{dt} = \\frac{W_{\\infty}(V) - W}{ \\tau_W(V)} 
 
+    **Neuron Parameters**
+    
+    ============= ============== ======== =======================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -------------------------------------------------------
+    noise         0.             \        The noise fluctuation.
+    V_Ca          130.           mV       Equilibrium potentials of Ca+.(mV)
+    g_Ca          4.4            \        Maximum conductance of corresponding Ca+.(mS/cm2)
+    V_K           -84.           mV       Equilibrium potentials of K+.(mV)
+    g_K           8.             \        Maximum conductance of corresponding K+.(mS/cm2)
+    V_Leak        -60.           mV       Equilibrium potentials of leak current.(mV)
+    g_Leak        2.             \        Maximum conductance of leak current.(mS/cm2)
+    C             20.            \        Membrane capacitance.(uF/cm2)
+    V1            -1.2           \        Potential at which M_inf = 0.5.(mV)
+    V2            18.            \        Reciprocal of slope of voltage dependence of M_inf.(mV)
+    V3            2.             \        Potential at which W_inf = 0.5.(mV)
+    V4            30.            \        Reciprocal of slope of voltage dependence of W_inf.(mV)
+    phi           0.04           \        A temperature factor.(1/s)
+    mode          'vector'       \        Data structure of ST members.
+    ============= ============== ======== =======================================================
+    
+    Returns:
+        bp.Neutype: return description of Morris-Lecar model.
+
+
+    **Neuron State**
+    
     ST refers to neuron state, members of ST are listed below:
     
     =============== ================= =========================================================
@@ -31,25 +58,6 @@ def get_MorrisLecar(noise=0., V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_Leak=-60.
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        noise (float): The noise fluctuation.
-        V_Ca (float): Equilibrium potentials of Ca+.(mV)
-        g_Ca (float): Maximum conductance of corresponding Ca+.(mS/cm2)
-        V_K (float): Equilibrium potentials of K+.(mV)
-        g_K (float): Maximum conductance of corresponding K+.(mS/cm2)
-        V_Leak (float): Equilibrium potentials of leak current.(mV)
-        g_Leak (float): Maximum conductance of leak current.(mS/cm2)
-        C (float): Membrane capacitance.(uF/cm2)
-        V1 (float): Potential at which M_inf = 0.5.(mV)
-        V2 (float): Reciprocal of slope of voltage dependence of M_inf.(mV)
-        V3 (float): Potential at which W_inf = 0.5.(mV)
-        V4 (float): Reciprocal of slope of voltage dependence of W_inf.(mV)
-        phi (float): A temperature factor.(1/s)
-        mode (str): Data structure of ST members.
-
-    Returns:
-        bp.Neutype: return description of Morris-Lecar model.
 
     References:
         .. [1] Meier, Stephen R., Jarrett L. Lancaster, and Joseph M. Starobin.
