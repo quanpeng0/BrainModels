@@ -23,6 +23,7 @@ The prior goal of ``BrainPy-Models`` is to free users from repeatly implementing
    
    tutorials/neurons
    tutorials/synapses
+   tutorials/dynamics_analysis
 
 .. toctree::
    :maxdepth: 2
@@ -30,7 +31,6 @@ The prior goal of ``BrainPy-Models`` is to free users from repeatly implementing
    
    examples/networks
    examples/from_papers
-   examples/dynamics_analysis
 
 .. toctree::
    :maxdepth: 2

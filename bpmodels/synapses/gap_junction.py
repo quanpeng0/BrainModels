@@ -2,7 +2,6 @@
 
 import brainpy as bp
 import numpy as np
-import sys
 
 def get_gap_junction(mode='scalar'):
     """
@@ -11,6 +10,8 @@ def get_gap_junction(mode='scalar'):
     .. math::
 
         I_{syn} = w (V_{pre} - V_{post})
+
+    **Synapse State**
 
     ST refers to synapse state, members of ST are listed below:
 
@@ -27,7 +28,7 @@ def get_gap_junction(mode='scalar'):
         mode (string): data structure of ST members.
 
     Returns:
-        bp.SynType
+        bp.SynType: return description of synapse model with gap junction.
 
     Reference:
         .. [1] Chow, Carson C., and Nancy Kopell. 
@@ -36,10 +37,10 @@ def get_gap_junction(mode='scalar'):
 
     """
 
-    ST=bp.types.SynState(['w'])
+    ST=bp.types.SynState('w')
 
     requires = dict(
-        pre=bp.types.NeuState(['V']),
+        pre=bp.types.NeuState('V'),
         post=bp.types.NeuState(['V', 'input'])
     )
 
@@ -103,7 +104,7 @@ def get_gap_junction_lif(weight, k_spikelet=0.1, post_has_refractory=False, mode
         weight (float): Synapse weights.
 
     Returns:
-        bp.SynType
+        bp.SynType: return description of synapse model with gap junction.
 
     References:
         .. [1] Chow, Carson C., and Nancy Kopell. 

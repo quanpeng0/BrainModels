@@ -16,7 +16,45 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
         \\tau_m \\frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) - R w + RI(t)
         
         \\tau_w \\frac{d w}{d t}=a(V-V_{rest}) - w + b \\tau_w \\sum \\delta (t-t^f)
+
+
+    **Neuron Parameters**
     
+    ============= ============== ======== ========================================================================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ------------------------------------------------------------------------------------------------------------------------
+    V_rest        -65.           mV       Resting potential.
+
+    V_reset       -68.           mV       Reset potential after spike.
+
+    V_th          -30.           mV       Threshold potential of spike and reset.
+
+    a_0           .07            \        Coefficient describes membrane potential update. Larger than 0.
+
+    V_c           -50.           mV       Critical voltage for spike initiation. Must be larger than V_rest.
+
+    a             1              \        The sensitivity of the recovery variable :math:`u` to the sub-threshold fluctuations of the membrane potential :math:`v`
+
+    b             .1             \        The increment of :math:`w` produced by a spike.
+
+    R             1              \        Membrane resistance.
+
+    tau           10             ms       Membrane time constant. Compute by R * C.
+
+    tau_w         10             ms       Time constant of the adaptation current.
+
+    t_refractory  0              ms       Refractory period length.
+
+    noise         0.             \        the noise fluctuation.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ========================================================================================================================    
+    
+    Returns:
+        bp.Neutype: return description of the AdQuaIF model.
+
+    **Neuron State**
+
     ST refers to neuron state, members of ST are listed below:
     
     =============== ================= =========================================================
@@ -41,24 +79,6 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-    
-    Args:
-        a (float):
-        b (float):
-        a_0 (float): Coefficient describes membrane potential update. Larger than 0.
-        V_c (float): Critical voltage for spike initiation. Must be larger than V_rest.
-        V_rest (float): Resting potential.
-        V_reset (float): Reset potential after spike.
-        V_th (float): Threshold potential of spike.
-        R (float): Membrane resistance.
-        C (float): Membrane capacitance.
-        tau (float): Membrane time constant. Compute by R * C.
-        tau_w (float): Time constant of the adaptation current.
-        t_refractory (int): Refractory period length.(ms)
-        noise (float): noise.   
-        
-    Returns:
-        bp.Neutype: return description of QuaIF model.
         
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
@@ -66,14 +86,8 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
                University Press, 2014.
     """
 
-    if mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode != 'scalar':
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    ST = bp.types.NeuState(
-        {'V': 0, 'w': 0, 'input': 0, 'spike': 0, 'refractory': 0, 't_last_spike': -1e7}
-    )
+    ST = bp.types.NeuState('V', 'w', 'input', 'spike', 'refractory', t_last_spike = -1e7)
+    
 
     @bp.integrate
     def int_V(V, t, w, I_ext):
@@ -83,23 +97,28 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
     def int_w(w, t, V):
         return (a* (V - V_rest)-w) / tau_w, noise / tau_w
 
-    def update(ST, _t):
-        ST['spike'] = 0
-        if _t - ST['t_last_spike'] <= t_refractory:
-            ST['refractory'] = 1.
-        else:
-            ST['refractory'] = 0.
-            w = int_w(ST['w'], _t, ST['V'])
-            V = int_V(ST['V'], _t, w, ST['input'])
-            if V >= V_th:
-                V = V_reset
-                w += b
-                ST['spike'] = 1
-                ST['t_last_spike'] = _t
-            ST['V'] = V
-            ST['w'] = w
-        # reset input
-        ST['input'] = 0.
+    if mode=='scalar':
+        def update(ST, _t):
+            ST['spike'] = 0
+            if _t - ST['t_last_spike'] <= t_refractory:
+                ST['refractory'] = 1.
+            else:
+                ST['refractory'] = 0.
+                w = int_w(ST['w'], _t, ST['V'])
+                V = int_V(ST['V'], _t, w, ST['input'])
+                if V >= V_th:
+                    V = V_reset
+                    w += b
+                    ST['spike'] = 1
+                    ST['t_last_spike'] = _t
+                ST['V'] = V
+                ST['w'] = w
+            # reset input
+            ST['input'] = 0.
+    elif mode == 'vector':
+        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
+    else:
+        raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
     return bp.NeuType(name='AdQuaIF_neuron',
                       ST=ST,

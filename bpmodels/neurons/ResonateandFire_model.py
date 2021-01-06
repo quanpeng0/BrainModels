@@ -37,6 +37,30 @@ def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., mode=
         
         z \\leftarrow i
         
+    **Neuron Parameters**
+    
+    ============= ============== ======== ========================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- --------------------------------------------------------
+    b             -1.            \        Parameter, refers to the rate of attrsction to the rest.
+
+    omega         10.            \        Parameter. refers to the frequency of the oscillations.
+
+    V_th          1.             \        Threshold potential of spike.
+
+    V_reset       1.             \        Reset value for voltage-like variable after spike.
+
+    x_reset       0.             \        Reset value for current-like variable after spike.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ========================================================
+
+    Returns:
+        bp.Neutype: return description of RF model.
+
+
+    **Neuron State**
+        
     ST refers to neuron state, members of ST are listed below:
     
     =============== ================= ==============================================
@@ -57,17 +81,6 @@ def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., mode=
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-    
-    Args:
-        b (float): Parameter, refers to the rate of attrsction to the rest.
-        omega (float): Parameter. refers to the frequency of the oscillations.
-        V_th (float): Threshold potential of spike.
-        V_reset (float): Reset value for voltage-like variable after spike.
-        x_reset (float): Reset value for current-like variable after spike.
-        mode (str): Data structure of ST members.
-        
-    Returns:
-        bp.Neutype: return description of RF model.
         
     References:
         .. [1] Izhikevich, Eugene M. "Resonate-and-fire neurons." 

@@ -20,6 +20,43 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
         \\tau_w \\frac{d w}{d t}=a(V-V_{rest}) - w + b \\tau_w \\sum \\delta (t-t^f)
 
 
+    **Neuron Parameters**
+
+    ============= ============== ======== ========================================================================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ------------------------------------------------------------------------------------------------------------------------
+    V_rest        -65.           mV       Resting potential.
+
+    V_reset       -68.           mV       Reset potential after spike.
+
+    V_th          -30.           mV       Threshold potential of spike and reset.
+
+    V_T           -59.9          mV       Threshold potential of generating action potential.
+
+    delta_T       3.48           \        Spike slope factor.
+
+    a             1              \        The sensitivity of the recovery variable :math:`u` to the sub-threshold fluctuations of the membrane potential :math:`v`
+
+    b             1              \        The increment of :math:`w` produced by a spike.
+
+    R             1              \        Membrane resistance.
+
+    tau           10             ms       Membrane time constant. Compute by R * C.
+
+    tau_w         30             ms       Time constant of the adaptation current.
+
+    t_refractory  0              ms       Refractory period length.
+
+    noise         0.             \        the noise fluctuation.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ========================================================================================================================
+
+    Returns:
+        bp.Neutype: return description of the AdExIF model.
+
+    **Neuron State**
+
     ST refers to neuron state, members of ST are listed below:
     
     =============== ================= =========================================================
@@ -43,25 +80,7 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
     =============== ================= =========================================================
     
     Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-        
-    Args:
-        a (float):
-        b (float):
-        V_rest (float): Resting potential.
-        V_reset (float): Reset potential after spike.
-        V_th (float): Threshold potential of spike.
-        V_T (float): Threshold potential of steady/non-steady.
-        delta_T (float): Spike slope factor.
-        R (float): Membrane resistance.
-        C (float): Membrane capacitance.
-        tau (float): Membrane time constant. Compute by R * C.
-        tau_w (float): Time constant of the adaptation current.
-        t_refractory (int): Refractory period length.
-        noise (float): noise.   
-        
-    Returns:
-        bp.Neutype: return description of ExpIF model.
+    though some of them represent other data types (such as boolean).  
     
     References:
         .. [1] Fourcaud-Trocmé, Nicolas, et al. "How spike generation 
@@ -81,8 +100,10 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
 
     def update(ST, _t):
         ST['spike'] = 0
-        ST['refractory'] = 1. if _t - ST['t_last_spike'] <= t_refractory else 0.
-        if ST['refractory'] > 0.:
+        if _t - ST['t_last_spike'] <= t_refractory:
+            ST['refractory'] = 1.
+        else:
+            ST['refractory'] = 0.
             w = int_w(ST['w'], _t, ST['V'])
             V = int_V(ST['V'], _t, w, ST['input'])
             if V >= V_th:

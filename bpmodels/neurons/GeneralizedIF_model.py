@@ -34,6 +34,60 @@ def get_GeneralizedIF(V_rest=-70., V_reset=-70.,
     
     Note that I_j refers to arbitrary number of internal currents.
     
+    **Neuron Parameters**
+    
+    ============= ============== ======== ====================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- --------------------------------------------------------------------
+    V_rest        -70.           mV       Resting potential.
+
+    V_reset       -70.           mV       Reset potential after spike.
+
+    V_th_inf      -50.           mV       Target value of threshold potential V_th updating.
+
+    V_th_reset    -60.           mV       Free parameter, should be larger than V_reset.
+
+    R             20.            \        Membrane resistance.
+
+    tau           20.            \        Membrane time constant. Compute by R * C.
+
+    a             0.             \        Coefficient describes the dependence of 
+    
+                                          V_th on membrane potential.
+
+    b             0.01           \        Coefficient describes V_th update.
+
+    k1            0.2            \        Constant pf I1.
+
+    k2            0.02           \        Constant of I2.
+
+    R1            0.             \        Free parameter. 
+    
+                                          Describes dependence of I_1 reset value on 
+                                          
+                                          I_1 value before spiking.
+
+    R2            1.             \        Free parameter. 
+    
+                                          Describes dependence of I_2 reset value on 
+                                          
+                                          I_2 value before spiking.
+
+    A1            0.             \        Free parameter.
+
+    A2            0.             \        Free parameter.
+
+    noise         0.             \        noise.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ====================================================================
+        
+    Returns:
+        bp.Neutype: return description of Generalized IF model.
+        
+    
+    **Neuron State**
+        
     ST refers to neuron state, members of ST are listed below:
     
     =============== ================= ==============================================
@@ -58,28 +112,6 @@ def get_GeneralizedIF(V_rest=-70., V_reset=-70.,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-    
-    Args:
-        V_rest (float): Resting potential.
-        V_reset (float): Reset potential after spike.
-        V_th_inf (float): Target value of threshold potential V_th updating.
-        V_th_reset (float): Free parameter, should be larger than V_reset.
-        R (float): Membrane resistance.
-        C (float): Membrane capacitance.
-        tau (float): Membrane time constant. Compute by R * C.
-        a (float): Coefficient describes the dependence of V_th on membrane potential.
-        b (float): Coefficient describes V_th update.
-        k1 (float): Constant pf I1.
-        k2 (float): Constant of I2.
-        R1 (float): Free parameter. Describes dependence of I_1 reset value on I_1 value before spiking.
-        R2 (float): Free parameter. Describes dependence of I_2 reset value on I_2 value before spiking.
-        A1 (float): Free parameter.
-        A2 (float): Free parameter.
-        noise (float): noise.   
-        mode (str): Data structure of ST members.
-        
-    Returns:
-        bp.Neutype: return description of Generalized IF model.
         
     References:
         .. [1] Mihalaş, Ştefan, and Ernst Niebur. "A generalized linear 
