@@ -13,6 +13,25 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
         \\frac{d s}{d t}&=-\\frac{s}{\\tau_{decay}}+\\sum_{k} \\delta(t-t_{j}^{k})
 
 
+    **Synapse Parameters**
+    
+    ============= ============== ======== ===================================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -----------------------------------------------------------------------------------
+    tau_decay     2.             ms       The time constant of decay.
+
+    g_max         .1             µmho(µS) Maximum conductance.
+
+    E             0.             mV       The reversal potential for the synaptic current. (only for conductance-based model)
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ===================================================================================  
+    
+    Returns:
+        bp.Syntype: return description of the AMPA synapse model.
+
+    **Synapse State**
+
     ST refers to the synapse state, items in ST are listed below:
     
     =============== ================== =========================================================
@@ -25,14 +44,6 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
 
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        g_max (float): Maximum conductance in µmho (µS).
-        E (float): The reversal potential for the synaptic current.
-        tau_decay (float): The time constant of decay.
-
-    Returns:
-        bp.Neutype
 
     References:
         .. [1] Brunel N, Wang X J. Effects of neuromodulation in a cortical network 
@@ -108,7 +119,7 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
 
 
 
-def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mode = 'vector'):
+def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mode = 'scalar'):
     """AMPA conductance-based synapse (type 2).
 
     .. math::
@@ -116,6 +127,31 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
         I_{syn}&=\\bar{g}_{syn} s (V-E_{syn})
 
         \\frac{ds}{dt} &=\\alpha[T](1-s)-\\beta s
+
+    **Synapse Parameters**
+    
+    ============= ============== ======== ================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ------------------------------------------------
+    g_max         .42            µmho(µS) Maximum conductance.
+
+    E             0.             mV       The reversal potential for the synaptic current.
+
+    alpha         .98            \        Binding constant.
+
+    beta          .18            \        Unbinding constant.
+
+    T             .5             mM       Neurotransmitter concentration.
+
+    T_duration    .5             ms       Duration of the neurotransmitter concentration.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ================================================    
+    
+    Returns:
+        bp.Syntype: return description of the AMPA synapse model.
+
+    **Synapse State**
 
     ST refers to the synapse state, items in ST are listed below:
     
@@ -131,17 +167,6 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        g_max (float): Maximum conductance in µmho (µS).
-        E (float): The reversal potential for the synaptic current.
-        alpha (float): Binding constant.
-        beta (float): Unbinding constant.
-        T (float): Neurotransmitter binding coefficient.
-        T_duration (float): Duration of the binding of neurotransmitter.
-
-    Returns:
-        bp.Neutype
 
     References:
         .. [1] Vijayan S, Kopell N J. Thalamic model of awake alpha oscillations 

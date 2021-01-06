@@ -29,6 +29,27 @@ def get_alpha(tau_decay = 2., g_max=.2, E=0., mode='scalar', co_base = False):
     
         I(t) = \\bar{g} s (t)
 
+    **Synapse Parameters**
+    
+    ============= ============== ======== ===================================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -----------------------------------------------------------------------------------
+    tau_decay     2.             ms       The time constant of decay.
+
+    g_max         .2             µmho(µS) Maximum conductance.
+
+    E             0.             mV       The reversal potential for the synaptic current. (only for conductance-based model)
+
+    co_base       False          \        Whether to return Conductance-based model. If False: return current-based model.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ===================================================================================  
+    
+    Returns:
+        bp.Syntype: return description of the alpha synapse model.
+
+    **Synapse State**
+
 
     ST refers to the synapse state, items in ST are listed below:
     
@@ -42,14 +63,6 @@ def get_alpha(tau_decay = 2., g_max=.2, E=0., mode='scalar', co_base = False):
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        tau_decay (float): The time constant of decay.
-        g_max (float): The peak conductance change in µmho (µS).
-        E (float): The reversal potential for the synaptic current. (only for conductance-based)
-
-    Returns:
-        bp.Neutype
 
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 

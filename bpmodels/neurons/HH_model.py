@@ -13,14 +13,13 @@ G_K = 36.
 G_LEAK = 0.03
 V_THRESHOLD = 20.
 
-NOISE = 1.
+NOISE = 0.
 
 
-def get_HH(noise=NOISE, V_th=V_THRESHOLD, C=C, E_Na=E_NA, E_K=E_K,
+def get_HH(V_th=V_THRESHOLD, C=C, E_Na=E_NA, E_K=E_K,
            E_leak=E_LEAK, g_Na=G_NA, g_K=G_K, g_leak=G_LEAK,
-           mode='vector'):
-    '''
-    A Hodgkin–Huxley neuron implemented in BrainPy.
+           noise=NOISE, mode='vector'):
+    '''Hodgkin–Huxley neuron model.
     
     .. math::
 
@@ -41,6 +40,37 @@ def get_HH(noise=NOISE, V_th=V_THRESHOLD, C=C, E_Na=E_NA, E_K=E_K,
         
         & \\beta_n(V) = 0.125 exp(\\frac{-(V + 65)} {80})
 
+
+    **Neuron Parameters**
+
+    ============= ============== ======== ====================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ------------------------------------
+    V_th          20.            mV       the spike threshold.
+
+    C             1.             ufarad   capacitance.
+
+    E_Na          50.            mV       reversal potential of sodium.
+
+    E_K           -77.           mV       reversal potential of potassium.
+
+    E_leak        54.387         mV       reversal potential of unspecific.
+
+    g_Na          120.           msiemens conductance of sodium channel.
+
+    g_K           36.            msiemens conductance of potassium channel.
+
+    g_leak        .03            msiemens conductance of unspecific channels.
+
+    noise         0.             \        the noise fluctuation.
+
+    mode          'vector'       \        Data structure of ST members.
+    ============= ============== ======== ====================================
+
+    Returns:
+        bp.Neutype
+
+    **Neuron State**
 
     ST refers to the neuron state, items in ST are listed below:
     
@@ -63,17 +93,6 @@ def get_HH(noise=NOISE, V_th=V_THRESHOLD, C=C, E_Na=E_NA, E_K=E_K,
 
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        noise (float): the noise fluctuation.
-        V_th (float): the spike threshold (mV).
-        C (float): capacitance (ufarad).
-        E_Na (float): reversal potential of sodium (mV).
-        E_K (float): reversal potential of potassium (mV).
-        E_leak (float): reversal potential of unspecific (mV).
-        g_Na (float): conductance of sodium channel (msiemens).
-        g_K (float): conductance of potassium channel (msiemens).
-        g_leak (float): conductance of unspecific channels (msiemens).
 
     References:
         .. [1] Hodgkin, Alan L., and Andrew F. Huxley. "A quantitative description 

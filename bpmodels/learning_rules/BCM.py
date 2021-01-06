@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-def get_BCM(learning_rate=0.01, w_max=2., w_min = 0., r_0 = 0., mode='matrix'):
+def get_BCM(learning_rate=0.005, w_max=2., w_min = 0., r_0 = 0., mode='matrix'):
     """
     Bienenstock-Cooper-Munro (BCM) rule.
 
@@ -21,6 +21,26 @@ def get_BCM(learning_rate=0.01, w_max=2., w_min = 0., r_0 = 0., mode='matrix'):
 
         r_{\\theta} = < r_i >
 
+    **Learning Rule Parameters**
+    
+    ============= ============== ======== ================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- --------------------------------
+    learning_rate 0.005          \        Learning rate.
+
+    w_max         2.             \        Maximal possible synapse weight.
+
+    w_min         0.             \        Minimal possible synapse weight.
+
+    mode          'matrix'       \        Data structure of ST members.
+    ============= ============== ======== ================================
+
+    Returns:
+        bp.Syntype: return description of the BCM rule.
+        
+    
+    **Learning Rule State**
+
     ST refers to synapse state (note that BCM learning rule can be implemented as synapses),
     members of ST are listed below:
 
@@ -32,15 +52,6 @@ def get_BCM(learning_rate=0.01, w_max=2., w_min = 0., r_0 = 0., mode='matrix'):
 
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        learning_rate (float): learning rate of the synapse weights.
-        w_max (float): Maximum of the synapse weights.
-        w_min (float): Minimum of the synapse weights.
-        r_0 (float): Minimal plasticity threshold.
-
-    Returns:
-        bp.Syntype: return description of BCM rule.
 
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 

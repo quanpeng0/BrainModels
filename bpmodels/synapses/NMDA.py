@@ -25,6 +25,36 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
     :math:`a= 0.5 ms^{-1}`, and :math:`\\tau_{rise}` =2 ms
 
 
+    **Synapse Parameters**
+
+    ============= ============== =============== ================================================
+    **Parameter** **Init Value** **Unit**        **Explanation**
+    ------------- -------------- --------------- ------------------------------------------------
+    g_max         .15            µmho(µS)        Maximum conductance.
+
+    E             0.             mV              The reversal potential for the synaptic current.
+
+    alpha         .062           \               Binding constant.
+
+    beta          3.57           \               Unbinding constant.
+
+    cc_Mg         1.2            mM              Concentration of Magnesium ion.
+
+    tau_decay     100.           ms              The time constant of decay.
+
+    tau_rise      2.             ms              The time constant of rise.
+
+    a             .5             ms:math:`^{-1}` 
+
+    mode          'scalar'       \               Data structure of ST members.
+    ============= ============== =============== ================================================    
+    
+    
+    Returns:
+        bp.Syntype: return description of the NMDA synapse model.
+
+    **Synapse State**
+
     ST refers to the synapse state, items in ST are listed below:
     
     =============== ================== =========================================================
@@ -39,17 +69,6 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-
-    Args:
-        g_max (float) : The maximum conductance.
-        E (float) : The reversal potential.
-        alpha (float) : Binding constant.
-        beta (float) : Unbinding constant.
-        cc_Mg (float) : concentration of Magnesium ion.
-        tau_decay (float) : The time constant of decay.
-        tau_rise (float) : The time constant of rise.
-        a (float)
         
     References:
         .. [1] Brunel N, Wang X J. Effects of neuromodulation in a 

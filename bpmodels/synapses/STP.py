@@ -28,6 +28,26 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
     by total release of all the neurotransmitter (:math:`u=x=1`), called
     absolute synaptic efficacy of the connections.
 
+
+    **Synapse Parameters**
+
+    ============= ============== ======== ===========================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -------------------------------------------
+    tau_d         200.           ms       Time constant of short-term depression.
+
+    tau_f         1500.          ms       Time constant of short-term facilitation.
+
+    U             .15            \        The increment of :math:`u` produced by a spike.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ===========================================    
+    
+    Returns:
+        bp.Syntype: return description of the Short-term plasticity synapse model.
+
+    **Synapse State**
+
     ST refers to the synapse state, items in ST are listed below:
     
     =============== ================== =====================================================================
@@ -46,24 +66,9 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
     though some of them represent other data types (such as boolean).
 
 
-    Parameters
-    ----------
-    tau_d : float
-        Time constant of short-term depression.
-    tau_f : float
-        Time constant of short-term facilitation .
-    U : float
-        The increment of :math:`u` produced by a spike.
-    x0 : float
-        Initial value of :math:`x`.
-    u0 : float
-        Initial value of :math:`u`.
-
-    References
-    ----------
-
-    .. [1] Tsodyks, Misha, Klaus Pawelzik, and Henry Markram. "Neural networks
-           with dynamic synapses." Neural computation 10.4 (1998): 821-835.
+    References:
+        .. [1] Tsodyks, Misha, Klaus Pawelzik, and Henry Markram. "Neural networks
+                with dynamic synapses." Neural computation 10.4 (1998): 821-835.
     """
 
     @bp.integrate

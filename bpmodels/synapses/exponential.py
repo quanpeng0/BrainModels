@@ -5,7 +5,7 @@ import numpy as np
 
 def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base = False):
     '''
-    Exponential decay synapse model.
+    Single Exponential decay synapse model.
 
     .. math::
 
@@ -24,6 +24,29 @@ def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base = False
     
         I(t) = \\bar{g} s (t)
 
+
+ **Synapse Parameters**
+    
+    ============= ============== ======== ===================================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -----------------------------------------------------------------------------------
+    tau_decay     8.             ms       The time constant of decay.
+
+    g_max         .1             µmho(µS) Maximum conductance.
+
+    E             0.             mV       The reversal potential for the synaptic current. (only for conductance-based model)
+
+    co_base       False          \        Whether to return Conductance-based model. If False: return current-based model.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ===================================================================================  
+    
+    Returns:
+        bp.Syntype: return description of a synapse model with single exponential decay.
+
+    **Synapse State**
+
+
     ST refers to synapse state, members of ST are listed below:
     
     ================ ================== =========================================================
@@ -37,14 +60,6 @@ def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base = False
 
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        tau_decay (float): The time constant of decay.
-        g_max (float): Synaptic weight.
-        mode (string): data structure of ST members.
-
-    Returns:
-        bp.Neutype: return description of exponential synapse model.
 
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 

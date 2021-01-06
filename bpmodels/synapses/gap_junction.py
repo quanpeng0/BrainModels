@@ -11,6 +11,8 @@ def get_gap_junction(mode='scalar'):
 
         I_{syn} = w (V_{pre} - V_{post})
 
+    **Synapse State**
+
     ST refers to synapse state, members of ST are listed below:
 
     =============== ================= =========================================================
@@ -26,7 +28,7 @@ def get_gap_junction(mode='scalar'):
         mode (string): data structure of ST members.
 
     Returns:
-        bp.SynType
+        bp.SynType: return description of synapse model with gap junction.
 
     Reference:
         .. [1] Chow, Carson C., and Nancy Kopell. 
@@ -102,7 +104,7 @@ def get_gap_junction_lif(weight, k_spikelet=0.1, post_has_refractory=False, mode
         weight (float): Synapse weights.
 
     Returns:
-        bp.SynType
+        bp.SynType: return description of synapse model with gap junction.
 
     References:
         .. [1] Chow, Carson C., and Nancy Kopell. 

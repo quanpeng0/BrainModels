@@ -27,6 +27,29 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
     
         I(t) = \\bar{g} s (t)
 
+
+ **Synapse Parameters**
+    
+    ============= ============== ======== ===================================================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -----------------------------------------------------------------------------------
+    tau_decay     3.             ms       The time constant of decay.
+
+    tau_rise      1.             ms       The time to peak of the conductance change.
+
+    g_max         .2             µmho(µS) Maximum conductance.
+
+    E             0.             mV       The reversal potential for the synaptic current. (only for conductance-based model)
+
+    co_base       False          \        Whether to return Conductance-based model. If False: return current-based model.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ===================================================================================  
+    
+    Returns:
+        bp.Syntype: return description of the two_exponentials synapse model.
+
+    **Synapse State**
         
     ST refers to synapse state, members of ST are listed below:
 
@@ -42,15 +65,6 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-
-    Args:
-        g_max (float): The peak conductance change in µmho (µS).
-        E (float): The reversal potential for the synaptic current. (only for conductance-based)
-        tau_rise (float): The time to peak of the conductance change.
-        tau_decay (float): The decay time of the synapse.
-
-    Returns:
-        bp.Neutype: return description of two_exponentials synapse model.
 
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 
