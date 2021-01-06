@@ -2,11 +2,9 @@
 
 import brainpy as bp
 import numpy as np
-import sys
-
 
 def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57, 
-            cc_Mg=1.2, tau_decay=100., a=0.5, tau_rise=2., mode = 'vector'):
+            cc_Mg=1.2, tau_decay=100., a=0.5, tau_rise=2., mode = 'scalar'):
     """NMDA conductance-based synapse.
 
     .. math::
@@ -21,6 +19,7 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
 
         & \\frac{d x_{j}(t)}{dt} = -\\frac{x_{j}(t)}{\\tau_{rise}}+
         \\sum_{k} \\delta(t-t_{j}^{k})
+
 
     where the decay time of NMDA currents is taken to be :math:`\\tau_{decay}` =100 ms,
     :math:`a= 0.5 ms^{-1}`, and :math:`\\tau_{rise}` =2 ms
@@ -61,11 +60,11 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
     """
 
     @bp.integrate
-    def int_x(x, _t):
+    def int_x(x, t):
         return -x / tau_rise
 
     @bp.integrate
-    def int_s(s, _t, x):
+    def int_s(s, t, x):
         return -s / tau_decay + a * x * (1 - s)
 
     ST=bp.types.SynState({'s': 0., 'x': 0., 'g': 0.})
@@ -86,9 +85,8 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
 
         @bp.delayed
         def output(ST, post):
-            I_syn = ST['g'] * (post['V'] - E)
             g_inf = 1 + cc_Mg / beta * np.exp(-alpha * post['V'])
-            post['input'] -= I_syn * g_inf
+            post['input'] -= ST['g'] * (post['V'] - E) / g_inf
 
     elif mode == 'vector':
         requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')

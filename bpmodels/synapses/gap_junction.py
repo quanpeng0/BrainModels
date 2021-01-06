@@ -2,7 +2,6 @@
 
 import brainpy as bp
 import numpy as np
-import sys
 
 def get_gap_junction(mode='scalar'):
     """
@@ -36,10 +35,10 @@ def get_gap_junction(mode='scalar'):
 
     """
 
-    ST=bp.types.SynState(['w'])
+    ST=bp.types.SynState('w')
 
     requires = dict(
-        pre=bp.types.NeuState(['V']),
+        pre=bp.types.NeuState('V'),
         post=bp.types.NeuState(['V', 'input'])
     )
 

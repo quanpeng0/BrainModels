@@ -2,9 +2,8 @@
 
 import brainpy as bp
 import numpy as np
-import sys
 
-def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'vector'):
+def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
     """AMPA conductance-based synapse (type 1).
 
     .. math::
@@ -42,7 +41,7 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'vector'):
     """
 
     @bp.integrate
-    def ints(s, _t):
+    def ints(s, t):
         return - s / tau_decay
 
     ST=bp.types.SynState(['s', 'g'], help='AMPA synapse state.')
@@ -151,7 +150,7 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
     """
 
     @bp.integrate
-    def int_s(s, _t, TT):
+    def int_s(s, t, TT):
         return alpha * TT * (1 - s) - beta * s
 
     ST=bp.types.SynState({'s': 0., 't_last_pre_spike': -1e7, 'g': 0.},

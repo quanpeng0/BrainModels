@@ -50,11 +50,10 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
         b (float):
         V_rest (float): Resting potential.
         V_reset (float): Reset potential after spike.
-        V_th (float): Threshold potential of spike.
-        V_T (float): Threshold potential of steady/non-steady.
+        V_th (float): Threshold potential of spike and reset.
+        V_T (float): Threshold potential of generating action potential.
         delta_T (float): Spike slope factor.
         R (float): Membrane resistance.
-        C (float): Membrane capacitance.
         tau (float): Membrane time constant. Compute by R * C.
         tau_w (float): Time constant of the adaptation current.
         t_refractory (int): Refractory period length.
@@ -81,8 +80,10 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
 
     def update(ST, _t):
         ST['spike'] = 0
-        ST['refractory'] = 1. if _t - ST['t_last_spike'] <= t_refractory else 0.
-        if ST['refractory'] > 0.:
+        if _t - ST['t_last_spike'] <= t_refractory:
+            ST['refractory'] = 1.
+        else:
+            ST['refractory'] = 0.
             w = int_w(ST['w'], _t, ST['V'])
             V = int_V(ST['V'], _t, w, ST['input'])
             if V >= V_th:

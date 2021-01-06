@@ -94,54 +94,71 @@ def get_HH(noise=NOISE, V_th=V_THRESHOLD, C=C, E_Na=E_NA, E_K=E_K,
     )
 
     @bp.integrate
-    def int_m(m, _t_, V):
+    def int_m(m, t, V):
         alpha = 0.1 * (V + 40) / (1 - np.exp(-(V + 40) / 10))
         beta = 4.0 * np.exp(-(V + 65) / 18)
         return alpha * (1 - m) - beta * m
 
     @bp.integrate
-    def int_h(h, _t_, V):
+    def int_h(h, t, V):
         alpha = 0.07 * np.exp(-(V + 65) / 20.)
         beta = 1 / (1 + np.exp(-(V + 35) / 10))
         return alpha * (1 - h) - beta * h
 
     @bp.integrate
-    def int_n(n, _t_, V):
+    def int_n(n, t, V):
         alpha = 0.01 * (V + 55) / (1 - np.exp(-(V + 55) / 10))
         beta = 0.125 * np.exp(-(V + 65) / 80)
         return alpha * (1 - n) - beta * n
 
     @bp.integrate
-    def int_V(V, _t_, m, h, n, I_ext):
-        I_Na = (g_Na * np.power(m, 3.0) * h) * (V - E_Na)
-        I_K = (g_K * np.power(n, 4.0)) * (V - E_K)
+    def int_V(V, t, m, h, n, I_ext):
+        I_Na = g_Na * (m ** 3) * h * (V - E_Na)
+        I_K = g_K * (n ** 4) * (V - E_K)
         I_leak = g_leak * (V - E_leak)
         dVdt = (- I_Na - I_K - I_leak + I_ext) / C
         return dVdt, noise / C
 
-    # update the variables change over time (for each step)
-    def update(ST, _t_):
-        m = np.clip(int_m(ST['m'], _t_, ST['V']), 0., 1.)  # use np.clip to limit the int_m to between 0 and 1.
-        h = np.clip(int_h(ST['h'], _t_, ST['V']), 0., 1.)
-        n = np.clip(int_n(ST['n'], _t_, ST['V']), 0., 1.)
-        V = int_V(ST['V'], _t_, m, h, n, ST['input'])  # solve V from int_V equation.
-        spike = np.logical_and(ST['V'] < V_th, V >= V_th)  # spike when reach threshold.
-        ST['spike'] = spike
-        ST['V'] = V
-        ST['m'] = m
-        ST['h'] = h
-        ST['n'] = n
-        ST['input'] = 0.
-
-    hh = bp.NeuType(name='HH_neuron',
-                    ST=ST,
-                    steps=update)
-
     if mode == 'scalar':
-        hh.mode = 'scalar'
-        return hh
+        def my_clip(x, min=0., max=1.):
+            if x < min:
+                return min
+            elif x > max:
+                return max
+            else:
+                return x
+
+        def update(ST, _t):
+            m = my_clip(int_m(ST['m'], _t, ST['V']), 0., 1.)  # use my_clip to limit the int_m to between 0 and 1.
+            h = my_clip(int_h(ST['h'], _t, ST['V']), 0., 1.)
+            n = my_clip(int_n(ST['n'], _t, ST['V']), 0., 1.)
+            V = int_V(ST['V'], _t, m, h, n, ST['input'])
+            if ST['V'] < V_th and V >= V_th:
+                ST['spike'] = 1.  # spike when reach threshold.
+            ST['V'] = V
+            ST['m'] = m
+            ST['h'] = h
+            ST['n'] = n
+            ST['input'] = 0.  # reset input
+    
+
     elif mode == 'vector':
-        hh.mode = 'vector'
-        return hh
+        def update(ST, _t):
+            m = np.clip(int_m(ST['m'], _t, ST['V']), 0., 1.)  # use np.clip to limit the int_m to between 0 and 1.
+            h = np.clip(int_h(ST['h'], _t, ST['V']), 0., 1.)
+            n = np.clip(int_n(ST['n'], _t, ST['V']), 0., 1.)
+            V = int_V(ST['V'], _t, m, h, n, ST['input'])
+            ST['spike'] = np.logical_and(ST['V'] < V_th, V >= V_th)  # spike when reach threshold.
+            ST['V'] = V
+            ST['m'] = m
+            ST['h'] = h
+            ST['n'] = n
+            ST['input'] = 0.  # reset input
+
     else:
         raise ValueError
+
+    return  bp.NeuType(name='HH_neuron',
+                        ST=ST,
+                        steps=update,
+                        mode=mode)

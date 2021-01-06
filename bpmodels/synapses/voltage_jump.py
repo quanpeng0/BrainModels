@@ -1,8 +1,7 @@
 import brainpy as bp
 import numpy as np
-import sys
 
-def get_voltage_jump(post_has_refractory=False, mode='vector'):
+def get_voltage_jump(post_has_refractory=False, mode='scalar'):
     """Voltage jump synapses without post-synaptic neuron refractory.
 
     .. math::
@@ -71,7 +70,6 @@ def get_voltage_jump(post_has_refractory=False, mode='vector'):
     elif mode=='matrix':
         def update(ST, pre):
             ST['s'] += pre['spike'].reshape((-1, 1))
-
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

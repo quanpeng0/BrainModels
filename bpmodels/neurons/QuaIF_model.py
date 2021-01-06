@@ -48,7 +48,6 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
         V_reset (float): Reset potential after spike.
         V_th (float): Threshold potential of spike.
         R (float): Membrane resistance.
-        C (float): Membrane capacitance.
         tau (float): Membrane time constant. Compute by R * C.
         t_refractory (int): Refractory period length.(ms)
         noise (float): noise.   
@@ -65,35 +64,32 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
                 J. Neurophysiology 83, pp. 808–827. 
     """
 
-    if mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode != 'scalar':
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    ST = bp.types.NeuState(
-        {'V': 0, 'input': 0, 'spike': 0, 'refractory': 0, 't_last_spike': -1e7}
-    )
+    ST = bp.types.NeuState('V', 'input', 'spike', 'refractory', t_last_spike=-1e7)
 
     @bp.integrate
     def int_V(V, t, I_ext):
         return (a_0 * (V - V_rest) * (V - V_c) + R * I_ext) / tau, noise / tau
 
-    def update(ST, _t):
-        ST['spike'] = 0
-        if _t - ST['t_last_spike'] <= t_refractory:
-            ST['refractory'] = 1.
-        else:
-            ST['refractory'] = 0.
-            V = int_V(ST['V'], _t, ST['input'])
-            if V >= V_th:
-                V = V_reset
-                ST['spike'] = 1
-                ST['t_last_spike'] = _t
-            ST['V'] = V
-        # reset input
-        ST['input'] = 0.
+    if mode == 'scalar':
+        def update(ST, _t):
+            ST['spike'] = 0
+            if _t - ST['t_last_spike'] <= t_refractory:
+                ST['refractory'] = 1.
+            else:
+                ST['refractory'] = 0.
+                V = int_V(ST['V'], _t, ST['input'])
+                if V >= V_th:
+                    V = V_reset
+                    ST['spike'] = 1
+                    ST['t_last_spike'] = _t
+                ST['V'] = V
+            # reset input
+            ST['input'] = 0.
+
+    elif mode == 'vector':
+        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))    
+    else:
+        raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
     return bp.NeuType(name='QuaIF_neuron',
                       ST=ST,
