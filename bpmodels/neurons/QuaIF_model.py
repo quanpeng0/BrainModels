@@ -71,18 +71,6 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-    
-    Args:
-        a_0 (float): Coefficient describes membrane potential update. Larger than 0.
-        V_c (float): Critical voltage for spike initiation. Must be larger than V_rest.
-        V_rest (float): Resting potential.
-        V_reset (float): Reset potential after spike.
-        V_th (float): Threshold potential of spike.
-        R (float): Membrane resistance.
-        tau (float): Membrane time constant. Compute by R * C.
-        t_refractory (int): Refractory period length.(ms)
-        noise (float): noise.   
-
         
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
