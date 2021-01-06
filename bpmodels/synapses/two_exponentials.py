@@ -8,9 +8,9 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
 
     .. math::
 
-        &\\frac {ds} {dt} = x
+        \\frac {ds} {dt} = x
         
-        &\\tau_rise \\tau_decay \\frac {dx}{dt} = - (\\tau_rise+\\tau_decay)x 
+        &\\tau_{rise} \\tau_{decay} \\frac {dx}{dt} = - (\\tau_{rise}+\\tau_{decay})x 
         -s + \\sum \\delta(t-t^f)
 
 

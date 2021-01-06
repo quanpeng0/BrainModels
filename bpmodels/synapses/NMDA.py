@@ -11,14 +11,12 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
 
         & I(t) = \\bar{g} s(t) (V-E) \\cdot g_{\\infty}
 
-        & g_{\\infty}(V,[{Mg}^{2+}]) = (1+{e}^{-\\alpha V}
-        \\frac{[{Mg}^{2+}] {\\beta})^{-1} 
+        & g_{\\infty}(V,[{Mg}^{2+}]) = (1+{e}^{-\\alpha V} \\frac{[{Mg}^{2+}] {\\beta})^{-1} 
 
-        & \\frac{d s_{j}(t)}{dt} = -\\frac{s_{j}(t)}
-        {\\tau_{decay}}+a x_{j}(t)(1-s_{j}(t)) 
+        & \\frac{d s_{j}(t)}{dt} = -\\frac{s_{j}(t)}{\\tau_{decay}}+a x_{j}(t)(1-s_{j}(t)) 
 
-        & \\frac{d x_{j}(t)}{dt} = -\\frac{x_{j}(t)}{\\tau_{rise}}+
-        \\sum_{k} \\delta(t-t_{j}^{k})
+        & \\frac{d x_{j}(t)}{dt} = -\\frac{x_{j}(t)}{\\tau_{rise}}
+        + \\sum_{k} \\delta(t-t_{j}^{k})
 
 
     where the decay time of NMDA currents is taken to be :math:`\\tau_{decay}` =100 ms,

@@ -10,10 +10,9 @@ def get_alpha(tau_decay = 2., g_max=.2, E=0., mode='scalar', co_base = False):
 
     .. math::
 
-        &\\frac {ds} {dt} = x
+        \\frac {ds} {dt} = x
         
-        &\\tau_{decay}^2 \\frac {dx} {dt} = - 2  \\tau_{decay}  \\frac {x}
-        - s + \\sum \\delta(t-t^f)
+        \\tau^2 \\frac {dx} {dt} = - 2  \\tau x - s + \\sum_f \\delta(t-t^f)
 
 
     For conductance-based (co-base=True):
