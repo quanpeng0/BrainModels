@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-import brainpy.numpy as np
+import numpy as np
 import bpmodels
 import matplotlib.pyplot as plt
 
 # set global params
 dt = 0.02  # update variables per <dt> ms
-bp.profile.set(backend="numba", dt=dt, merge_steps=True)
+bp.profile.set(jit=True, dt=dt, merge_steps=True)
 mode = 'irregular_bursting'
 param= {'quiescence':         [1.0, 2.0],  #a
         'spiking':            [3.5, 5.0],  #c
@@ -18,11 +18,10 @@ param= {'quiescence':         [1.0, 2.0],  #a
 print(f"parameters is set to firing mode <{mode}>")
 
 # define neuron type
-HindmarshRose_neuron = bpmodels.neurons.get_HindmarshRose()
+HindmarshRose_neuron = bpmodels.neurons.get_HindmarshRose(noise = 0.)
 
 # build neuron group
 neu = bp.NeuGroup(HindmarshRose_neuron, geometry=(10,), monitors=['V', 'y', 'z'])
-neu.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
 neu.pars['b'] = param[mode][0]
 
 # create input

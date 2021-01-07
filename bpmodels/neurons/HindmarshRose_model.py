@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
-import brainpy.numpy as np
 import sys
 
-def get_HindmarshRose(a = 1., b = 3., c = 1., d = 5., r = 0.01, s = 4., V_rest = -1.6, mode='scalar'):
+import brainpy as bp
+
+
+def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise = 0., mode='scalar'):
     """
     Hindmarsh-Rose neuron model.
 
@@ -14,7 +15,53 @@ def get_HindmarshRose(a = 1., b = 3., c = 1., d = 5., r = 0.01, s = 4., V_rest =
         &\\frac{d y}{d t} = c - d V^2 - y
 
         &\\frac{d z}{d t} = r (s (V - V_{rest}) - z)
-        
+    
+    **Neuron Parameters**
+    
+    ============= ============== ========= ============================================================
+    **Parameter** **Init Value** **Unit**  **Explanation**
+    ------------- -------------- --------- ------------------------------------------------------------
+    a             1.             \         Model parameter. 
+    
+                                           Fixed to a value best fit neuron activity.
+
+    b             3.             \         Model parameter. 
+    
+                                           Allows the model to switch between bursting
+
+                                           and spiking, controls the spiking frequency.
+
+    c             1.             \         Model parameter. 
+    
+                                           Fixed to a value best fit neuron activity.
+
+    d             5.             \         Model parameter. 
+    
+                                           Fixed to a value best fit neuron activity.
+
+    r             0.01           \         Model parameter. 
+    
+                                           Controls slow variable z's variation speed.
+                                           
+                                           Governs spiking frequency when spiking, and affects the 
+                                           
+                                           number of spikes per burst when bursting.
+
+    s             4.             \         Model parameter. Governs adaption.
+
+    V_rest        -1.6           \         Membrane resting potential.
+
+    noise         0.             \         noise.
+
+    mode          'scalar'       \         Data structure of ST members.
+    ============= ============== ========= ============================================================
+
+    Returns:
+        bp.NeuType: return description of Hindmarsh-Rose neuron model.
+       
+
+    **Neuron State**
+    
     =============== ================= =====================================
     **Member name** **Initial Value** **Explanation**
     --------------- ----------------- -------------------------------------
@@ -29,22 +76,6 @@ def get_HindmarshRose(a = 1., b = 3., c = 1., d = 5., r = 0.01, s = 4., V_rest =
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-    
-    Args:
-        a (float): Model parameter. Fixed to a value best fit neuron activity.
-        b (float): Model parameter. Allows the model to switch between bursting 
-                   and spiking, controls the spiking frequency.
-        c (float): Model parameter. Fixed to a value best fit neuron activity.
-        d (float): Model parameter. Fixed to a value best fit neuron activity.
-        r (float): Model parameter. Controls slow variable z's variation speed. 
-                   Governs spiking frequency when spiking, and affects the number 
-                   of spikes per burst when bursting.
-        s (float): Model parameter. Governs adaption.
-        V_rest (float): Membrane resting potential.
-        mode (str): Data structure of ST members.
-
-    Returns:
-        bp.NeuType: return description of Hindmarsh-Rose neuron model.
 
     References:
         .. [1] Hindmarsh, James L., and R. M. Rose. "A model of neuronal bursting using 
@@ -58,41 +89,36 @@ def get_HindmarshRose(a = 1., b = 3., c = 1., d = 5., r = 0.01, s = 4., V_rest =
     """
 
     ST = bp.types.NeuState(
-        {'V':-1.6, 'y':-10., 'z':0., 'input': 0}
+        {'V': -1.6, 'y': -10., 'z': 0., 'input': 0}
     )
 
     @bp.integrate
-    def int_V(V, _t_, y, z, I_ext):
-        return y - a * V * V * V + b * V * V - z + I_ext
+    def int_V(V, t, y, z, I_ext):
+        return y - a * V * V * V + b * V * V - z + I_ext, noise
 
     @bp.integrate
-    def int_y(y, _t_, V):
+    def int_y(y, t, V):
         return c - d * V * V - y
 
     @bp.integrate
-    def int_z(z, _t_, V):
+    def int_z(z, t, V):
         return r * (s * (V - V_rest) - z)
-    
-    def update(ST, _t_):
-        V = int_V(ST['V'], _t_, ST['y'], ST['z'], ST['input'])
-        y = int_y(ST['y'], _t_, ST['V'])
-        z = int_z(ST['z'], _t_, ST['V'])
+
+    def update(ST, _t):
+        V = int_V(ST['V'], _t, ST['y'], ST['z'], ST['input'])
+        y = int_y(ST['y'], _t, ST['V'])
+        z = int_z(ST['z'], _t, ST['V'])
         ST['V'] = V
         ST['y'] = y
         ST['z'] = z
-    
-    def reset(ST):
         ST['input'] = 0
-    
-    
+
     if mode == 'scalar':
         return bp.NeuType(name="HindmarshRose_neuron",
-                          requires=dict(ST=ST),
-                          steps=(update, reset),
+                          ST=ST,
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

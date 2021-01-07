@@ -34,18 +34,18 @@ def int_f(V, t, Isyn):
 
 
 def update(ST, _t):
-    V = int_f(ST['V'], _t, ST['inp'])
+    V = int_f(ST['V'], _t, ST['input'])
     if V >= V_threshld:
-        ST['sp'] = 1.
+        ST['spike'] = 1.
         V = V_reset
     else:
-        ST['sp'] = 0.
+        ST['spike'] = 0.
     ST['V'] = V
-    ST['inp'] = 0.
+    ST['input'] = 0.
 
 
 neu = bp.NeuType(name='LIF',
-                 ST=bp.types.NeuState({'V': 0, 'sp': 0., 'inp': 0.}),
+                 ST=bp.types.NeuState({'V': 0, 'spike': 0., 'input': 0.}),
                  steps=update,
                  mode='scalar')
 
@@ -65,16 +65,16 @@ def ints(s, t):
 
 def update(ST, _t, pre):
     s = ints(ST['s'], _t)
-    s += pre['sp']
+    s += pre['spike']
     ST['s'] = s
     ST['g'] = ST['w'] * s
 
 
 def output(ST, post):
-    post['inp'] += ST['g']
+    post['input'] += ST['g']
 
 
-syn = bp.SynType(name='alpha_synapse',
+syn = bp.SynType(name='exponential_synapse',
                  ST=bp.types.SynState(['s', 'g', 'w']),
                  steps=(update, output),
                  mode='scalar')
@@ -85,7 +85,7 @@ syn = bp.SynType(name='alpha_synapse',
 
 group = bp.NeuGroup(neu,
                     geometry=num_exc + num_inh,
-                    monitors=['sp'])
+                    monitors=['spike'])
 group.ST['V'] = np.random.random(num_exc + num_inh) * (V_threshld - V_rest) + V_rest
 
 exc_conn = bp.SynConn(syn,

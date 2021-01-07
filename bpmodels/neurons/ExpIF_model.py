@@ -12,6 +12,39 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
     
         \\tau\\frac{d V}{d t}= - (V-V_{rest}) + \\Delta_T e^{\\frac{V-V_T}{\\Delta_T}} + RI(t)
     
+    **Neuron Parameters**
+    
+    ============= ============== ======== ===================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ---------------------------------------------------
+    V_rest        -65.           mV       Resting potential.
+
+    V_reset       -68.           mV       Reset potential after spike.
+
+    V_th          -30.           mV       Threshold potential of spike.
+
+    V_T           -59.9          mV       Threshold potential of generating action potential.
+
+    delta_T       3.48           \        Spike slope factor.
+
+    R             10.            \        Membrane resistance.
+
+    C             1.             \        Membrane capacitance.
+
+    tau           10.            \        Membrane time constant. Compute by R * C.
+
+    t_refractory  1.7            \        Refractory period length.
+
+    noise         0.             \        noise.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ===================================================
+
+    Returns:
+        bp.Neutype: return description of ExpIF model.
+
+    **Neuron State**    
+    
     ST refers to neuron state, members of ST are listed below:
     
     =============== ================= =========================================================
@@ -34,22 +67,6 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-        
-    Args:
-        V_rest (float): Resting potential.
-        V_reset (float): Reset potential after spike.
-        V_th (float): Threshold potential of spike.
-        V_T (float): Threshold potential of steady/non-steady.
-        delta_T (float): Spike slope factor.
-        R (float): Membrane resistance.
-        C (float): Membrane capacitance.
-        tau (float): Membrane time constant. Compute by R * C.
-        t_refractory (int): Refractory period length.
-        noise (float): noise.
-        mode (str): Data structure of ST members.
-        
-    Returns:
-        bp.Neutype: return description of ExpIF model.
     
     References:
         .. [1] Fourcaud-Trocmé, Nicolas, et al. "How spike generation 
@@ -62,33 +79,31 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
     )
 
     @bp.integrate
-    def int_V(V, _t_, I_ext):  # integrate u(t)
+    def int_V(V, t, I_ext):  # integrate u(t)
         return (- (V - V_rest) + delta_T * np.exp((V - V_T) / delta_T) + R * I_ext) / tau, noise / tau
 
-    def update(ST, _t_):
+    def update(ST, _t):
         # update variables
         ST['spike'] = 0
-        ST['refractory'] = True if _t_ - ST['t_last_spike'] <= t_refractory else False
-        if not ST['refractory']:
-            V = int_V(ST['V'], _t_, ST['input'])
+        ST['refractory'] = 1. if _t - ST['t_last_spike'] <= t_refractory else 0.
+        if _t - ST['t_last_spike'] <= t_refractory:
+            ST['refractory'] = 1.
+        else:
+            ST['refractory'] = 0.
+            V = int_V(ST['V'], _t, ST['input'])
             if V >= V_th:
                 V = V_reset
                 ST['spike'] = 1
-                ST['t_last_spike'] = _t_
+                ST['t_last_spike'] = _t
             ST['V'] = V
-            
-    def reset(ST):
-        ST['input'] = 0.
+        ST['input'] = 0.  # reset input here or it will be brought to next step
 
-    
     if mode == 'scalar':
         return bp.NeuType(name='ExpIF_neuron',
-                          requires=dict(ST=ST),
-                          steps=(update, reset),
+                          ST=ST,
+                          steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

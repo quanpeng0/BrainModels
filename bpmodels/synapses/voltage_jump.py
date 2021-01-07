@@ -1,8 +1,7 @@
 import brainpy as bp
-import brainpy.numpy as np
-import sys
+import numpy as np
 
-def get_voltage_jump(post_has_refractory=False, mode='vector'):
+def get_voltage_jump(post_has_refractory=False, mode='scalar'):
     """Voltage jump synapses without post-synaptic neuron refractory.
 
     .. math::
@@ -29,42 +28,54 @@ def get_voltage_jump(post_has_refractory=False, mode='vector'):
     
   
     """
+    
+
+    requires = dict(
+        pre=bp.types.NeuState(['spike'])
+    )
+
+    if post_has_refractory:
+        requires['post'] = bp.types.NeuState(['V', 'refractory'])
+
+        @bp.delayed
+        def output(ST, post):
+            post['V'] += ST['s'] * (1. - post['refractory'])
+
+    else:
+        requires['post'] = bp.types.NeuState(['V'])
+
+        @bp.delayed
+        def output(ST, post):
+            post['V'] += ST['s']
+
     if mode=='vector':
-
-        ST=bp.types.SynState(['g'])
-
-        requires = dict(
-            pre=bp.types.NeuState(['spike']),
-            pre2post=bp.types.ListConn(),
-        )
-
-        if post_has_refractory:
-            requires['post'] = bp.types.NeuState(['V', 'refractory'])
-
-            @bp.delayed
-            def output(ST, post):
-                post['V'] += ST['g'] * (1. - post['refractory'])
-
-        else:
-            requires['post'] = bp.types.NeuState(['V'])
-
-            @bp.delayed
-            def output(ST, post):
-                post['V'] += ST['g']
+        requires['pre2post']=bp.types.ListConn()
 
         def update(ST, pre, post, pre2post):
             num_post = post['V'].shape[0]
-            g = np.zeros_like(num_post, dtype=np.float_)
-            for pre_id in range(pre['spike'].shape[0]):
-                if pre['spike'][pre_id] > 0.:
-                    post_ids = pre2post[pre_id]
-                    g[post_ids] = 1.
-            ST['g'] = g
+            s = np.zeros_like(num_post, dtype=np.float_)
+            spike_idx = np.where(pre['spike'] > 0.)[0]
+            for i in spike_idx:
+                post_ids = pre2post[i]
+                s[post_ids] = 1.
+            ST['s'] = s
+
+    elif mode=='scalar':
+
+        def update(ST, pre):
+            ST['s'] = 0.
+            if pre['spike'] > 0.:
+                ST['s'] = 1.        
+
+    elif mode=='matrix':
+        def update(ST, pre):
+            ST['s'] += pre['spike'].reshape((-1, 1))
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
     return bp.SynType(name='voltage_jump_synapse',
-                      ST=ST, requires=requires,
+                      ST=bp.types.SynState(['s']), 
+                      requires=requires,
                       steps=(update, output),
                       mode = mode)

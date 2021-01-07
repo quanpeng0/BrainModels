@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
-import brainpy.numpy as np
 import sys
 
-def get_ResonateandFire(b = -1., omega = 10., V_th = 1., V_reset = 1., x_reset = 0., mode='scalar'):
+import brainpy as bp
+
+
+def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., mode='scalar'):
     """Resonate-and-fire neuron model.
         
     .. math::
@@ -36,6 +37,30 @@ def get_ResonateandFire(b = -1., omega = 10., V_th = 1., V_reset = 1., x_reset =
         
         z \\leftarrow i
         
+    **Neuron Parameters**
+    
+    ============= ============== ======== ========================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- --------------------------------------------------------
+    b             -1.            \        Parameter, refers to the rate of attrsction to the rest.
+
+    omega         10.            \        Parameter. refers to the frequency of the oscillations.
+
+    V_th          1.             \        Threshold potential of spike.
+
+    V_reset       1.             \        Reset value for voltage-like variable after spike.
+
+    x_reset       0.             \        Reset value for current-like variable after spike.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ========================================================
+
+    Returns:
+        bp.Neutype: return description of RF model.
+
+
+    **Neuron State**
+        
     ST refers to neuron state, members of ST are listed below:
     
     =============== ================= ==============================================
@@ -56,17 +81,6 @@ def get_ResonateandFire(b = -1., omega = 10., V_th = 1., V_reset = 1., x_reset =
     
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-    
-    Args:
-        b (float): Parameter, refers to the rate of attrsction to the rest.
-        omega (float): Parameter. refers to the frequency of the oscillations.
-        V_th (float): Threshold potential of spike.
-        V_reset (float): Reset value for voltage-like variable after spike.
-        x_reset (float): Reset value for current-like variable after spike.
-        mode (str): Data structure of ST members.
-        
-    Returns:
-        bp.Neutype: return description of RF model.
         
     References:
         .. [1] Izhikevich, Eugene M. "Resonate-and-fire neurons." 
@@ -79,42 +93,36 @@ def get_ResonateandFire(b = -1., omega = 10., V_th = 1., V_reset = 1., x_reset =
     )
 
     @bp.integrate
-    def int_x(x, _t_, V):  #input--internal
+    def int_x(x, t, V):  # input--internal
         return b * x - omega * V
 
-    @bp.integrate        
-    def int_V(V, _t_, x):  #V
+    @bp.integrate
+    def int_V(V, t, x):  # V
         return omega * x + b * V
 
-
-    def update(ST, _t_):
+    def update(ST, _t):
         # update variables
         ST['spike'] = 0
         x = ST['x']
         x += ST['input']
         V = ST['V']
-        x = int_x(x, _t_, V)
-        V = int_V(V, _t_, x)
+        x = int_x(x, _t, V)
+        V = int_V(V, _t, x)
         if V > V_th:
             V = V_reset
             x = x_reset
             ST['spike'] = 1
-            ST['t_last_spike'] = _t_
+            ST['t_last_spike'] = _t
         ST['x'] = x
         ST['V'] = V
-    
-    def reset(ST):
         ST['input'] = 0.
 
-    
     if mode == 'scalar':
         return bp.NeuType(name='RF_neuron',
-                          requires=dict(ST=ST),
-                          steps=(update, reset),
-                          mode=mode)   
+                          ST=ST,
+                          steps=update,
+                          mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

@@ -1,5 +1,5 @@
 import brainpy as bp
-from brainpy import numpy as np
+import numpy as np
 import matplotlib.pyplot as plt
 from bpmodels.learning_rules import get_BCM
 
@@ -19,9 +19,6 @@ def rate_neuron():
 
     return bp.NeuType(name='rate', steps=[update, reset], ST=ST, mode='vector')
 
-
-
-
 w_max = 2.
 
 bp.profile.set(dt=.1)
@@ -39,10 +36,7 @@ print(mode)
 bcm1 = get_BCM(learning_rate=0.005, w_max=w_max, mode=mode)
 bcm = bp.SynConn(model=bcm1, pre_group=pre, post_group=post,
                     conn=bp.connect.All2All(), 
-                    monitors=['w', 'dwdt'],
-                    delay = 0)
-bcm.r_th = np.zeros(n_post)
-bcm.post_r = np.zeros(n_post)
+                    monitors=['w'])
 bcm.sum_post_r = np.zeros(n_post)
 
 
