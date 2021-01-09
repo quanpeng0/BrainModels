@@ -101,7 +101,8 @@ class SynBetweenGroups(bp.SynConn):
 
         # step 3: initialize the synaptic connection
         super(SynBetweenGroups, self).__init__(model=model,
-                                               # SynConn needs "num" to initialize
+                                               # SynConn needs 'num' to initialize when
+                                               # 'pre_group' and 'post_group' are not provided
                                                satisfies={'num': group.num},
                                                delay=delay)
 
