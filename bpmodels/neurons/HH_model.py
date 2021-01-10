@@ -155,6 +155,8 @@ def get_HH(V_th=V_THRESHOLD, C=C, E_Na=E_NA, E_K=E_K,
             V = int_V(ST['V'], _t, m, h, n, ST['input'])
             if ST['V'] < V_th and V >= V_th:
                 ST['spike'] = 1.  # spike when reach threshold.
+            else:
+                ST['spike'] = 0.
             ST['V'] = V
             ST['m'] = m
             ST['h'] = h
