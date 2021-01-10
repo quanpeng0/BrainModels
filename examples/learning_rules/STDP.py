@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 import matplotlib.pyplot as plt
 import brainpy as bp
 import numpy as np
 import bpmodels
+
 from bpmodels.neurons import get_LIF
 from bpmodels.learning_rules import get_STDP
 
