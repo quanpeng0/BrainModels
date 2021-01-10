@@ -1,0 +1,10 @@
+# misc
+include LICENSE
+include requirements.txt
+
+# exclude
+prune docs
+prune examples
+prune develop
+prune README.md
+
