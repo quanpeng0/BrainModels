@@ -1,6 +1,5 @@
-numpy>=1.13
+numpy
 numba
 matplotlib
 sympy
-autopep8
-brain.py
+brainpy-simulator

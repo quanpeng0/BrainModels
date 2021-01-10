@@ -21,6 +21,9 @@ n_groups = 10
 group_size = 100
 spike_sigma = 1.
 
+# Synapse parameter
+delay = 5.0  # ms
+
 
 # neuron model
 # ------------
@@ -78,24 +81,30 @@ class SynBetweenGroups(bp.SynConn):
 
         # step 2: define the synaptic computation logic
 
-        def update(pre, post, ext):
+        def update(ST, pre, ext):
             # synapse model between external and group 1
             end = group_size
-            post['y'][:end] += weight * np.dot(ext['spike'], mat1)
+            ST['g'][:end] = weight * np.dot(ext['spike'], mat1)
 
             # feed-forward connection
             for i in range(1, n_groups):
                 s1 = (i - 1) * group_size
                 s2 = i * group_size
                 s3 = (i + 1) * group_size
-                post['y'][s2: s3] += weight * np.dot(pre['spike'][s1: s2], mat2)
+                ST['g'][s2: s3] = weight * np.dot(pre['spike'][s1: s2], mat2)
 
-        model = bp.SynType(name='syn', ST=bp.SynState(), steps=update)
+        @bp.delayed
+        def output(ST, post):
+            post['y'] += ST['g']
+
+        model = bp.SynType(name='syn', ST=bp.SynState('g'), steps=(update, output))
 
         # step 3: initialize the synaptic connection
         super(SynBetweenGroups, self).__init__(model=model,
-                                               # SynConn needs "num" to initialize
-                                               satisfies={'num': 1})
+                                               # SynConn needs 'num' to initialize when
+                                               # 'pre_group' and 'post_group' are not provided
+                                               satisfies={'num': group.num},
+                                               delay=delay)
 
         # step 4: assign the needed data
         self.pre = group.ST
@@ -108,7 +117,7 @@ class SynBetweenGroups(bp.SynConn):
 
 def run_network(spike_num=48):
     ext_group = bp.inputs.SpikeTimeInput(spike_num,
-                                         times=np.random.randn(spike_num) * spike_sigma + 50,
+                                         times=np.random.randn(spike_num) * spike_sigma + 20,
                                          indices=np.arange(spike_num))
     group = Groups(num=n_groups * group_size)
     syn_conn = SynBetweenGroups(group, ext_group)

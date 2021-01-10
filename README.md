@@ -34,7 +34,7 @@ Install from source code:
 
 Install ``BrainPy-Models`` using ``conda``:
 
-    conda install -c brainpy bpmodels
+    conda install bpmodels -c brainpy 
 
 Install `BrainPy-Models` using `pip`:
 
@@ -44,7 +44,7 @@ The following packages need to be installed to use `BrainPy-Models`:
 
 -   Python >= 3.7
 -   Matplotlib >= 2.0
--   BrainPy >= 0.3.0
+-   brainpy-simulator >= 0.3.0
 
 ## Quick Start
 

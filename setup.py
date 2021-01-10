@@ -30,7 +30,10 @@ setup(
     packages=find_packages(),
     python_requires='>=3.7',
     install_requires=[
-        'Brain.Py',
+        'brainpy-simulator',
+        'matplotlib',
+        'sympy',
+        'numpy',
     ],
     url='https://github.com/PKU-NIP-Lab/BrainPy-Models',
     keywords='computational neuroscience',
