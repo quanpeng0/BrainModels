@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys
-
 import brainpy as bp
-
+import numpy as np
 
 def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
               a_0=.07, V_c=-50, R=1., tau=10.,
@@ -89,7 +87,6 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
 
     if mode == 'scalar':
         def update(ST, _t):
-            ST['spike'] = 0
             if _t - ST['t_last_spike'] <= t_refractory:
                 ST['refractory'] = 1.
             else:
@@ -97,14 +94,30 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
                 V = int_V(ST['V'], _t, ST['input'])
                 if V >= V_th:
                     V = V_reset
-                    ST['spike'] = 1
+                    ST['spike'] = 1.
                     ST['t_last_spike'] = _t
+                else:
+                    ST['spike'] = 0.
                 ST['V'] = V
             # reset input
             ST['input'] = 0.
 
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))    
+        def update(ST, _t):
+            V = int_V(ST['V'], _t, ST['input'])
+
+            is_ref = _t - ST['t_last_spike'] < t_refractory
+            V = np.where(is_ref, ST['V'], V)
+
+            is_spike = V > V_th
+            V[is_spike] = V_reset
+            is_ref[is_spike] = 1.
+            ST['t_last_spike'][is_spike] = _t
+            
+            ST['V'] = V
+            ST['spike'] = is_spike
+            ST['refractory'] = is_ref
+            ST['input'] = 0. 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
