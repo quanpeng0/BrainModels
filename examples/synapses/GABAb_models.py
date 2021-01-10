@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import matplotlib.pyplot as plt
 import brainpy as bp
 import numpy as np

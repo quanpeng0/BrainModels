@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 def generate(data,
              col1='**Parameter**',
              col2='**Init Value**',

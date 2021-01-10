@@ -92,11 +92,8 @@ def get_MorrisLecar(noise=0., V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_Leak=-60.
         ST['V'] = V
         ST['W'] = W
         ST['input'] = 0.
-
-                             
-    if mode == 'scalar':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
-    elif mode == 'vector':
+ 
+    if mode == 'scalar' or mode == 'vector':
         return bp.NeuType(name='MorrisLecar_neuron',
                           ST=ST,
                           steps=update,

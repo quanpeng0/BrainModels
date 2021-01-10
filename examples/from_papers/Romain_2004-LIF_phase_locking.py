@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import brainpy as bp
+import numpy as np
+import matplotlib.pyplot as plt
 
 """
 Implementation of the paper:
@@ -7,11 +10,6 @@ Implementation of the paper:
   models." Journal of mathematical biology 48.1 (2004): 38-56.
 
 """
-
-import matplotlib.pyplot as plt
-
-import brainpy as bp
-import numpy as np
 
 bp.profile.set(jit=True)
 

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import matplotlib.pyplot as plt
 import brainpy as bp
 import numpy as np
@@ -7,7 +6,7 @@ import bpmodels
 
 bp.profile.set(jit=True, merge_steps=True)
 
-Izhikevich = bpmodels.neurons.get_Izhikevich(type='None')
+Izhikevich = bpmodels.neurons.get_Izhikevich(mode='scalar')
 neu = bp.NeuGroup(Izhikevich, 10, monitors=['V', 'u'])
 neu.pars['noise'] = 0.
 
@@ -41,8 +40,6 @@ plt.xlabel('Time (ms)')
 plt.legend()
 plt.show()
 
-
-
 # tonic spiking
 Izhikevich = bpmodels.neurons.get_Izhikevich(type='tonic spiking')
 neu = bp.NeuGroup(Izhikevich, 10, monitors=['V', 'u'])
@@ -54,17 +51,17 @@ neu.run(duration=200., inputs=['input', current], report=False)
 
 fig, ax1 = plt.subplots(figsize=(15, 5))
 plt.title('Tonic Spiking')
-ax1.plot(neu.mon.ts, neu.mon.V[:, 0], 'b', label='V')
+ax1.plot(neu.mon.ts, neu.mon.V[:, 0], label='V')
 ax1.set_xlabel('Time (ms)')
-ax1.set_ylabel('Membrane potential (mV)', color='b')
+ax1.set_ylabel('Membrane potential (mV)')
 ax1.set_xlim(-0.1, 200.1)
-ax1.tick_params('y', colors='b')
+ax1.tick_params('y')
 ax2 = ax1.twinx()
-ax2.plot(neu.mon.ts, current, 'r', label='Input')
+ax2.plot(neu.mon.ts, current, 'c', label='Input')
 ax2.set_xlabel('Time (ms)')
-ax2.set_ylabel('Input (mV)', color='r')
+ax2.set_ylabel('Input (mV)')
 ax2.set_ylim(0, 50)
-ax2.tick_params('y', colors='r')
+ax2.tick_params('y')
 ax1.legend(loc=1)
 ax2.legend(loc=3)
 fig.tight_layout()
