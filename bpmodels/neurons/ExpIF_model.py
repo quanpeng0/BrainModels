@@ -82,28 +82,51 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
     def int_V(V, t, I_ext):  # integrate u(t)
         return (- (V - V_rest) + delta_T * np.exp((V - V_T) / delta_T) + R * I_ext) / tau, noise / tau
 
-    def update(ST, _t):
-        # update variables
-        ST['spike'] = 0
-        ST['refractory'] = 1. if _t - ST['t_last_spike'] <= t_refractory else 0.
-        if _t - ST['t_last_spike'] <= t_refractory:
-            ST['refractory'] = 1.
-        else:
-            ST['refractory'] = 0.
-            V = int_V(ST['V'], _t, ST['input'])
-            if V >= V_th:
-                V = V_reset
-                ST['spike'] = 1
-                ST['t_last_spike'] = _t
-            ST['V'] = V
-        ST['input'] = 0.  # reset input here or it will be brought to next step
 
     if mode == 'scalar':
+
+        def update(ST, _t):
+            # update variables
+            ST['spike'] = 0
+            ST['refractory'] = 1. if _t - ST['t_last_spike'] <= t_refractory else 0.
+            if _t - ST['t_last_spike'] <= t_refractory:
+                ST['refractory'] = 1.
+            else:
+                ST['refractory'] = 0.
+                V = int_V(ST['V'], _t, ST['input'])
+                if V >= V_th:
+                    V = V_reset
+                    ST['spike'] = 1
+                    ST['t_last_spike'] = _t
+                ST['V'] = V
+            ST['input'] = 0.  # reset input here or it will be brought to next step
+        
         return bp.NeuType(name='ExpIF_neuron',
                           ST=ST,
                           steps=update,
                           mode=mode)
+
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
+
+        def update(ST, _t):
+            V = int_V(ST['V'], _t, ST['input'])
+
+            is_ref = _t - ST['t_last_spike'] < t_refractory
+            V = np.where(is_ref, ST['V'], V)
+            is_spike = V > V_th
+
+            V[is_spike] = V_reset
+            is_ref[is_spike] = 1.
+            ST['t_last_spike'][is_spike] = _t
+
+            ST['refractory'] = is_ref
+            ST['spike'] = is_spike
+            ST['V'] = V
+            ST['input'] = 0 # reset input here or it will be brought to next step
+        
+        return bp.NeuType(name='ExpIF_neuron',
+                          ST=ST,
+                          steps=update,
+                          mode=mode)
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

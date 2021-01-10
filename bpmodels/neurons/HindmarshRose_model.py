@@ -5,7 +5,7 @@ import sys
 import brainpy as bp
 
 
-def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise = 0., mode='scalar'):
+def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise = 0., mode='vector'):
     """
     Hindmarsh-Rose neuron model.
 
@@ -113,12 +113,10 @@ def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise =
         ST['z'] = z
         ST['input'] = 0
 
-    if mode == 'scalar':
+    if mode == 'scalar' or mode == 'vector':
         return bp.NeuType(name="HindmarshRose_neuron",
                           ST=ST,
                           steps=update,
                           mode=mode)
-    elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

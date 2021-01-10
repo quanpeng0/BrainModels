@@ -68,53 +68,53 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
                University Press, 2014.
     """
 
-    ST = bp.types.NeuState(
-        {'V': 0, 'input': 0, 'spike': 0, 'refractory': 0, 't_last_spike': -1e7}
-    )
+    ST = bp.types.NeuState('V', 'input', 'spike', 'refractory', t_last_spike=-1e7)
 
     @bp.integrate
     def int_V(V, t, I_ext):  # integrate u(t)
         return (- (V - V_rest) + R * I_ext) / tau, noise / tau
 
-    def update(ST, _t):
-        # update variables
-        if _t - ST['t_last_spike'] <= t_refractory:
-            ST['refractory'] = 1.
-        else:
-            ST['refractory'] = 0.
-            V = int_V(ST['V'], _t, ST['input'])
-            if V >= V_th:
-                V = V_reset
-                ST['spike'] = 1
-                ST['t_last_spike'] = _t
-            else:
-                ST['spike'] = 0.
-            ST['V'] = V
-        ST['input'] = 0.  # reset input here or it will be brought to next step
-
     if mode == 'scalar':
+        def update(ST, _t):
+            # update variables
+            if _t - ST['t_last_spike'] < t_refractory:
+                ST['refractory'] = 1.
+            else:
+                ST['refractory'] = 0.
+                V = int_V(ST['V'], _t, ST['input'])
+                if V >= V_th:
+                    V = V_reset
+                    ST['spike'] = 1
+                    ST['t_last_spike'] = _t
+                else:
+                    ST['spike'] = 0.
+                ST['V'] = V
+            ST['input'] = 0.  # reset input here or it will be brought to next step
+
         return bp.NeuType(name='LIF_neuron',
                           ST=ST,
                           steps=update,
                           mode=mode)
+
     elif mode == 'vector':
 
         def update(ST, _t):
             V = int_V(ST['V'], _t, ST['input'])
+
             is_ref = _t - ST['t_last_spike'] < t_refractory
             V = np.where(is_ref, ST['V'], V)
+
             is_spike = V > V_th
-            spike_idx = np.where(is_spike)[0]
-            if len(spike_idx):
-                V[spike_idx] = V_reset
-                is_ref[spike_idx] = 1.
-                ST['t_last_spike'][spike_idx] = _t
+            V[is_spike] = V_reset
+            is_ref[is_spike] = 1.
+            ST['t_last_spike'][is_spike] = _t
+            
             ST['V'] = V
             ST['spike'] = is_spike
             ST['refractory'] = is_ref
-            ST['input'] = 0.
+            ST['input'] = 0.  # reset input here or it will be brought to next step
 
-        return bp.NeuType(name='LIF',
+        return bp.NeuType(name='LIF_neuron',
                          ST=ST,
                          steps=update,
                          mode='vector')

@@ -118,9 +118,7 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                IEEE transactions on neural networks 15.5 (2004): 1063-1070.
     '''
 
-    ST = bp.types.NeuState(
-        {'V': -65., 'u': 1., 'input': 0., 'spike': 0., 't_last_spike': -1e7}
-    )
+    ST = bp.types.NeuState('input', 'spike', 'refractory', V=-65., u=1., t_last_spike=-1e7)
 
     if type in ['tonic', 'tonic spiking']:
         a, b, c, d = [0.02, 0.40, -65.0, 2.0]
@@ -162,8 +160,6 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
         a, b, c, d = [-0.02, -1.00, -60.0, 8.0]
     elif type in ['inhibition-induced bursting', ]:
         a, b, c, d = [-0.026, -1.00, -45.0, 0]
-
-    # Neurons
     elif type in ['Regular Spiking', 'RS']:
         a, b, c, d = [0.02, 0.2, -65, 8]
     elif type in ['Intrinsically Bursting', 'IB']:
@@ -185,14 +181,14 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
 
     @bp.integrate
     def int_V(V, t, u, Isyn):
-        dfdt = 0.04 * V * V + 5 * V + 140 - u + Isyn
-        dgdt = noise
-        return dfdt, dgdt
+        return 0.04 * V * V + 5 * V + 140 - u + Isyn, noise
 
-    if np.any(t_refractory > 0.):
-
+    if mode == 'scalar':
         def update(ST, _t):
-            if (_t - ST['t_last_spike']) > t_refractory:
+            if (_t - ST['t_last_spike']) < t_refractory:
+                ST['refractory'] = 1.
+            else:
+                ST['refractory'] = 0.
                 V = int_V(ST['V'], _t, ST['u'], ST['input'])
                 u = int_u(ST['u'], _t, ST['V'])
                 if V >= V_th:
@@ -202,27 +198,38 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                     ST['spike'] = 1.
                 ST['V'] = V
                 ST['u'] = u
-                ST['input'] = 0.
-    else:
+            ST['input'] = 0.  # reset input here or it will be brought to next step
 
-        def update(ST, _t):
-            V = int_V(ST['V'], _t, ST['u'], ST['input'])
-            u = int_u(ST['u'], _t, ST['V'])
-            if V >= V_th:
-                V = c
-                u += d
-                ST['t_last_spike'] = _t
-                ST['spike'] = 1.
-            ST['V'] = V
-            ST['u'] = u
-            ST['input'] = 0.
-
-    if mode == 'scalar':
         return bp.NeuType(name='Izhikevich_neuron',
                           ST=ST,
                           steps=update,
                           mode=mode)
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
+        
+        def update(ST, _t):
+            V = int_V(ST['V'], _t, ST['u'], ST['input'])
+            u = int_u(ST['u'], _t, ST['V'])
+            
+            is_ref = _t - ST['t_last_spike'] < t_refractory
+            V = np.where(is_ref, ST['V'], V)
+            u = np.where(is_ref, ST['u'], u)
+
+            is_spike = V > V_th
+            V[is_spike] = c
+            u[is_spike] += d
+            is_ref[is_spike] = 1.
+            ST['t_last_spike'] = _t
+
+            ST['V'] = V
+            ST['u'] = u
+            ST['refractory'] = is_ref
+            ST['spike'] = is_spike
+            ST['input'] = 0.  # reset input here or it will be brought to next step
+
+        return bp.NeuType(name='Izhikevich_neuron',
+                          ST=ST,
+                          steps=update,
+                          mode=mode)
+    
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
