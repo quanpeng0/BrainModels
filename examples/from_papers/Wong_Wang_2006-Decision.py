@@ -3,25 +3,33 @@
 """
 Implementation of the paper：
 
-- 
+- Wong, K.-F. & Wang, X.-J. A Recurrent Network Mechanism 
+  of Time Integration in Perceptual Decisions. 
+  J. Neurosci. 26, 1314–1328 (2006).
 
 """
 
 import brainpy as bp
 import numpy as np
+import matplotlib.pyplot as plt
+
+bp.profile.set(jit=False, numerical_method='exponential')
 
 # -------
 # neuron
 # -------
 
-def rate_neuron(I_0=0.2346, tau_A = 2, sigma = 0.007):
+def get_neuron(I_0=0.2346, tau_A = 2, sigma = 0.007, decision_th = 15, J_A11 = 9.9026, J_A12 = 6.5177*(10**(-5))):
     '''
     Args:
         I_0 (float): mean effective external input.
         tau_A (float): AMPAR time constant.
         sigma (flaot): variance of the noise.
+        decision_th (float): decision threshold (Hz).
+        J_A11 (float): from 1 to 1, AMPAR; J_A22=J_A11
+        J_A12 (float): from 2 to 1, AMPAR; J_A21=J_A12
     '''
-    ST = bp.types.NeuState(['r', 'input', 'I_noise'])
+    ST = bp.types.NeuState('r', 'input', 'I_noise')
 
     @bp.integrate
     def int_I_noise(I_noise, t):
@@ -31,14 +39,25 @@ def rate_neuron(I_0=0.2346, tau_A = 2, sigma = 0.007):
     def get_x(I_noise, I_ext):
         return I_noise + I_0 + I_ext
 
+    def theta(x):
+        if x < 0:
+            return 0
+        else:
+            return 1
+
     def H(x1, x2):
-        return x1+x2  # ??
+        a = 23.9400 * J_A11 + 270
+        b = 9.7000 * J_A11 + 108
+        d = -.003 * J_A11 + 0.1540
+        f = J_A12 * (-276 * x2 + 106) * theta(x2 - 0.4)
+        h1 = a * x1 - f - b
+        h = h1 / (1 - np.exp(-d * h1))
+        return h
 
     def get_r(x1, x2):
         r1 = H(x1, x2)
         r2 = H(x2, x1)
         return np.array([r1, r2])
-
 
     def update(ST, _t):
         I_noise = int_I_noise(ST['I_noise'], _t)
@@ -64,9 +83,9 @@ def get_syn(J=.1, tau=100, gamma=0.641):
         tau (float): NMDAR time constant.
         gamma (float):
     '''
-    ST = bp.types.SynState('s', 'g')
+    ST = bp.types.SynState('s')
     pre = bp.types.NeuState('r')
-    post = bp.types.NeuState('r')
+    post = bp.types.NeuState('input')
 
     @bp.integrate
     def int_s(s, t, r):
@@ -74,10 +93,9 @@ def get_syn(J=.1, tau=100, gamma=0.641):
 
     def update(ST, _t, pre):
         ST['s'] = int_s(ST['s'], _t, pre['r'])
-        ST['g'] = J * ST['s']
 
     def output(ST, post):
-        post['r'] += ST['g']
+        post['input'] += J * ST['s']
         
     return bp.SynType(name='NMDA_synapse',
                       ST=ST,
@@ -90,84 +108,51 @@ def get_syn(J=.1, tau=100, gamma=0.641):
 # network
 # -------
 
-
-def decision_net(group, syn, J_rec = .1561, J_inh = .0264):
-    rec_conn = bp.SynConn(syn,
-                        pre_group=group,
-                        post_group=group,
-                        conn = bp.connect.One2One()
-                        )
-
-    rec_conn.pars['J'] = J_rec
-
-    inh_conn = bp.SynConn(syn,
-                        pre_group=group,
-                        post_group=group,
-                        conn = bp.connect.All2All(include_self=False))
-
-    inh_conn.pars['J'] = -J_inh
-
-    return bp.Network(group, rec_conn, inh_conn)
-
-
-# -------
-# simulation
-# -------
-
-bp.profile.set(jit=True, numerical_method='exponential')
-
-decision_th = 15    # decision threshold (Hz)
-
-# build network
 J_rec = .1561
-J_inh = .0264
-neu = rate_neuron()
+J_inh = -.0264
+neu = get_neuron()
 syn = get_syn()
-group = bp.NeuGroup(neu, geometry=2,
-                    monitors=['r'])
+group = bp.NeuGroup(neu, geometry=2, monitors=['r'])
 rec_conn = bp.SynConn(syn,
                     pre_group=group,
                     post_group=group,
-                    conn = bp.connect.One2One()
-                    )
+                    conn = bp.connect.One2One())
 
 rec_conn.pars['J'] = J_rec
 
-inh_conn21 = bp.SynConn(syn,
-                    pre_group=group[:1],
-                    post_group=group[1:],
-                    conn = bp.connect.All2All())
+inh_conn = bp.SynConn(syn,
+                    pre_group=group,
+                    post_group=group,
+                    conn = bp.connect.All2All(include_self=False))
 
-inh_conn21.pars['J'] = -J_inh
+inh_conn.pars['J'] = J_inh
 
-inh_conn12 = bp.SynConn(syn,
-                    pre_group=group[1:],
-                    post_group=group[:1],
-                    conn = bp.connect.All2All())
-
-inh_conn12.pars['J'] = -J_inh
-
-net = bp.Network(group, rec_conn, inh_conn21, inh_conn12)
+net = bp.Network(group, rec_conn, inh_conn)
 
 # simulation
-amplitude = 100.
+amplitude = 10.
 J_Aext = 0.2243*(10**(-3))      # average synaptic coupling with AMPARs
 coherence = .512                # coherence level (from 0. to 1. => 0% to 100%)
-# co = 0
+#coherence = 0
 I1 = J_Aext * (1 + coherence) * amplitude 
 I2 = J_Aext * (1 - coherence) * amplitude 
 
-I = np.array([I1, I2]).T
-print(I)
+def get_current(amplitude, duration=2000):
+    (I, duration) = bp.inputs.constant_current(
+                            [(0, 500), (amplitude, duration-500)])
+    return I
 
-net.run(duration=100., inputs=(group, 'ST.input', I), report=True)
+I = np.array([get_current(I1), get_current(I2)]).T
 
+net.run(duration=2000., inputs=(group, 'ST.input', I), report=False)
 
+fig, gs = bp.visualize.get_figure(1, 1, 3, 8)
 
-'''
-# J_Aij: from j to i, AMPAR
-J_A11 = 9.9026*(10**(-4))
-J_A22 = J_A11
-J_A12 = 6.5177*(10**(-5))
-J_A21 = J_A12
-'''
+fig.add_subplot(gs[0, 0])
+
+plt.plot(net.ts, group.mon.r[:, 0], 'r', label = 'group1')
+plt.plot(net.ts, group.mon.r[:, 1], 'b', label = 'group2')
+plt.xlim(net.t_start - 0.1, net.t_end + 0.1)
+plt.ylabel('Firing Rate (Hz)')
+plt.legend()
+plt.show()
