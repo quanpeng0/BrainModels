@@ -29,7 +29,6 @@ The prior goal of ``BrainPy-Models`` is to free users from repeatly implementing
    :maxdepth: 2
    :caption: Examples
    
-   examples/networks
    examples/from_papers
 
 .. toctree::
