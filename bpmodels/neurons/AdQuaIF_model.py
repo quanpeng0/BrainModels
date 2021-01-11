@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys
-
 import brainpy as bp
-
+import numpy as np
 
 def get_AdQuaIF(a=1, b=.1, a_0=.07,
                 V_c=-50, V_rest=-65., V_reset=-68., V_th=-30.,
@@ -99,7 +97,6 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
 
     if mode=='scalar':
         def update(ST, _t):
-            ST['spike'] = 0
             if _t - ST['t_last_spike'] <= t_refractory:
                 ST['refractory'] = 1.
             else:
@@ -109,14 +106,34 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
                 if V >= V_th:
                     V = V_reset
                     w += b
-                    ST['spike'] = 1
+                    ST['spike'] = 1.
                     ST['t_last_spike'] = _t
+                else:
+                    ST['spike'] = 0.
                 ST['V'] = V
                 ST['w'] = w
             # reset input
             ST['input'] = 0.
     elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
+        def update(ST, _t):
+            w = int_w(ST['w'], _t, ST['V'])
+            V = int_V(ST['V'], _t, w, ST['input'])
+            is_ref = _t - ST['t_last_spike'] <= t_refractory
+            V = np.where(is_ref, ST['V'], V)
+            w = np.where(is_ref, ST['w'], w)
+
+            is_spike = V > V_th
+            V[is_spike] = V_reset
+            w[is_spike] += b
+            is_ref[is_spike] = 1.
+            ST['t_last_spike'][is_spike] = _t
+            
+            ST['V'] = V
+            ST['w'] = w
+            ST['spike'] = is_spike
+            ST['refractory'] = is_ref
+            ST['input'] = 0. 
+
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
