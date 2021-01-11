@@ -1,11 +1,12 @@
-# -*- coding: utf-8 -*-
-import brainpy as bp
-import numpy as np
 
 """
 “Fast Global Oscillations in Networks of Integrate-and-Fire Neurons with Low Firing Rates”
 Nicolas Brunel & Vincent Hakim Neural Computation 11, 1621-1671 (1999)
 """
+
+
+import brainpy as bp
+import numpy as np
 
 bp.profile.set(jit=True)
 
