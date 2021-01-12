@@ -81,7 +81,8 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
     elif mode=='vector':
 
         requires['pre2syn'] = bp.types.ListConn()
-        requires['post2syn'] = bp.types.ListConn()
+        #requires['post2syn'] = bp.types.ListConn()
+        requires['post_slice_syn']=bp.types.Array(dim=2)
 
         def update(ST, pre, pre2syn):
             s = int_s(ST['s'], 0.)
@@ -91,12 +92,22 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
             ST['s'] = s
             ST['g'] = g_max * s
 
-        @bp.delayed
-        def output(ST, post, post2syn):
+        '''@bp.delayed
+        def output(ST, post, post2syn, post_slice_syn):
+            print(post_slice_syn, len(post_slice_syn))
             post_cond = np.zeros(len(post2syn), dtype=np.float_)
             for post_id, syn_ids in enumerate(post2syn):
                 post_cond[post_id] = np.sum(ST['g'][syn_ids])
+            post['input'] -= post_cond * (post['V'] - E)'''
+        
+        @bp.delayed
+        def output(ST, post, post_slice_syn):
+            post_num = len(post_slice_syn)
+            post_cond = np.zeros(post_num, dtype=np.float_)
+            for i, [s, e] in enumerate(post_slice_syn):
+                post_cond[i] = np.sum(ST['g'][s:e])
             post['input'] -= post_cond * (post['V'] - E)
+            
                           
     elif mode == 'matrix':
 
@@ -182,7 +193,7 @@ def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., m
     elif mode == 'vector':
 
         requires['pre2syn']=bp.types.ListConn(help = "Pre-synaptic neuron index -> synapse index")
-        requires['post2syn']=bp.types.ListConn(help = "Post-synaptic neuron index -> synapse index")
+        requires['post_slice_syn']=bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             for pre_id in np.where(pre['spike'] > 0.)[0]:
@@ -194,24 +205,22 @@ def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., m
             ST['g'] = g_max * s
 
         @bp.delayed
-        def output(ST, post, post2syn):
-            post_cond = np.zeros(len(post2syn), dtype=np.float_)
-            for post_id, syn_ids in enumerate(post2syn):
-                post_cond[post_id] = np.sum(ST['g'][syn_ids])
+        def output(ST, post, post_slice_syn):
+            post_num = len(post_slice_syn)
+            post_cond = np.zeros(post_num, dtype=np.float_)
+            for i, [s, e] in enumerate(post_slice_syn):
+                post_cond[i] = np.sum(ST['g'][s:e])
             post['input'] -= post_cond * (post['V'] - E)
 
     elif mode == 'matrix':
-        
-        requires['conn_mat'] = bp.types.MatConn(help='Connectivity matrix with shape of (num_pre, num_post)')
-        
-        def update(ST, _t, pre, conn_mat):
+        def update(ST, _t, pre):
             spike_idxs = np.where(pre['spike'] > 0.)[0]
             ST['t_last_pre_spike'][spike_idxs] = _t
             TT = ((_t - ST['t_last_pre_spike']) < T_duration) * T
             s = int_s(ST['s'], _t, TT)
             ST['s'] = s
             ST['g'] = g_max * s
-        
+
         @bp.delayed
         def output(ST, post):
             g = np.sum(ST['g'], axis = 0)
@@ -224,4 +233,3 @@ def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., m
                       requires=requires,
                       steps=(update, output),
                       mode=mode)
-

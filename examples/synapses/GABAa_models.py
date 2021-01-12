@@ -10,7 +10,7 @@ duration = 500.
 dt = 0.02
 bp.profile.set(jit=True, dt=dt, merge_steps=True)
 LIF_neuron = get_LIF()
-GABAa_syn = bpmodels.synapses.get_GABAa1(mode='vector')
+GABAa_syn = bpmodels.synapses.get_GABAa1(mode='scalar')
 
 # build and simulate gabaa net
 pre = bp.NeuGroup(LIF_neuron, geometry=(20,), monitors=['V', 'input', 'spike'])

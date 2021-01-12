@@ -124,7 +124,7 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
     elif mode == 'vector':
 
         requires['pre2syn'] = bp.types.ListConn()
-        requires['post2syn'] = bp.types.ListConn()
+        requires['post_slice_syn']=bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             for pre_id in np.where(pre['spike'] > 0.)[0]:
@@ -138,10 +138,11 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
             ST['g'] = g_max * G ** 4 / (G ** 4 + kd)
 
         @bp.delayed
-        def output(ST, post, post2syn):
-            post_cond = np.zeros(len(post2syn), dtype=np.float_)
-            for post_id, syn_ids in enumerate(post2syn):
-                post_cond[post_id] = np.sum(ST['g'][syn_ids])
+        def output(ST, post, post_slice_syn):
+            post_num = len(post_slice_syn)
+            post_cond = np.zeros(post_num, dtype=np.float_)
+            for i, [s, e] in enumerate(post_slice_syn):
+                post_cond[i] = np.sum(ST['g'][s:e])
             post['input'] -= post_cond * (post['V'] - E)
 
     elif mode == 'matrix':
@@ -299,7 +300,7 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
             ST['D'] = D
             ST['R'] = R
             ST['G'] = G
-            ST['g'] = - g_max * (G ** 4 / (G ** 4 + kd))
+            ST['g'] = g_max * (G ** 4 / (G ** 4 + kd))
 
         @bp.delayed
         def output(ST, post):
@@ -308,7 +309,7 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
     elif mode=='vector':
 
         requires['pre2syn'] = bp.types.ListConn(help = "Pre-synaptic neuron index -> synapse index")
-        requires['post2syn'] = bp.types.ListConn(help = "Post-synaptic neuron index -> synapse index")
+        requires['post_slice_syn']=bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             # calculate synaptic state
@@ -322,14 +323,15 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
             ST['D'] = D
             ST['R'] = R
             ST['G'] = G
-            ST['g'] = - g_max * (G ** 4 / (G ** 4 + kd))
+            ST['g'] = g_max * (G ** 4 / (G ** 4 + kd))
 
         @bp.delayed
-        def output(ST, post, post2syn):
-            post_cond = np.zeros(len(post2syn), dtype=np.float_)
-            for post_id, syn_ids in enumerate(post2syn):
-                post_cond[post_id] = np.sum(ST['g'][syn_ids])
-            post['input'] += post_cond * (post['V'] - E)
+        def output(ST, post, post_slice_syn):
+            post_num = len(post_slice_syn)
+            post_cond = np.zeros(post_num, dtype=np.float_)
+            for i, [s, e] in enumerate(post_slice_syn):
+                post_cond[i] = np.sum(ST['g'][s:e])
+            post['input'] -= post_cond * (post['V'] - E)
     
     elif mode == 'matrix':
     
@@ -343,7 +345,7 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
             ST['D'] = D
             ST['R'] = R
             ST['G'] = G
-            ST['g'] = - g_max * (G ** 4 / (G ** 4 + kd))
+            ST['g'] = g_max * (G ** 4 / (G ** 4 + kd))
         
         @bp.delayed
         def output(ST, post):
