@@ -205,6 +205,7 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                 ST['input'] = 0.
     else:
 
+    elif mode == 'vector':
         def update(ST, _t):
             V = int_V(ST['V'], _t, ST['u'], ST['input'])
             u = int_u(ST['u'], _t, ST['V'])
@@ -215,14 +216,14 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                 ST['spike'] = 1.
             ST['V'] = V
             ST['u'] = u
-            ST['input'] = 0.
-
-    if mode == 'scalar':
-        return bp.NeuType(name='Izhikevich_neuron',
-                          ST=ST,
-                          steps=update,
-                          mode=mode)
-    elif mode == 'vector':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
+            ST['refractory'] = is_ref
+            ST['spike'] = is_spike
+            ST['input'] = 0.  # reset input here or it will be brought to next step
+    
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
+
+    return bp.NeuType(name='Izhikevich_neuron',
+                      ST=ST,
+                      steps=update,
+                      mode=mode)

@@ -92,11 +92,6 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
             ST['V'] = V
         ST['input'] = 0.  # reset input here or it will be brought to next step
 
-    if mode == 'scalar':
-        return bp.NeuType(name='LIF_neuron',
-                          ST=ST,
-                          steps=update,
-                          mode=mode)
     elif mode == 'vector':
 
         def update(ST, _t):
@@ -112,11 +107,11 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
             ST['V'] = V
             ST['spike'] = is_spike
             ST['refractory'] = is_ref
-            ST['input'] = 0.
-
-        return bp.NeuType(name='LIF',
-                         ST=ST,
-                         steps=update,
-                         mode='vector')
+            ST['input'] = 0.  # reset input here or it will be brought to next step
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
+    
+    return bp.NeuType(name='LIF_neuron',
+                      ST=ST,
+                      steps=update,
+                      mode=mode)

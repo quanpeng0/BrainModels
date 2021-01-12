@@ -10,15 +10,13 @@ duration = 500.
 dt = 0.02
 bp.profile.set(jit=True, dt=dt, merge_steps=True, show_code=False)
 LIF_neuron = get_LIF()
-GABAa_syn = bpmodels.synapses.get_GABAb1(mode='vector')
+GABAa_syn = bpmodels.synapses.get_GABAb2(mode='scalar')
 
 # build and simulate gabaa net
 pre = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-pre.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
 pre.pars['V_rest'] = -65.
 pre.ST['V'] = -65.
 post = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-post.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
 post.pars['V_rest'] = -65.
 post.ST['V'] = -65.
 
