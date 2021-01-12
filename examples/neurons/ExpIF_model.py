@@ -11,7 +11,7 @@ duration = 350.  # simulate duration
 bp.profile.set(jit=True, dt=dt, merge_steps=True, show_code=False)
 
 # define neuron type
-Exp_LIF_neuron = bpmodels.neurons.get_ExpIF(mode='vector', noise = 1.)
+Exp_LIF_neuron = bpmodels.neurons.get_ExpIF(noise = 1.)
 
 # build neuron group
 neu = bp.NeuGroup(Exp_LIF_neuron, geometry=(10,), monitors=['V'])

@@ -31,8 +31,17 @@ Continuous-attractor Network
    from_papers/Wu_2008_CANN
 
 
+Working Memory
+==============
+
+.. toctree::
+   :maxdepth: 1
+
+   from_papers/Mi_2017_working_memory_capacity
+
+
 Others
-=================
+======
 
 .. toctree::
    :maxdepth: 1

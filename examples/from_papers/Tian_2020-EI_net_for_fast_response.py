@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import brainpy as bp
-import numpy as np
 
 """"
 Implementation of the paper：
@@ -10,6 +8,10 @@ Implementation of the paper：
   Computational Neuroscience 14 (2020): 79.
 
 """
+
+
+import brainpy as bp
+import numpy as np
 
 bp.profile.set(jit=True, numerical_method='exponential')
 

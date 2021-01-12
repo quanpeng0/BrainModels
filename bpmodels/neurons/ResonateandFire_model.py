@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import numpy as np
+
 import brainpy as bp
 
 
-def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., noise = 0., mode='scalar'):
+def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., mode='scalar'):
     """Resonate-and-fire neuron model.
         
     .. math::
@@ -88,7 +88,9 @@ def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., noise
     
     """
 
-    ST = bp.types.NeuState('V', 'x', 'input', 'spike')
+    ST = bp.types.NeuState(
+        {'V': 0., 'x': 0., 'input': 0., 'spike': 0., 't_last_spike': -1e7}
+    )
 
     @bp.integrate
     def int_x(x, t, V):  # input--internal
@@ -96,50 +98,31 @@ def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., noise
 
     @bp.integrate
     def int_V(V, t, x):  # V
-        return omega * x + b * V, noise
+        return omega * x + b * V
+
+    def update(ST, _t):
+        # update variables
+        ST['spike'] = 0
+        x = ST['x']
+        x += ST['input']
+        V = ST['V']
+        x = int_x(x, _t, V)
+        V = int_V(V, _t, x)
+        if V > V_th:
+            V = V_reset
+            x = x_reset
+            ST['spike'] = 1
+            ST['t_last_spike'] = _t
+        ST['x'] = x
+        ST['V'] = V
+        ST['input'] = 0.
 
     if mode == 'scalar':
-
-        def update(ST, _t):
-            # update variables
-            ST['spike'] = 0
-            x = ST['x']
-            x += ST['input']
-            V = ST['V']
-            x = int_x(x, _t, V)
-            V = int_V(V, _t, x)
-            if V > V_th:
-                V = V_reset
-                x = x_reset
-                ST['spike'] = 1.
-            ST['x'] = x
-            ST['V'] = V
-            ST['input'] = 0.  # reset input here or it will be brought to next step
-
         return bp.NeuType(name='RF_neuron',
                           ST=ST,
                           steps=update,
                           mode=mode)
-
     elif mode == 'vector':
-        
-        def update(ST, _t):
-            x = ST['x'] + ST['input']
-            x = int_x(x, _t, ST['V'])
-            V = int_V(ST['V'], _t, x)
-
-            is_spike = V > V_th
-            V[is_spike] = V_reset
-            x[is_spike] = x_reset
-
-            ST['spike'] = is_spike
-            ST['x'] = x
-            ST['V'] = V
-            ST['input'] = 0.  # reset input here or it will be brought to next step
-
-        return bp.NeuType(name='RF_neuron',
-                          ST=ST,
-                          steps=update,
-                          mode=mode)
+        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

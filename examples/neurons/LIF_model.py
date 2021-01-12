@@ -12,7 +12,7 @@ duration = 100.  # simulate duration
 bp.profile.set(jit=True, dt=dt, merge_steps=True)
 
 # define neuron type
-LIF_neuron = bpmodels.neurons.get_LIF()
+LIF_neuron = bpmodels.neurons.get_LIF(mode='vector')
 
 # build neuron group
 neu = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'refractory', "spike", "t_last_spike"])

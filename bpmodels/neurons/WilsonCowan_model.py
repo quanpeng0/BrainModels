@@ -120,20 +120,19 @@ def get_WilsonCowan(c1=12., c2=4., c3=13., c4=11.,
         return (- a_i + (k_i - r_i * a_i) *
                 mysigmoid(c3 * a_e - c4 * a_i + I_ext_i, slope_i, theta_i)) / tau_i
 
-    if mode == 'scalar':
-        def update(ST, _t):
-            a_e = int_a_e(ST['a_e'], _t, ST['a_i'], ST['input_e'])
-            a_i = int_a_i(ST['a_i'], _t, ST['a_e'], ST['input_i'])
-            ST['a_e'] = a_e
-            ST['a_i'] = a_i
-            ST['input_e'] = 0
-            ST['input_i'] = 0
+    def update(ST, _t):
+        a_e = int_a_e(ST['a_e'], _t, ST['a_i'], ST['input_e'])
+        a_i = int_a_i(ST['a_i'], _t, ST['a_e'], ST['input_i'])
+        ST['a_e'] = a_e
+        ST['a_i'] = a_i
+        ST['input_e'] = 0
+        ST['input_i'] = 0
 
+    if mode == 'scalar':
         return bp.NeuType(name='WilsonCowan_neuron',
                           ST=ST,
                           steps=update,
                           mode=mode)
-                          
     elif mode == 'vector':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:

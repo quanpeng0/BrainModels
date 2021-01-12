@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import numpy as np
+
 import brainpy as bp
 
 
@@ -140,56 +140,30 @@ def get_GeneralizedIF(V_rest=-70., V_reset=-70.,
     def int_V(V, t, I_ext, I1, I2):
         return (- (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau, noise / tau
 
+    def update(ST, _t):
+        ST['spike'] = 0
+        I1 = int_I1(ST['I1'], _t)
+        I2 = int_I2(ST['I2'], _t)
+        V_th = int_V_th(ST['V_th'], _t, ST['V'])
+        V = int_V(ST['V'], _t, ST['input'], ST['I1'], ST['I2'])
+        if V > ST['V_th']:
+            V = V_reset
+            I1 = R1 * I1 + A1
+            I2 = R2 * I2 + A2
+            V_th = max(V_th, V_th_reset)
+            ST['spike'] = 1
+        ST['I1'] = I1
+        ST['I2'] = I2
+        ST['V_th'] = V_th
+        ST['V'] = V
+        ST['input'] = 0.
 
     if mode == 'scalar':
-
-        def update(ST, _t):
-            ST['spike'] = 0
-            I1 = int_I1(ST['I1'], _t)
-            I2 = int_I2(ST['I2'], _t)
-            V_th = int_V_th(ST['V_th'], _t, ST['V'])
-            V = int_V(ST['V'], _t, ST['input'], ST['I1'], ST['I2'])
-            if V > ST['V_th']:
-                V = V_reset
-                I1 = R1 * I1 + A1
-                I2 = R2 * I2 + A2
-                V_th = max(V_th, V_th_reset)
-                ST['spike'] = 1
-            ST['I1'] = I1
-            ST['I2'] = I2
-            ST['V_th'] = V_th
-            ST['V'] = V
-            ST['input'] = 0.
-
         return bp.NeuType(name='GeneralizedIF_neuron',
                           ST=ST,
                           steps=update,
                           mode=mode)
     elif mode == 'vector':
-
-        def update(ST, _t):
-            V = int_V(ST['V'], _t, ST['input'], ST['I1'], ST['I2'])
-            V_th = int_V_th(ST['V_th'], _t, ST['V'])
-            I1 = int_I1(ST['I1'], _t)
-            I2 = int_I2(ST['I2'], _t)
-            is_spike = V > ST['V_th']
-
-            is_V_th_reset = np.logical_and(V_th < V_th_reset, is_spike)
-            V[is_spike] = V_reset
-            V_th = np.where(is_V_th_reset, V_th_reset,V_th)
-            I1[is_spike] = R1 * I1[is_spike] + A1
-            I2[is_spike] = R2 * I2[is_spike] + A2
-
-            ST['spike'] = is_spike
-            ST['I1'] = I1
-            ST['I2'] = I2
-            ST['V_th'] = V_th
-            ST['V'] = V
-            ST['input'] = 0.
-
-        return bp.NeuType(name='GeneralizedIF_neuron',
-                          ST=ST,
-                          steps=update,
-                          mode=mode)
+        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
