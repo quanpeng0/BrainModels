@@ -13,11 +13,9 @@ GABAa_syn = bpmodels.synapses.get_GABAb1(mode='vector')
 
 # build and simulate gabaa net
 pre = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-pre.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
 pre.pars['V_rest'] = -65.
 pre.ST['V'] = -65.
 post = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-post.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
 post.pars['V_rest'] = -65.
 post.ST['V'] = -65.
 

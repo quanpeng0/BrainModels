@@ -54,36 +54,40 @@ def get_Oja(gamma = 0.005, w_max = 1., w_min = 0., mode = 'vector'):
     """
     
     
-    ST = bp.types.SynState({'w': 0.05, 'output_save': 0.})
+    ST = bp.types.SynState('output_save', w = 0.05)
     
     requires = dict(
         pre = bp.types.NeuState(['r']),
         post = bp.types.NeuState(['r']), 
-        post2syn=bp.types.ListConn(),
-        post2pre=bp.types.ListConn(),
     )
-    
+        
     @bp.integrate
     def int_w(w, t, r_pre, r_post):
-        dw = gamma * (r_post * r_pre - r_post * r_post * w)
-        return dw
+        return gamma * (r_post * r_pre - r_post * r_post * w)
 
-    def update(ST, _t, pre, post, post2pre, post2syn):
-        for i in range(len(post2pre)):
-            pre_ids = post2pre[i]
-            syn_ids = post2syn[i]
-            post['r'] = np.sum(ST['w'][syn_ids] * pre['r'][pre_ids])
-            ST['w'][syn_ids] = int_w(ST['w'][syn_ids], _t,  pre['r'][pre_ids], post['r'][i])
-    
     if mode == 'scalar':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
+    
     elif mode == 'vector':
-        return bp.SynType(name='Oja_synapse',
-                          ST=ST,
-                          requires=requires,
-                          steps=update,
-                          mode=mode)
+
+        requires['post2syn'] = bp.types.ListConn()
+        requires['post2pre'] = bp.types.ListConn()
+
+        def update(ST, _t, pre, post, post2pre, post2syn):
+            for i in range(len(post2pre)):
+                pre_ids = post2pre[i]
+                syn_ids = post2syn[i]
+                post['r'] = np.sum(ST['w'][syn_ids] * pre['r'][pre_ids])
+                ST['w'][syn_ids] = int_w(ST['w'][syn_ids], _t,  pre['r'][pre_ids], post['r'][i])
+
     elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
+
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
+        
+    return bp.SynType(name='Oja_synapse',
+                      ST=ST,
+                      requires=requires,
+                      steps=update,
+                      mode=mode)
