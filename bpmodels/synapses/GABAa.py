@@ -92,11 +92,10 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
                 s[syn_ids] += 1
             ST['s'] = s
             ST['g'] = g_max * s
-            
+
         @bp.delayed
         def output(ST, post, post_slice_syn):
-            post_num = len(post_slice_syn)
-            post_cond = np.zeros(post_num, dtype=np.float_)
+            post_cond = np.zeros(len(post_slice_syn), dtype=np.float_)
             for i, [s, e] in enumerate(post_slice_syn):
                 post_cond[i] = np.sum(ST['g'][s:e])
             post['input'] -= post_cond * (post['V'] - E)
@@ -201,8 +200,7 @@ def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., m
 
         @bp.delayed
         def output(ST, post, post_slice_syn):
-            post_num = len(post_slice_syn)
-            post_cond = np.zeros(post_num, dtype=np.float_)
+            post_cond = np.zeros(len(post_slice_syn), dtype=np.float_)
             for i, [s, e] in enumerate(post_slice_syn):
                 post_cond[i] = np.sum(ST['g'][s:e])
             post['input'] -= post_cond * (post['V'] - E)

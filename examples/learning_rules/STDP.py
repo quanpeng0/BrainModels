@@ -10,7 +10,7 @@ from bpmodels.neurons import get_LIF
 duration = 550.
 dt = 0.02
 bp.profile.set(jit=True, dt = dt, merge_steps = True, show_code = False)
-STDP_syn = bpmodels.learning_rules.get_STDP()
+STDP_syn = bpmodels.learning_rules.get_STDP(mode='scalar')
 
 # set params
 delta_t = [-20, -15, -10, -8, -6, -4, -3, 
@@ -23,25 +23,16 @@ pre_spike_t = range(50, 550, 50) #pre neuron spike time train
 delta_t_num = len(delta_t)
 spike_num = len(pre_spike_t)
 
+LIF_model = get_LIF()
+pre_neu = bp.NeuGroup(model=LIF_model, geometry = (delta_t_num, ))
+post_neu = bp.NeuGroup(model=LIF_model, geometry = (delta_t_num, ))
 # build SynConn
-stdp = bp.SynConn(model = STDP_syn, satisfies = dict(num=delta_t_num), 
-                  monitors = ['w', 'A_s', 'A_t', 'g'], delay = 10.)
+stdp = bp.SynConn(model = STDP_syn, pre_group = pre_neu, post_group = post_neu, \
+                  conn = bp.connect.One2One(), monitors = ['w', 'A_s', 'A_t', 'g'], delay = 10.)
                   # 1 synapse corresponds to 1 delta_t (for parallel computing)
 stdp.ST["A_s"] = 0.
 stdp.ST["A_t"] = 0.
 stdp.ST['w'] = 10.
-stdp.pre = bp.types.NeuState(['spike'])(delta_t_num)
-stdp.post = bp.types.NeuState(['V', 'input', 'spike'])(delta_t_num)
-
-# build pre-syn-post connection
-pre2syn_list = []
-post2syn_list = []
-for i in range(delta_t_num):
-    pre2syn_list.append([i, i])
-    post2syn_list.append([i, i])
-stdp.pre2syn = stdp.requires['pre2syn'].make_copy(pre2syn_list)
-stdp.post2syn = stdp.requires['post2syn'].make_copy(post2syn_list)
-
 # build network
 net = bp.Network(stdp)
 
