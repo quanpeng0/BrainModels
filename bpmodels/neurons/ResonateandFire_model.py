@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import sys
-
 import brainpy as bp
 
 
-<<<<<<< HEAD
-def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., mode='scalar'):
-=======
 def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., noise=0., mode='scalar'):
->>>>>>> add_vector
     """Resonate-and-fire neuron model.
 
     .. math::

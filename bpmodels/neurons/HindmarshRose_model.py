@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import sys
-
 import brainpy as bp
 
-
-<<<<<<< HEAD
-def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise = 0., mode='scalar'):
-=======
 def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise=0., mode='vector'):
->>>>>>> add_vector
     """
     Hindmarsh-Rose neuron model.
 

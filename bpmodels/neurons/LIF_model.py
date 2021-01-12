@@ -76,21 +76,22 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
     def int_V(V, t, I_ext):  # integrate u(t)
         return (- (V - V_rest) + R * I_ext) / tau, noise / tau
 
-    def update(ST, _t):
-        # update variables
-        if _t - ST['t_last_spike'] <= t_refractory:
-            ST['refractory'] = 1.
-        else:
-            ST['refractory'] = 0.
-            V = int_V(ST['V'], _t, ST['input'])
-            if V >= V_th:
-                V = V_reset
-                ST['spike'] = 1
-                ST['t_last_spike'] = _t
+    if mode == 'scalar':
+        def update(ST, _t):
+            # update variables
+            if _t - ST['t_last_spike'] <= t_refractory:
+                ST['refractory'] = 1.
             else:
-                ST['spike'] = 0.
-            ST['V'] = V
-        ST['input'] = 0.  # reset input here or it will be brought to next step
+                ST['refractory'] = 0.
+                V = int_V(ST['V'], _t, ST['input'])
+                if V >= V_th:
+                    V = V_reset
+                    ST['spike'] = 1
+                    ST['t_last_spike'] = _t
+                else:
+                    ST['spike'] = 0.
+                ST['V'] = V
+            ST['input'] = 0.  # reset input here or it will be brought to next step
 
     elif mode == 'vector':
 
