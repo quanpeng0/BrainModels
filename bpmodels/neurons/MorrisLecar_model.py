@@ -66,9 +66,7 @@ def get_MorrisLecar(noise=0., V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_Leak=-60.
                e0122401.
     """
 
-    ST = bp.types.NeuState(
-        {'V': -20, 'W': 0.02, 'input': 0.}
-    )
+    ST = bp.types.NeuState('input', V=-20., W=0.02)
 
     @bp.integrate
     def int_W(W, t, V):
@@ -86,17 +84,18 @@ def get_MorrisLecar(noise=0., V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_Leak=-60.
         dVdt = (- I_Ca - I_K - I_Leak + Isyn) / C
         return dVdt, noise / C
 
-    def update(ST, _t):
-        W = int_W(ST['W'], _t, ST['V'])
-        V = int_V(ST['V'], _t, ST['W'], ST['input'])
-        ST['V'] = V
-        ST['W'] = W
-        ST['input'] = 0.
  
     if mode == 'scalar' or mode == 'vector':
-        return bp.NeuType(name='MorrisLecar_neuron',
-                          ST=ST,
-                          steps=update,
-                          mode=mode)
+        def update(ST, _t):
+            W = int_W(ST['W'], _t, ST['V'])
+            V = int_V(ST['V'], _t, ST['W'], ST['input'])
+            ST['V'] = V
+            ST['W'] = W
+            ST['input'] = 0.
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
+    
+    return bp.NeuType(name='MorrisLecar_neuron',
+                      ST=ST,
+                      steps=update,
+                      mode=mode)

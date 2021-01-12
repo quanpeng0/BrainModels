@@ -4,7 +4,8 @@ import brainpy as bp
 import numpy as np
 import sys
 
-def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012, 
+
+def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
                kd=100., T=0.5, T_duration=0.3, mode='vector'):
     """GABAb conductance-based synapse model(type 1).
 
@@ -20,9 +21,9 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
     - [G] is the concentration of activated G protein.
     - [R] is the fraction of activated receptor.
     - [T] is the transmitter concentration.
-    
+
     **Synapse Parameters**
-    
+
     ============= ============== ======== ============================================================================
     **Parameter** **Init Value** **Unit** **Explanation**
     ------------- -------------- -------- ----------------------------------------------------------------------------
@@ -31,7 +32,7 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
     E             -95.           mV       Reversal potential of synapse.
 
     k1            0.18           \        Activating rate constant of G protein catalyzed 
-    
+
                                           by activated GABAb receptor.
 
     k2            0.034          \        De-activating rate constant of G protein.
@@ -41,15 +42,15 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
     k4            0.0012         \        De-activating rate constant of GABAb receptor.
 
     kd            100.           \        Dissociation rate constant of the binding of 
-    
+
                                           G protein on K+ channels.
 
     T             0.5            \        Transmitter concentration when synapse is 
-    
+
                                           triggered by a pre-synaptic spike.
 
     T_duration    0.3            \        Transmitter concentration duration time 
-    
+
                                           after being triggered.
 
     mode          'vector'       \        Data structure of ST members.
@@ -58,37 +59,37 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
     Returns:
         bp.SynType: return description of GABAb synapse model.
 
-    
+
     **Synapse State**
-    
+
     ST refers to synapse state, members of ST are listed below:
-    
+
     ================ ================= =========================================================
     **Member name**  **Initial Value** **Explanation**
     ---------------- ----------------- ---------------------------------------------------------
     R                0.                The fraction of activated receptor.
-    
+
     G                0.                The concentration of activated G protein.
-     
+
     g                0.                Synapse conductance on post-synaptic neuron.
-                             
+
     t_last_pre_spike -1e7              Last spike time stamp of pre-synaptic neuron.
     ================ ================= =========================================================
-    
+
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-        
+
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
                neurons to networks and models of cognition. Cambridge 
                University Press, 2014.
     """
-    
+
     ST = bp.types.SynState('R', 'G', 'g', t_last_pre_spike=-1e7)
-    
+
     requires = {
-        'pre': bp.types.NeuState(['spike'], help = "Pre-synaptic neuron state must have 'spike' item"),
-        'post': bp.types.NeuState(['V', 'input'], help = "Post-synaptic neuron state must have 'V' and 'input' item"),
+        'pre': bp.types.NeuState(['spike'], help="Pre-synaptic neuron state must have 'spike' item"),
+        'post': bp.types.NeuState(['V', 'input'], help="Post-synaptic neuron state must have 'V' and 'input' item"),
     }
 
     @bp.integrate
@@ -124,7 +125,7 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
     elif mode == 'vector':
 
         requires['pre2syn'] = bp.types.ListConn()
-        requires['post_slice_syn']=bp.types.Array(dim=2)
+        requires['post_slice_syn'] = bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             for pre_id in np.where(pre['spike'] > 0.)[0]:
@@ -146,7 +147,7 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
             post['input'] -= post_cond * (post['V'] - E)
 
     elif mode == 'matrix':
-        
+
         def update(ST, _t, pre):
             spike_idxs = np.where(pre['spike'] > 0.)[0]
             ST['t_last_pre_spike'][spike_idxs] = _t
@@ -156,15 +157,15 @@ def get_GABAb1(g_max=0.02, E=-95., k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
             ST['R'] = R
             ST['G'] = G
             ST['g'] = g_max * G ** 4 / (G ** 4 + kd)
-        
+
         @bp.delayed
         def output(ST, post):
-            g = np.sum(ST['g'], axis = 0)
+            g = np.sum(ST['g'], axis=0)
             post['input'] -= g * (post['V'] - E)
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
-    
+
     return bp.SynType(name='GABAb1_synapse',
                       ST=ST,
                       requires=requires,
@@ -176,7 +177,7 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
                k5=8.3e-5, k6=7.9e-3, kd=100., T=0.5, T_duration=0.5, mode='vector'):
     """
     GABAb conductance-based synapse model (markov form).
-    
+
     G-protein cascade occurs in the following steps: 
     (i) the transmitter binds to the receptor, leading to its activated form; 
     (ii) the activated receptor catalyzes the activation of G proteins; 
@@ -196,9 +197,9 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
     - [D] is the fraction of desensitized receptor.
     - [G] is the concentration of activated G-protein (μM).
     - [T] is the transmitter concentration.
-    
+
     **Synapse Parameters**
-    
+
     ============= ============== ======== ============================================================================
     **Parameter** **Init Value** **Unit** **Explanation**
     ------------- -------------- -------- ----------------------------------------------------------------------------
@@ -207,7 +208,7 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
     E             -95.           mV       Reversal potential of synapse.
 
     k1            0.66           \        Activating rate constant of G protein 
-    
+
                                           catalyzed by activated GABAb receptor.
 
     k2            0.02           \        De-activating rate constant of G protein.
@@ -217,21 +218,21 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
     k4            0.017          \        De-activating rate constant of GABAb receptor.
 
     k5            8.3e-5         \        Activating rate constant of G protein 
-    
+
                                           catalyzed by activated GABAb receptor.
 
     k6            7.9e-3         \        De-activating rate constant of activated G protein.
 
     kd            100.           \        Dissociation rate constant of the binding of 
-    
+
                                           G protein on K+ channels.
 
     T             0.5            \        Transmitter concentration when synapse 
-    
+
                                           is triggered by a pre-synaptic spike.
 
     T_duration    0.5            \        Transmitter concentration duration time 
-    
+
                                           after being triggered.
 
     mode          'vector'       \        Data structure of ST members.
@@ -240,28 +241,28 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
     Returns:
         bp.SynType: return decription of GABAb synapse model.
 
-    
+
     **Synapse State**
-    
+
     ST refers to synapse state, members of ST are listed below:
-    
+
     ================ ================= =========================================================
     **Member name**  **Initial Value** **Explanation**
     ---------------- ----------------- ---------------------------------------------------------
     D                0.                The fraction of desensitized receptor.
-    
+
     R                0.                The fraction of activated receptor.
-    
+
     G                0.                The concentration of activated G protein.
-     
+
     g                0.                Synapse conductance on post-synaptic neuron.
-                             
+
     t_last_pre_spike -1e7              Last spike time stamp of pre-synaptic neuron.
     ================ ================= =========================================================
-    
+
     Note that all ST members are saved as floating point type in BrainPy, 
     though some of them represent other data types (such as boolean).
-    
+
     References:
         .. [1] Destexhe, Alain, et al. "G-protein activation kinetics and 
                spillover of GABA may account for differences between 
@@ -269,11 +270,13 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
                Proc. Natl. Acad. Sci. USA v92 (1995): 9515-9519.
 
     """
-    ST=bp.types.SynState('D', 'R', 'G', 'g', t_last_pre_spike=-1e7)
-    
+    ST = bp.types.SynState('D', 'R', 'G', 'g', t_last_pre_spike=-1e7)
+
     requires = dict(
-        pre=bp.types.NeuState(['spike'], help = "Pre-synaptic neuron state must have 'spike' item"),
-        post=bp.types.NeuState(['V', 'input'], help = "Post-synaptic neuron state must have 'V' and 'input' item"),
+        pre=bp.types.NeuState(
+            ['spike'], help="Pre-synaptic neuron state must have 'spike' item"),
+        post=bp.types.NeuState(
+            ['V', 'input'], help="Post-synaptic neuron state must have 'V' and 'input' item"),
     )
 
     @bp.integrate
@@ -288,12 +291,12 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
     def int_G(G, t, R):
         return k5 * R - k6 * G
 
-    if mode=='scalar':
-    
+    if mode == 'scalar':
+
         def update(ST, _t, pre):
             if pre['spike'] > 0.:
                 ST['t_last_pre_spike'] = _t
-            TT = ((_t - ST['t_last_pre_spike']) < T_duration) * T    
+            TT = ((_t - ST['t_last_pre_spike']) < T_duration) * T
             D = int_D(ST['D'], _t, ST['R'])
             R = int_R(ST['R'], _t, TT, D)
             G = int_G(ST['G'], _t, R)
@@ -306,10 +309,11 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
         def output(ST, post):
             post['input'] -= ST['g'] * (post['V'] - E)
 
-    elif mode=='vector':
+    elif mode == 'vector':
 
-        requires['pre2syn'] = bp.types.ListConn(help = "Pre-synaptic neuron index -> synapse index")
-        requires['post_slice_syn']=bp.types.Array(dim=2)
+        requires['pre2syn'] = bp.types.ListConn(
+            help="Pre-synaptic neuron index -> synapse index")
+        requires['post_slice_syn'] = bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             # calculate synaptic state
@@ -332,9 +336,9 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
             for i, [s, e] in enumerate(post_slice_syn):
                 post_cond[i] = np.sum(ST['g'][s:e])
             post['input'] -= post_cond * (post['V'] - E)
-    
+
     elif mode == 'matrix':
-    
+
         def update(ST, _t, pre):
             spike_idxs = np.where(pre['spike'] > 0.)[0]
             ST['t_last_pre_spike'][spike_idxs] = _t
@@ -346,10 +350,10 @@ def get_GABAb2(g_max=0.02, E=-95., k1=0.66, k2=0.02, k3=0.0053, k4=0.017,
             ST['R'] = R
             ST['G'] = G
             ST['g'] = g_max * (G ** 4 / (G ** 4 + kd))
-        
+
         @bp.delayed
         def output(ST, post):
-            g = np.sum(ST['g'], axis = 0)
+            g = np.sum(ST['g'], axis=0)
             post['input'] -= g * (post['V'] - E)
 
     else:
