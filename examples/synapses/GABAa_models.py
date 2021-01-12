@@ -6,26 +6,23 @@ import numpy as np
 import bpmodels
 from bpmodels.neurons import get_LIF
 
-
 duration = 500.
 dt = 0.02
-bp.profile.set(jit=True, dt=dt, merge_steps=True, show_code=True)
+bp.profile.set(jit=True, dt=dt, merge_steps=True)
 LIF_neuron = get_LIF()
-GABAa_syn = bpmodels.synapses.get_GABAa2(mode='vector')
+GABAa_syn = bpmodels.synapses.get_GABAa1(mode='scalar')
 
 # build and simulate gabaa net
-pre = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-pre.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
+pre = bp.NeuGroup(LIF_neuron, geometry=(20,), monitors=['V', 'input', 'spike'])
 pre.pars['V_rest'] = -65.
 pre.ST['V'] = -65.
 post = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-post.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
 post.pars['V_rest'] = -65.
 post.ST['V'] = -65.
 
 gabaa = bp.SynConn(model=GABAa_syn, pre_group=pre, post_group=post,
                    conn=bp.connect.All2All(), monitors=['s'], delay=10.)
-gabaa.runner.set_schedule(['input', 'update', 'output', 'monitor'])
+gabaa.set_schedule(['input', 'update', 'output', 'monitor'])
 
 net = bp.Network(pre, gabaa, post)
 
@@ -37,6 +34,7 @@ net.run(duration=duration, inputs=[gabaa, 'pre.spike', current, "="], report=Tru
 ts = net.ts
 fig, gs = bp.visualize.get_figure(2, 2, 5, 6)
 
+print(gabaa.mon.s.shape)
 fig.add_subplot(gs[0, 0])
 plt.plot(ts, gabaa.mon.s[:, 0], label='s')
 plt.legend()
@@ -50,4 +48,3 @@ plt.plot(ts, post.mon.input[:, 0], label='post.input')
 plt.legend()
 
 plt.show()
-

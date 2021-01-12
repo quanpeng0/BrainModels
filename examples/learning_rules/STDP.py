@@ -5,12 +5,12 @@ import brainpy as bp
 import numpy as np
 import bpmodels
 from bpmodels.neurons import get_LIF
-from bpmodels.learning_rules import get_STDP
+#from bpmodels.learning_rules import get_STDP
 
 duration = 550.
 dt = 0.02
 bp.profile.set(jit=True, dt = dt, merge_steps = True, show_code = False)
-STDP_syn = get_STDP()
+STDP_syn = bpmodels.learning_rules.get_STDP()
 
 # set params
 delta_t = [-20, -15, -10, -8, -6, -4, -3, 
@@ -24,7 +24,7 @@ delta_t_num = len(delta_t)
 spike_num = len(pre_spike_t)
 
 # build SynConn
-stdp = bp.SynConn(model = STDP_syn, num = delta_t_num, 
+stdp = bp.SynConn(model = STDP_syn, satisfies = dict(num=delta_t_num), 
                   monitors = ['w', 'A_s', 'A_t', 'g'], delay = 10.)
                   # 1 synapse corresponds to 1 delta_t (for parallel computing)
 stdp.ST["A_s"] = 0.

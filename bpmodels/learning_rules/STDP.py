@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import brainpy as bp
 import numpy as np
 import sys
@@ -96,24 +95,14 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10.,
                simulations." Frontiers in neuroinformatics 8 (2014): 6.
     """
     
-    ST=bp.types.SynState({'A_s': 0., 'A_t': 0., 'g': 0., 'w': 0.}, help='STDP synapse state.')
+    ST=bp.types.SynState('A_s', 'A_t', 'g', 'w')
     
-    requires_scalar = dict(
+    requires = dict(
         pre=bp.types.NeuState(['spike'], help='Pre-synaptic neuron state \
                                                must have "spike" item.'),
         post=bp.types.NeuState(['V', 'input', 'spike'], 
                                help='Pre-synaptic neuron state must \
                                      have "V", "input" and "spike" item.'),
-    )
-
-    requires_vector = dict(
-        pre=bp.types.NeuState(['spike'], help='Pre-synaptic neuron state \
-                                               must have "spike" item.'),
-        post=bp.types.NeuState(['V', 'input', 'spike'], 
-                               help='Post-synaptic neuron state must \
-                                     have "V", "input" and "spike" item.'),
-        pre2syn=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index'),
-        post2syn=bp.types.ListConn(help='Post-synaptic neuron index -> synapse index'),
     )
 
     @bp.integrate
@@ -131,8 +120,7 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10.,
     if mode=='scalar':
         def my_relu(w):
             return w if w > 0 else 0
-    
-    if mode=='scalar':
+
         def update(ST, _t, pre, post):
             A_s = int_A_s(ST['A_s'], _t)
             A_t = int_A_t(ST['A_t'], _t)
@@ -149,7 +137,17 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10.,
             ST['A_t'] = A_t
             ST['g'] = g
             ST['w'] = w
+
+        @bp.delayed
+        def output(ST, post):
+            I_syn = - g_max * ST['g'] * (post['V'] - E)
+            post['input'] += I_syn
+
     elif mode=='vector':
+
+        requires['pre2syn'] = bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
+        requires['post2syn'] = bp.types.ListConn(help='Post-synaptic neuron index -> synapse index')
+
         def update(ST, _t, pre, post, pre2syn, post2syn):
             A_s = int_A_s(ST['A_s'], _t)
             A_t = int_A_t(ST['A_t'], _t)
@@ -168,13 +166,7 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10.,
             ST['A_t'] = A_t
             ST['g'] = g
             ST['w'] = w
-
-    if mode=='scalar':
-        @bp.delayed
-        def output(ST, post):
-            I_syn = - g_max * ST['g'] * (post['V'] - E)
-            post['input'] += I_syn
-    elif mode=='vector':
+            
         @bp.delayed
         def output(ST, post, post2syn):
             post_cond = np.zeros(len(post2syn), dtype=np.float_)
@@ -182,20 +174,13 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s = 10., tau_t = 10.,
                 post_cond[post_id] = np.sum(- g_max * ST['g'][syn_ids] * (post['V'][post_id] - E))
             post['input'] += post_cond
 
-    if mode == 'scalar':
-        return bp.SynType(name='STDP_synapse',
-                          ST=ST,
-                          requires=requires_scalar,
-                          steps=(update, output),
-                          mode=mode)
-    elif mode == 'vector':
-        return bp.SynType(name='STDP_synapse',
-                          ST=ST,
-                          requires=requires_vector,
-                          steps=(update, output),
-                          mode=mode)
     elif mode == 'matrix':
         raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
+    return bp.SynType(name='STDP_synapse',
+                      ST=ST,
+                      requires=requires,
+                      steps=(update, output),
+                      mode=mode)
