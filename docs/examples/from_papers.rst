@@ -38,6 +38,7 @@ Working Memory
    :maxdepth: 1
 
    from_papers/Mi_2017_working_memory_capacity
+   from_papers/Bouchacourt_2019_Flexible_working_memory
 
 
 Others
