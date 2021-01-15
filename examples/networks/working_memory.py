@@ -12,18 +12,18 @@ def rotate_distance(x, y):
 
 # set params
 ## set global params
-dt=0.02
+dt=0.1
 bp.profile.set(jit=True,
                device='cpu',
                dt=dt,
-               merge_steps=True)
+               numerical_method='exponential')
 
 base_N_E = 2048
 base_N_I = 512
 net_scale = 8
 N_E = base_N_E//net_scale
 N_I = base_N_I//net_scale
-time_scale = 1.
+time_scale = 10.
 pre_period = 1000. / time_scale
 cue_period = 250.
 delay_period = 8750. / time_scale
@@ -179,7 +179,10 @@ def get_NMDA(g_max=0., E=E_NMDA, alpha=alpha_NMDA, beta=beta_NMDA,
 
         def update(ST, _t, pre, conn_mat):
             x = int_x(ST['x'], _t)
-            x += pre['spike'].reshape((-1, 1)) * conn_mat
+            #x += pre['spike'].reshape((-1, 1)) * conn_mat
+            for i in range(pre['spike'].shape[0]):
+            	if pre['spike'][i] > 0.:
+	                x[i] += conn_mat[i]
             s = int_s(ST['s'], _t, x)
             ST['x'] = x
             ST['s'] = s
@@ -225,6 +228,7 @@ plt.show()
 print("Check constraints: ", JE2E.reshape((N_E, N_E)).sum(axis=0)[0], "should be equal to ", N_E)
 for i in range(N_E):
     JE2E[i*N_E + i] = 0.
+JE2E = JE2E.reshape((N_E, N_E))  #for matrix mode
 
 ## unstructured weights
 JE2I = 1.
@@ -232,12 +236,13 @@ JI2E = 1.
 JI2I = np.full((N_I ** 2), 1. )
 for i in range(N_I):
     JI2I[i*N_I + i] = 0.
+#JI2I = JI2I.reshape((N_I, N_I))  #for matrix mode
 
 # get neu & syn type
 LIF = get_LIF()
-AMPA = bpmodels.synapses.get_AMPA1(mode = 'vector')  
-GABAa = bpmodels.synapses.get_GABAa1(mode = 'vector') #TODO: mode=?
-NMDA = get_NMDA(mode = 'vector')
+AMPA = bpmodels.synapses.get_AMPA1(mode = 'scalar')  
+GABAa = bpmodels.synapses.get_GABAa1(mode = 'scalar') #TODO: mode=?
+NMDA = get_NMDA(mode = 'matrix')
 
 # build neuron groups
 neu_E = bp.NeuGroup(model = LIF, geometry = N_E, monitors = ['V', 'spike', 'input'])
