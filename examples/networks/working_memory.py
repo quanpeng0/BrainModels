@@ -23,12 +23,13 @@ base_N_I = 512
 net_scale = 8
 N_E = base_N_E//net_scale
 N_I = base_N_I//net_scale
-time_scale = 10.
+time_scale = 1.
 pre_period = 1000. / time_scale
 cue_period = 250.
 delay_period = 8750. / time_scale
 resp_period = 250.
 post_period = 1000. / time_scale
+dist_period = 250.
 total_period = pre_period + cue_period + delay_period + resp_period + post_period
 
 
@@ -199,6 +200,8 @@ def get_NMDA(g_max=0., E=E_NMDA, alpha=alpha_NMDA, beta=beta_NMDA,
                       steps=(update, output),
                       mode = mode)
 
+# define weight
+## structured weight
 prefer_cue_E = np.linspace(0, 360, N_E+1)[:-1]
 prefer_cue_I = np.linspace(0, 360, N_I+1)[:-1]
 delta_E2E = 20.
@@ -211,17 +214,24 @@ for i in range(N_E**2):
                 (J_plus_E2E - J_neg_E2E) * 
                 np.exp(- 0.5 * rotate_distance(prefer_cue_E[i//N_E], prefer_cue_E[i%N_E])**2/delta_E2E ** 2))
 JE2E = np.array(JE2E)
+
+### visualize w-delta_theta plot
 plt.plot(range(0, N_E), JE2E.reshape((N_E, N_E))[100])
+plt.xlabel("delta theta")
+plt.ylabel("weight w")
+plt.axhline(y = J_plus_E2E, ls = ":", c = "k", label = "J+")
+plt.axhline(y = J_neg_E2E, ls = ":", c = "k", label = "J-")
 plt.show()
 print("Check constraints: ", JE2E.reshape((N_E, N_E)).sum(axis=0)[0], "should be equal to ", N_E)
 for i in range(N_E):
     JE2E[i*N_E + i] = 0.
+
+## unstructured weights
 JE2I = 1.
 JI2E = 1.
 JI2I = np.full((N_I ** 2), 1. )
 for i in range(N_I):
     JI2I[i*N_I + i] = 0.
-#print("J+, J-:", J_plus_E2E, J_neg_E2E)
 
 # get neu & syn type
 LIF = get_LIF()
@@ -300,7 +310,12 @@ neu_cue_index_neg = int(N_E * ((cue-(cue_width/2)) / 360.))
 neu_cue_index_pos = int(N_E * ((cue+(cue_width/2)) / 360.))  #TODO: check here? bug when pass 360.
 
 print(f"the excitatory neurons that are stimulated in cue period is from No.{neu_cue_index_neg} to No.{neu_cue_index_pos}")
-
+distract_cue = 20.
+distract_width = 36.
+dist_amp = 0.2
+neu_distract_idx = N_E * (distract_cue / 360.)
+neu_distract_index_neg = int(N_E * ((distract_cue-(distract_width/2)) / 360.))
+neu_distract_index_pos = int(N_E * ((distract_cue+(distract_width/2)) / 360.))
 ## create input (with stimulus in cue period and response period)
 input_base, _ = bp.inputs.constant_current([(0., pre_period), 
                                             (0., cue_period), 
@@ -317,13 +332,23 @@ input_resp, _ = bp.inputs.constant_current([(0., pre_period),
                                             (0., delay_period), 
                                             (resp_amp, resp_period), 
                                             (0., post_period)])
+input_dist, _ = bp.inputs.constant_current([(0., pre_period), 
+                                            (0., cue_period), 
+                                            (0., (delay_period-dist_period)/2), 
+                                            (dist_amp, cue_period), 
+                                            (0., (delay_period-dist_period)/2), 
+                                            (resp_amp, resp_period), 
+                                            (0., post_period)])
+                                                                                  
                                          
 input_cue = input_base + input_resp
 for i in range(1, N_E):
-    if i < neu_cue_index_neg or i > neu_cue_index_pos:
-        input_cue = np.vstack((input_cue, input_base + input_resp))
-    else:
+    if i >= neu_cue_index_neg and i <= neu_cue_index_pos:
         input_cue = np.vstack((input_cue, input_bias + input_resp))
+    elif i >= neu_distract_index_neg and i <= neu_distract_index_pos:
+        input_cue = np.vstack((input_cue, input_dist + input_resp))
+    else:
+        input_cue = np.vstack((input_cue, input_base + input_resp))
         
 # simulate
 net.run(duration=total_period, 
