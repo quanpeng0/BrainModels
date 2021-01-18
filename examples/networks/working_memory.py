@@ -91,9 +91,13 @@ poission_frequency = 1800
 g_max_input2E = 3.1 * 1e-3      #uS  #AMPA
 g_max_input2I = 2.38 * 1e-3     #uS  #AMPA
 
+# =========
+#  synapse
+# =========
+
 ## set synapse params
 ### AMPA
-tau_AMPA = 2. * 0.9 #ms
+tau_AMPA = 2.  #ms
 E_AMPA = 0.    #mV
 ### GABAa
 tau_GABAa = 10. #ms
@@ -110,10 +114,6 @@ g_max_E2E = 0.381 * 1e-3 * net_scale   #uS
 g_max_E2I = 0.292 * 1e-3 * net_scale   #uS
 g_max_I2E = 1.336 * 1e-3 * net_scale   #uS
 g_max_I2I = 1.024 * 1e-3 * net_scale   #uS
-
-# =========
-#  synapse
-# =========
 
 def get_NMDA(g_max=0., E=E_NMDA, alpha=alpha_NMDA, beta=beta_NMDA, 
              cc_Mg=cc_Mg_NMDA, a=a_NMDA, 
@@ -203,6 +203,25 @@ def get_NMDA(g_max=0., E=E_NMDA, alpha=alpha_NMDA, beta=beta_NMDA,
                       steps=(update, output),
                       mode = mode)
 
+## set stimulus params
+### cue
+cue_angle = 160.
+cue_width = 36.
+cue_amp = 0.15   #nA(10^-9)
+cue_idx = N_E * (cue_angle / 360.)
+cue_idx_neg = int(N_E * ((cue_angle-(cue_width/2)) / 360.))
+cue_idx_pos = int(N_E * ((cue_angle+(cue_width/2)) / 360.))
+# here: may cause bug when idx go pass 360.
+### distarctor
+dist_angle = 30.
+dist_width = 36.
+dist_amp = cue_amp  #nA(10^-9)  # distractor stimulation always equal to cue stimulation
+dist_idx = N_E * (dist_angle / 360.)
+dist_idx_neg = int(N_E * ((dist_angle-(dist_width/2)) / 360.))
+dist_idx_pos = int(N_E * ((dist_angle+(dist_width/2)) / 360.))
+### response
+resp_amp = 0.5  #nA(10^-9)
+
 # define weight
 ## structured weight
 prefer_cue_E = np.linspace(0, 360, N_E+1)[:-1]
@@ -225,7 +244,7 @@ plt.ylabel("weight w")
 plt.axhline(y = J_plus_E2E, ls = ":", c = "k", label = "J+")
 plt.axhline(y = J_neg_E2E, ls = ":", c = "k", label = "J-")
 plt.show()
-print("Check constraints: ", JE2E.reshape((N_E, N_E)).sum(axis=0)[0], "should be equal to ", N_E)
+#print("Check constraints: ", JE2E.reshape((N_E, N_E)).sum(axis=0)[0], "should be equal to ", N_E)
 for i in range(N_E):
     JE2E[i*N_E + i] = 0.
 JE2E = JE2E.reshape((N_E, N_E))  #for matrix mode
@@ -236,150 +255,133 @@ JI2E = 1.
 JI2I = np.full((N_I ** 2), 1. )
 for i in range(N_I):
     JI2I[i*N_I + i] = 0.
-#JI2I = JI2I.reshape((N_I, N_I))  #for matrix mode
+JI2I = JI2I.reshape((N_I, N_I))  #for matrix mode
 
-# get neu & syn type
-LIF = get_LIF()
-AMPA = bpmodels.synapses.get_AMPA1(mode = 'scalar')  
-GABAa = bpmodels.synapses.get_GABAa1(mode = 'scalar') #TODO: mode=?
-NMDA = get_NMDA(mode = 'matrix')
+def create_input(cue_angle, cue_width, cue_amp,
+                 dist_angle, dist_width, dist_amp,
+                 resp_amp
+                 ):
+    ## build input (with stimulus in cue period and response period)
+    input_cue , _  = bp.inputs.constant_current([(0., pre_period), 
+                                                (cue_amp, cue_period), 
+                                                (0., delay_period), 
+                                                (0., resp_period), 
+                                                (0., post_period)])
+    input_resp, _ = bp.inputs.constant_current([(0., pre_period), 
+                                                (0., cue_period), 
+                                                (0., delay_period), 
+                                                (resp_amp, resp_period), 
+                                                (0., post_period)])
+    input_dist, _ = bp.inputs.constant_current([(0., pre_period), 
+                                                (0., cue_period), 
+                                                (0., (delay_period-dist_period)/2), 
+                                                (dist_amp, cue_period), 
+                                                (0., (delay_period-dist_period)/2), 
+                                                (0., resp_period), 
+                                                (0., post_period)])
+    ext_input = input_resp
+    for i in range(1, N_E):
+        input_pos = input_resp
+        if i >= cue_idx_neg and i <= cue_idx_pos:
+            input_pos = input_pos + input_cue
+        if i >= dist_idx_neg and i <= dist_idx_pos:
+            input_pos = input_pos + input_dist
+        ext_input = np.vstack((ext_input, input_pos))
+    
+    return ext_input.T
 
-# build neuron groups
-neu_E = bp.NeuGroup(model = LIF, geometry = N_E, monitors = ['V', 'spike', 'input'])
-neu_E.set_schedule(['input', 'update', 'monitor', 'reset'])
-neu_E.pars['V_rest'] = V_rest_E
-neu_E.pars['V_reset'] = V_reset_E
-neu_E.pars['V_th'] = V_th_E
-neu_E.pars['R'] = R_E
-neu_E.pars['tau'] = tau_E
-neu_E.pars['t_refractory'] = t_refractory_E
-neu_I = bp.NeuGroup(model = LIF, geometry = N_I, monitors = ['V'])
-neu_I.set_schedule(['input', 'update', 'monitor', 'reset'])
-neu_I.pars['V_rest'] = V_rest_I
-neu_I.pars['V_reset'] = V_reset_I
-neu_I.pars['V_th'] = V_th_I
-neu_I.pars['R'] = R_I
-neu_I.pars['tau'] = tau_I
-neu_I.pars['t_refractory'] = t_refractory_I
+def run_simulation(input = None):
+    # get neu & syn type
+    LIF = get_LIF()
+    AMPA = bpmodels.synapses.get_AMPA1(mode = 'matrix')  
+    GABAa = bpmodels.synapses.get_GABAa1(mode = 'matrix')
+    NMDA = get_NMDA(mode = 'matrix')
 
-# build synapse connections                 
-syn_E2E = bp.SynConn(model = NMDA, pre_group = neu_E, post_group = neu_E,
-                     conn = bp.connect.All2All())
-syn_E2E.pars['g_max'] = g_max_E2E * JE2E
+    # build neuron groups
+    neu_E = bp.NeuGroup(model = LIF, geometry = N_E, monitors = ['V', 'spike', 'input'])
+    neu_E.set_schedule(['input', 'update', 'monitor', 'reset'])
+    neu_E.pars['V_rest'] = V_rest_E
+    neu_E.pars['V_reset'] = V_reset_E
+    neu_E.pars['V_th'] = V_th_E
+    neu_E.pars['R'] = R_E
+    neu_E.pars['tau'] = tau_E
+    neu_E.pars['t_refractory'] = t_refractory_E
+    neu_I = bp.NeuGroup(model = LIF, geometry = N_I, monitors = ['V'])
+    neu_I.set_schedule(['input', 'update', 'monitor', 'reset'])
+    neu_I.pars['V_rest'] = V_rest_I
+    neu_I.pars['V_reset'] = V_reset_I
+    neu_I.pars['V_th'] = V_th_I
+    neu_I.pars['R'] = R_I
+    neu_I.pars['tau'] = tau_I
+    neu_I.pars['t_refractory'] = t_refractory_I
 
-syn_E2I = bp.SynConn(model = NMDA, pre_group = neu_E, post_group = neu_I,
-                     conn = bp.connect.All2All())
-syn_E2I.pars['g_max'] = g_max_E2I * JE2I
+    # build synapse connections                 
+    syn_E2E = bp.SynConn(model = NMDA, pre_group = neu_E, post_group = neu_E,
+                         conn = bp.connect.All2All())
+    syn_E2E.pars['g_max'] = g_max_E2E * JE2E
 
-syn_I2E = bp.SynConn(model = GABAa, pre_group = neu_I, post_group = neu_E,
-                     conn = bp.connect.All2All())
-syn_I2E.pars['tau_decay'] = tau_GABAa
-syn_I2E.pars['E'] = E_GABAa
-syn_I2E.pars['g_max'] = g_max_I2E * JI2E
+    syn_E2I = bp.SynConn(model = NMDA, pre_group = neu_E, post_group = neu_I,
+                         conn = bp.connect.All2All())
+    syn_E2I.pars['g_max'] = g_max_E2I * JE2I
 
-syn_I2I = bp.SynConn(model = GABAa, pre_group = neu_I, post_group = neu_I,
-                     conn = bp.connect.All2All())
-syn_I2I.pars['tau_decay'] = tau_GABAa
-syn_I2I.pars['E'] = E_GABAa
-syn_I2I.pars['g_max'] = g_max_I2I * JI2I
+    syn_I2E = bp.SynConn(model = GABAa, pre_group = neu_I, post_group = neu_E,
+                         conn = bp.connect.All2All())
+    syn_I2E.pars['tau_decay'] = tau_GABAa
+    syn_I2E.pars['E'] = E_GABAa
+    syn_I2E.pars['g_max'] = g_max_I2E * JI2E
 
-# set 1800Hz background input
-neu_input = bp.inputs.PoissonInput(geometry = N_E + N_I, freqs = poission_frequency)
-syn_input2E = bp.SynConn(model=AMPA, 
-                         pre_group = neu_input[:N_E],
-                         post_group = neu_E,
-                         conn=bp.connect.One2One(), 
-                         delay=0.)
-syn_input2E.pars['tau_decay'] = tau_AMPA
-syn_input2E.pars['E'] = E_AMPA
-syn_input2E.pars['g_max'] = g_max_input2E
-syn_input2I = bp.SynConn(model=AMPA, 
-                         pre_group = neu_input[N_E:],
-                         post_group = neu_I,
-                         conn=bp.connect.One2One(), 
-                         delay=0.)
-syn_input2I.pars['tau_decay'] = tau_AMPA
-syn_input2I.pars['E'] = E_AMPA
-syn_input2I.pars['g_max'] = g_max_input2I
+    syn_I2I = bp.SynConn(model = GABAa, pre_group = neu_I, post_group = neu_I,
+                         conn = bp.connect.All2All())
+    syn_I2I.pars['tau_decay'] = tau_GABAa
+    syn_I2I.pars['E'] = E_GABAa
+    syn_I2I.pars['g_max'] = g_max_I2I * JI2I
 
-net = bp.Network(neu_input, syn_input2E, syn_input2I, neu_E, neu_I, syn_E2E, syn_E2I, syn_I2E, syn_I2I)
+    # set 1800Hz background input
+    neu_input = bp.inputs.PoissonInput(geometry = N_E + N_I, freqs = poission_frequency)
+    syn_input2E = bp.SynConn(model=AMPA, 
+                             pre_group = neu_input[:N_E],
+                             post_group = neu_E,
+                             conn=bp.connect.One2One(), 
+                             delay=0.)
+    syn_input2E.pars['tau_decay'] = tau_AMPA
+    syn_input2E.pars['E'] = E_AMPA
+    syn_input2E.pars['g_max'] = g_max_input2E
+    syn_input2I = bp.SynConn(model=AMPA, 
+                             pre_group = neu_input[N_E:],
+                             post_group = neu_I,
+                             conn=bp.connect.One2One(), 
+                             delay=0.)
+    syn_input2I.pars['tau_decay'] = tau_AMPA
+    syn_input2I.pars['E'] = E_AMPA
+    syn_input2I.pars['g_max'] = g_max_input2I
 
-# create input
-## set input params
-cue = 160.
-cue_width = 36.
-cue_amp = 0.2   #nA(10^-9)
-resp_amp = 0.5  #nA(10^-9)
-neu_cue_idx = N_E * (cue / 360.)
-neu_cue_index_neg = int(N_E * ((cue-(cue_width/2)) / 360.))
-neu_cue_index_pos = int(N_E * ((cue+(cue_width/2)) / 360.))  #TODO: check here? bug when pass 360.
+    net = bp.Network(neu_input, syn_input2E, syn_input2I, neu_E, neu_I, syn_E2E, syn_E2I, syn_I2E, syn_I2I)
 
-print(f"the excitatory neurons that are stimulated in cue period is from No.{neu_cue_index_neg} to No.{neu_cue_index_pos}")
-distract_cue = 20.
-distract_width = 36.
-dist_amp = 0.2
-neu_distract_idx = N_E * (distract_cue / 360.)
-neu_distract_index_neg = int(N_E * ((distract_cue-(distract_width/2)) / 360.))
-neu_distract_index_pos = int(N_E * ((distract_cue+(distract_width/2)) / 360.))
-## create input (with stimulus in cue period and response period)
-input_base, _ = bp.inputs.constant_current([(0., pre_period), 
-                                            (0., cue_period), 
-                                            (0., delay_period), 
-                                            (0., resp_period), 
-                                            (0., post_period)])
-input_bias, _ = bp.inputs.constant_current([(0., pre_period), 
-                                            (cue_amp, cue_period), 
-                                            (0., delay_period), 
-                                            (0., resp_period), 
-                                            (0., post_period)])         
-input_resp, _ = bp.inputs.constant_current([(0., pre_period), 
-                                            (0., cue_period), 
-                                            (0., delay_period), 
-                                            (resp_amp, resp_period), 
-                                            (0., post_period)])
-input_dist, _ = bp.inputs.constant_current([(0., pre_period), 
-                                            (0., cue_period), 
-                                            (0., (delay_period-dist_period)/2), 
-                                            (dist_amp, cue_period), 
-                                            (0., (delay_period-dist_period)/2), 
-                                            (resp_amp, resp_period), 
-                                            (0., post_period)])
-                                                                                  
-                                         
-input_cue = input_base + input_resp
-for i in range(1, N_E):
-    if i >= neu_cue_index_neg and i <= neu_cue_index_pos:
-        input_cue = np.vstack((input_cue, input_bias + input_resp))
-    elif i >= neu_distract_index_neg and i <= neu_distract_index_pos:
-        input_cue = np.vstack((input_cue, input_dist + input_resp))
-    else:
-        input_cue = np.vstack((input_cue, input_base + input_resp))
-        
-# simulate
-net.run(duration=total_period, 
-        inputs = (
-                  [neu_E, 'ST.input', input_cue.T, "+"]
-                 ),
-        report = True,
-        report_percent = 0.1)
+    # run
+    net.run(duration=total_period, 
+            inputs = (
+                      [neu_E, 'ST.input', input, "+"]
+                     ),
+            report = True,
+            report_percent = 0.1)
+            
+    # visualize
+    print("ploting raster plot for simulation...")
+    fig, gs = bp.visualize.get_figure(1, 1, 4, 10)
 
-# visualize
-fig, gs = bp.visualize.get_figure(6, 1, 3, 20)
+    fig.add_subplot(gs[0, 0])
+    bp.visualize.raster_plot(net.ts, neu_E.mon.spike, xlim=(0., total_period), markersize=1)
 
-fig.add_subplot(gs[:3, 0])
-bp.visualize.raster_plot(net.ts, neu_E.mon.spike, xlim=(0., total_period), markersize=1)
+    plt.show()
+           
+# simulate without distractor
+ext_input = create_input(cue_angle = cue_angle, cue_width = cue_width, cue_amp = cue_amp,
+                         dist_angle = 0., dist_width = 0., dist_amp = 0.,
+                         resp_amp = resp_amp)
+run_simulation(input = ext_input)
 
-fig.add_subplot(gs[3, 0])
-rates = bp.measure.firing_rate(neu_E.mon.spike, 5.)
-plt.plot(net.ts, rates)
-plt.xlim(0., total_period)
-
-fig.add_subplot(gs[4, 0])
-plt.plot(net.ts, neu_E.mon.input[:, 97])
-plt.xlim(0., total_period)
-
-fig.add_subplot(gs[5, 0])
-plt.plot(net.ts, neu_E.mon.input[:, 103])
-plt.xlim(0., total_period)
-
-plt.show()
+# simulate with distractor
+ext_input = create_input(cue_angle = cue_angle, cue_width = cue_width, cue_amp = cue_amp,
+                         dist_angle = dist_angle, dist_width = dist_width, dist_amp = dist_amp,
+                         resp_amp = resp_amp)
+run_simulation(input = ext_input)
