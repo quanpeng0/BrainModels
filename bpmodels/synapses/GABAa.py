@@ -2,7 +2,6 @@
 import brainpy as bp
 import numpy as np
 import sys
-import pdb
 
 
 def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
@@ -82,7 +81,6 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
     elif mode == 'vector':
 
         requires['pre2syn'] = bp.types.ListConn()
-        #requires['post2syn'] = bp.types.ListConn()
         requires['post_slice_syn'] = bp.types.Array(dim=2)
 
         def update(ST, pre, pre2syn):
@@ -107,7 +105,9 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
 
         def update(ST, _t, pre, conn_mat):
             s = int_s(ST['s'], _t)
-            s += pre['spike'].reshape((-1, 1)) * conn_mat
+            for i in range(pre['spike'].shape[0]):
+            	if pre['spike'][i] > 0.:
+	                s[i] += conn_mat[i]
             ST['s'] = s
             ST['g'] = g_max * s
 
