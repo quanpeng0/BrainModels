@@ -49,3 +49,4 @@ Others
    :maxdepth: 1
 
    from_papers/Romain_2004_LIF_phase_locking
+   from_papers/wong_wang_2006_decision
