@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 import brainpy as bp
 import numpy as np
 import bpmodels
 import matplotlib.pyplot as plt
 import math
 from scipy.special import erf
-import pdb
 
 def rotate_distance(x, y):
     dist = np.abs(x - y)
