@@ -99,28 +99,11 @@ def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., noise
     def int_V(V, t, x):  # V
         return omega * x + b * V
 
-    def update(ST, _t):
-        # update variables
-        ST['spike'] = 0
-        x = ST['x']
-        x += ST['input']
-        V = ST['V']
-        x = int_x(x, _t, V)
-        V = int_V(V, _t, x)
-        if V > V_th:
-            V = V_reset
-            x = x_reset
-            ST['spike'] = 1
-            ST['t_last_spike'] = _t
-        ST['x'] = x
-        ST['V'] = V
-        ST['input'] = 0.
-
     if mode == 'scalar':
 
         def update(ST, _t):
             # update variables
-            ST['spike'] = 0
+            ST['spike'] = 0.
             x = ST['x']
             x += ST['input']
             V = ST['V']

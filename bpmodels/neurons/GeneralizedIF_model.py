@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-
 import brainpy as bp
 
 
@@ -140,7 +139,7 @@ def get_GeneralizedIF(V_rest=-70., V_reset=-70.,
     if mode == 'scalar':
 
         def update(ST, _t):
-            ST['spike'] = 0
+            ST['spike'] = 0.
             I1 = int_I1(ST['I1'], _t)
             I2 = int_I2(ST['I2'], _t)
             V_th = int_V_th(ST['V_th'], _t, ST['V'])
@@ -150,7 +149,7 @@ def get_GeneralizedIF(V_rest=-70., V_reset=-70.,
                 I1 = R1 * I1 + A1
                 I2 = R2 * I2 + A2
                 V_th = max(V_th, V_th_reset)
-                ST['spike'] = 1
+                ST['spike'] = 1.
             ST['I1'] = I1
             ST['I2'] = I2
             ST['V_th'] = V_th

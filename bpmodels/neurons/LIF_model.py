@@ -79,6 +79,7 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
     if mode == 'scalar':
         def update(ST, _t):
             # update variables
+            ST['spike'] = 0.
             if _t - ST['t_last_spike'] <= t_refractory:
                 ST['refractory'] = 1.
             else:
@@ -88,8 +89,6 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
                     V = V_reset
                     ST['spike'] = 1
                     ST['t_last_spike'] = _t
-                else:
-                    ST['spike'] = 0.
                 ST['V'] = V
             ST['input'] = 0.  # reset input here or it will be brought to next step
 

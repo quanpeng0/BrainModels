@@ -108,7 +108,7 @@ def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise=0
             ST['V'] = V
             ST['y'] = y
             ST['z'] = z
-            ST['input'] = 0
+            ST['input'] = 0.
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 

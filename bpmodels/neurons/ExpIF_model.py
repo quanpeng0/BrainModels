@@ -86,7 +86,7 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
 
         def update(ST, _t):
             # update variables
-            ST['spike'] = 0
+            ST['spike'] = 0.
             ST['refractory'] = 1. if _t - \
                 ST['t_last_spike'] <= t_refractory else 0.
             if _t - ST['t_last_spike'] <= t_refractory:
@@ -96,7 +96,7 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
                 V = int_V(ST['V'], _t, ST['input'])
                 if V >= V_th:
                     V = V_reset
-                    ST['spike'] = 1
+                    ST['spike'] = 1.
                     ST['t_last_spike'] = _t
                 ST['V'] = V
             ST['input'] = 0.  # reset input here or it will be brought to next step
