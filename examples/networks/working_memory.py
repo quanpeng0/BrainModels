@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 import brainpy as bp
 import numpy as np
 import bpmodels
 import matplotlib.pyplot as plt
 import math
 from scipy.special import erf
-import pdb
 
 def rotate_distance(x, y):
     dist = np.abs(x - y)
@@ -244,7 +244,7 @@ plt.ylabel("weight w")
 plt.axhline(y = J_plus_E2E, ls = ":", c = "k", label = "J+")
 plt.axhline(y = J_neg_E2E, ls = ":", c = "k", label = "J-")
 plt.show()
-#print("Check constraints: ", JE2E.reshape((N_E, N_E)).sum(axis=0)[0], "should be equal to ", N_E)
+print("Check constraints: ", JE2E.reshape((N_E, N_E)).sum(axis=0)[0], "should be equal to ", N_E)
 for i in range(N_E):
     JE2E[i*N_E + i] = 0.
 JE2E = JE2E.reshape((N_E, N_E))  #for matrix mode
@@ -306,7 +306,7 @@ def run_simulation(input = None):
     neu_E.pars['R'] = R_E
     neu_E.pars['tau'] = tau_E
     neu_E.pars['t_refractory'] = t_refractory_E
-    neu_I = bp.NeuGroup(model = LIF, geometry = N_I, monitors = ['V'])
+    neu_I = bp.NeuGroup(model = LIF, geometry = N_I, monitors = ['V', 'input'])
     neu_I.set_schedule(['input', 'update', 'monitor', 'reset'])
     neu_I.pars['V_rest'] = V_rest_I
     neu_I.pars['V_reset'] = V_reset_I
