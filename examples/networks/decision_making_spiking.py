@@ -3,7 +3,6 @@ import brainpy as bp
 import numpy as np
 import bpmodels
 import matplotlib.pyplot as plt
-import pdb
 
 # set params
 # set global params
@@ -352,7 +351,7 @@ syn_back2I_AMPA.pars['tau_decay'] = tau_decay_AMPA
 ## def stimulus input
 # Note: inputs only given to A and B group
 mu_0 = 40.
-coherence = 12.8
+coherence = 25.6
 rou_A = mu_0/100.
 rou_B = mu_0/100.
 mu_A = mu_0 + rou_A * coherence
@@ -451,19 +450,33 @@ def compute_population_fr(data, time_window, time_step):
             pop_fr_group.append(spike_cnt_group[t - time_cnt:t].sum(axis = 0))
     return pop_fr_group
 
-fig, gs = bp.visualize.get_figure(3, 1, 4, 8)
+fig, gs = bp.visualize.get_figure(4, 1, 4, 8)
 
 fig.add_subplot(gs[0, 0])
 bp.visualize.raster_plot(net.ts, neu_E.mon.spike, 
                          markersize=1, ylim=[0, N_A])
+plt.xlabel("time")
+plt.ylabel("spike of group A")
 fig.add_subplot(gs[1, 0])
 bp.visualize.raster_plot(net.ts, neu_E.mon.spike,
                          markersize=1, ylim=[N_A, N_A + N_B])
+plt.xlabel("time")
+plt.ylabel("spike of group B")
 
 fig.add_subplot(gs[2, 0])
 pop_fr_A = compute_population_fr(neu_E.mon.spike[:, 0:N_A], time_window = 50., time_step = 5.)
 pop_fr_B = compute_population_fr(neu_E.mon.spike[:, N_A: N_A+N_B], time_window = 50., time_step = 5.)
-plt.bar(net.ts, pop_fr_A)
-plt.bar(net.ts, pop_fr_B)
+plt.bar(net.ts, pop_fr_A, label = "group A")
+plt.bar(net.ts, pop_fr_B, label = "group B")
+plt.xlabel("time")
+plt.ylabel("population activity")
+plt.legend()
+
+fig.add_subplot(gs[3, 0])
+plt.plot(net.ts, neu_input2A.mon.freq[:, 0], label = "group A")
+plt.plot(net.ts, neu_input2B.mon.freq[:, 0], label = "group B")
+plt.xlabel("time")
+plt.ylabel("input firing rate")
+plt.legend()
 
 plt.show()
