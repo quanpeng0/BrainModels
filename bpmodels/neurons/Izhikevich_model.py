@@ -190,24 +190,8 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
         return dfdt, dgdt
 
     if mode == 'scalar':
-
-        if np.any(t_refractory > 0.):
-
-            def update(ST, _t):
-                if (_t - ST['t_last_spike']) > t_refractory:
-                    V = int_V(ST['V'], _t, ST['u'], ST['input'])
-                    u = int_u(ST['u'], _t, ST['V'])
-                    if V >= V_th:
-                        V = c
-                        u += d
-                        ST['t_last_spike'] = _t
-                        ST['spike'] = 1.
-                    ST['V'] = V
-                    ST['u'] = u
-                    ST['input'] = 0.
-        else:
-            
-            def update(ST, _t):
+        def update(ST, _t):
+            if (_t - ST['t_last_spike']) > t_refractory:
                 V = int_V(ST['V'], _t, ST['u'], ST['input'])
                 u = int_u(ST['u'], _t, ST['V'])
                 if V >= V_th:
@@ -215,22 +199,31 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
                     u += d
                     ST['t_last_spike'] = _t
                     ST['spike'] = 1.
+                else:
+                    ST['spike'] = 0.
                 ST['V'] = V
                 ST['u'] = u
                 ST['input'] = 0.
+            else:
+                ST['spike'] = 0.
 
     elif mode == 'vector':
         def update(ST, _t):
             V = int_V(ST['V'], _t, ST['u'], ST['input'])
             u = int_u(ST['u'], _t, ST['V'])
-            if V >= V_th:
-                V = c
-                u += d
-                ST['t_last_spike'] = _t
-                ST['spike'] = 1.
+
+            is_ref = _t - ST['t_last_spike'] <= t_refractory
+            V = np.where(is_ref, ST['V'], V)
+            u = np.where(is_ref, ST['u'], u)
+
+            is_spike = V > V_th
+            V[is_spike] = c
+            u[is_spike] += d
+            is_ref[is_spike] = 1.
+            ST['t_last_spike'][is_spike] = _t
+
             ST['V'] = V
             ST['u'] = u
-            ST['refractory'] = is_ref
             ST['spike'] = is_spike
             ST['input'] = 0.  # reset input here or it will be brought to next step
     

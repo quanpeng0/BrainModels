@@ -89,6 +89,7 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
         def update(ST, _t):
             if _t - ST['t_last_spike'] <= t_refractory:
                 ST['refractory'] = 1.
+                ST['spike'] = 0.
             else:
                 ST['refractory'] = 0.
                 V = int_V(ST['V'], _t, ST['input'])

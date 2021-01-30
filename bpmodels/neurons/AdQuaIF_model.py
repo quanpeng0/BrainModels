@@ -99,6 +99,7 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
         def update(ST, _t):
             if _t - ST['t_last_spike'] <= t_refractory:
                 ST['refractory'] = 1.
+                ST['spike'] = 0.
             else:
                 ST['refractory'] = 0.
                 w = int_w(ST['w'], _t, ST['V'])
