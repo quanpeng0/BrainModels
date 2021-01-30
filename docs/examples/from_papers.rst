@@ -42,6 +42,16 @@ Working Memory
    from_papers/Bouchacourt_2019_Flexible_working_memory
 
 
+Decision Making
+===============
+
+.. toctree::
+   :maxdepth: 1
+
+   from_papers/wong_wang_2006_decision
+   from_papers/Wang_2002_decision_making_spiking
+   
+
 Others
 ======
 
@@ -49,4 +59,3 @@ Others
    :maxdepth: 1
 
    from_papers/Romain_2004_LIF_phase_locking
-   from_papers/wong_wang_2006_decision
