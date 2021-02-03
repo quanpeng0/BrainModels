@@ -23,15 +23,15 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
 
     V_th          20.            mV       Threshold potential of spike.
 
-    R             1.             /        Membrane resistance.
+    R             1.             \        Membrane resistance.
 
-    tau           10.            /        Membrane time constant. Compute by R * C.
+    tau           10.            \        Membrane time constant. Compute by R * C.
 
     t_refractory  5.             ms       Refractory period length.(ms)
 
-    noise         0.             /        noise.
+    noise         0.             \        noise.
 
-    mode          'scalar'       /        Data structure of ST members.
+    mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== =========================================
         
     Returns:
