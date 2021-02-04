@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+
 import brainpy as bp
 import numpy as np
 
-def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar', co_base = False):
+
+def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar', co_base=False):
     '''
     two_exponentials synapse model.
 
@@ -72,12 +74,12 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
                 Cambridge: Cambridge UP, 2011. 172-95. Print.
     '''
 
-    ST=bp.types.SynState(('g','s','x'), help='The conductance defined by exponential function.')
+    ST = bp.types.SynState(('g', 's', 'x'), help='The conductance defined by exponential function.')
 
     requires = {
         'pre': bp.types.NeuState(['spike'], help='pre-synaptic neuron state must have "V"'),
         'post': bp.types.NeuState(['input', 'V'], help='post-synaptic neuron state must include "input" and "V"')
-        }
+    }
 
     @bp.integrate
     def int_s(s, t, x):
@@ -85,7 +87,7 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
 
     @bp.integrate
     def int_x(x, t, s):
-        return (-(tau_decay+tau_rise) * x - s ) / (tau_decay*tau_rise)
+        return (-(tau_decay + tau_rise) * x - s) / (tau_decay * tau_rise)
 
     if mode == 'scalar':
         def update(ST, _t, pre):
@@ -102,13 +104,13 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
         @bp.delayed
         def output(ST, post):
             if co_base:
-                post['input'] += ST['g']* (post['V'] - E)
+                post['input'] += ST['g'] * (post['V'] - E)
             else:
                 post['input'] += ST['g']
 
     elif mode == 'vector':
-        requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post_slice_syn']=bp.types.Array(dim=2)
+        requires['pre2syn'] = bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
+        requires['post_slice_syn'] = bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             s = ST['s']
@@ -132,10 +134,10 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
             if co_base:
                 post['input'] += g * (post['V'] - E)
             else:
-                post['input'] += g 
+                post['input'] += g
 
     elif mode == 'matrix':
-        requires['conn_mat']=bp.types.MatConn()
+        requires['conn_mat'] = bp.types.MatConn()
 
         def update(ST, _t, pre, conn_mat):
             s = ST['s']
@@ -151,7 +153,7 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
         def output(ST, post):
             g = np.sum(ST['g'], axis=0)
             if co_base:
-                post['input'] += g* (post['V'] - E)
+                post['input'] += g * (post['V'] - E)
             else:
                 post['input'] += g
 
@@ -159,7 +161,7 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
     return bp.SynType(name='two_exponentials_synapse',
-                 requires=requires,
-                 ST=ST,
-                 steps=(update, output),
-                 mode = mode)
+                      requires=requires,
+                      ST=ST,
+                      steps=(update, output),
+                      mode=mode)

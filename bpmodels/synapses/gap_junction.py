@@ -3,6 +3,7 @@
 import brainpy as bp
 import numpy as np
 
+
 def get_gap_junction(mode='scalar'):
     """
     synapse with gap junction.
@@ -37,20 +38,20 @@ def get_gap_junction(mode='scalar'):
 
     """
 
-    ST=bp.types.SynState('w')
+    ST = bp.types.SynState('w')
 
     requires = dict(
         pre=bp.types.NeuState('V'),
         post=bp.types.NeuState(['V', 'input'])
     )
 
-    if mode=='scalar':
+    if mode == 'scalar':
         def update(ST, pre, post):
-            post['input'] += ST['w'] * (pre['V'] - post['V'])        
+            post['input'] += ST['w'] * (pre['V'] - post['V'])
 
     elif mode == 'vector':
-        requires['post2pre']=bp.types.ListConn(help='post-to-pre connection.')
-        requires['pre_ids']=bp.types.Array(dim=1, help='Pre-synaptic neuron indices.')
+        requires['post2pre'] = bp.types.ListConn(help='post-to-pre connection.')
+        requires['pre_ids'] = bp.types.Array(dim=1, help='Pre-synaptic neuron indices.')
 
         def update(ST, pre, post, post2pre, pre_ids):
             num_post = len(post2pre)
@@ -59,24 +60,24 @@ def get_gap_junction(mode='scalar'):
                 post['input'][post_id] += ST['w'] * np.sum(pre['V'][pre_id] - post['V'][post_id])
 
     elif mode == 'matrix':
-        requires['conn_mat']=bp.types.MatConn()
+        requires['conn_mat'] = bp.types.MatConn()
 
         def update(ST, pre, post, conn_mat):
             # reshape
             dim = np.shape(ST['w'])
-            v_post = np.vstack((post['V'],)*dim[0])
-            v_pre = np.vstack((pre['V'],)*dim[1]).T   
+            v_post = np.vstack((post['V'],) * dim[0])
+            v_pre = np.vstack((pre['V'],) * dim[1]).T
 
             # update         
-            post['input'] += ST['w'] * (v_pre - v_post) * conn_mat        
+            post['input'] += ST['w'] * (v_pre - v_post) * conn_mat
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
-    return bp.SynType(name='gap_junction_synapse', 
-                        ST=ST, requires=requires, 
-                        steps=update, 
-                        mode=mode)
+    return bp.SynType(name='gap_junction_synapse',
+                      ST=ST, requires=requires,
+                      steps=update,
+                      mode=mode)
 
 
 def get_gap_junction_lif(weight, k_spikelet=0.1, post_has_refractory=False, mode='scalar'):
@@ -113,7 +114,7 @@ def get_gap_junction_lif(weight, k_spikelet=0.1, post_has_refractory=False, mode
 
     """
 
-    ST=bp.types.SynState('w', 'spikelet')
+    ST = bp.types.SynState('w', 'spikelet')
 
     requires = dict(
         pre=bp.types.NeuState(['V', 'spike']),
@@ -131,11 +132,11 @@ def get_gap_junction_lif(weight, k_spikelet=0.1, post_has_refractory=False, mode
         def output(ST, post):
             post['V'] += ST['spikelet']
 
-        steps=(update, output)
+        steps = (update, output)
 
     elif mode == 'vector':
-        requires['pre2post']=bp.types.ListConn(help='post-to-synapse connection.'),
-        requires['pre_ids']=bp.types.Array(dim=1, help='Pre-synaptic neuron indices.'),
+        requires['pre2post'] = bp.types.ListConn(help='post-to-synapse connection.'),
+        requires['pre_ids'] = bp.types.Array(dim=1, help='Pre-synaptic neuron indices.'),
 
         if post_has_refractory:
             requires['post'] = bp.types.NeuState(['V', 'input', 'refractory'])
@@ -169,7 +170,7 @@ def get_gap_junction_lif(weight, k_spikelet=0.1, post_has_refractory=False, mode
                 post['V'] += spikelet
                 post['input'] += g_post
 
-        steps=update
+        steps = update
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))

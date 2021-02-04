@@ -3,6 +3,7 @@
 import brainpy as bp
 import numpy as np
 
+
 def get_AdQuaIF(a=1, b=.1, a_0=.07,
                 V_c=-50, V_rest=-65., V_reset=-68., V_th=-30.,
                 R=1., tau=10., tau_w=10.,
@@ -84,18 +85,17 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
                University Press, 2014.
     """
 
-    ST = bp.types.NeuState('V', 'w', 'input', 'spike', 'refractory', t_last_spike = -1e7)
-    
+    ST = bp.types.NeuState('V', 'w', 'input', 'spike', 'refractory', t_last_spike=-1e7)
 
     @bp.integrate
     def int_V(V, t, w, I_ext):
-        return (a_0* (V - V_rest)*(V-V_c) - R * w + R * I_ext) / tau, noise / tau
+        return (a_0 * (V - V_rest) * (V - V_c) - R * w + R * I_ext) / tau, noise / tau
 
     @bp.integrate
     def int_w(w, t, V):
-        return (a* (V - V_rest)-w) / tau_w, noise / tau_w
+        return (a * (V - V_rest) - w) / tau_w, noise / tau_w
 
-    if mode=='scalar':
+    if mode == 'scalar':
         def update(ST, _t):
             if _t - ST['t_last_spike'] <= t_refractory:
                 ST['refractory'] = 1.
@@ -128,12 +128,12 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
             w[is_spike] += b
             is_ref[is_spike] = 1.
             ST['t_last_spike'][is_spike] = _t
-            
+
             ST['V'] = V
             ST['w'] = w
             ST['spike'] = is_spike
             ST['refractory'] = is_ref
-            ST['input'] = 0. 
+            ST['input'] = 0.
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
@@ -141,4 +141,4 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
     return bp.NeuType(name='AdQuaIF_neuron',
                       ST=ST,
                       steps=update,
-                      mode=mode)    
+                      mode=mode)

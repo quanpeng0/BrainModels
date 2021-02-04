@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 import brainpy as bp
 import numpy as np
+
 
 def get_voltage_jump(post_has_refractory=False, mode='scalar'):
     """Voltage jump synapses without post-synaptic neuron refractory.
@@ -28,7 +31,6 @@ def get_voltage_jump(post_has_refractory=False, mode='scalar'):
     
   
     """
-    
 
     requires = dict(
         pre=bp.types.NeuState(['spike'])
@@ -48,8 +50,8 @@ def get_voltage_jump(post_has_refractory=False, mode='scalar'):
         def output(ST, post):
             post['V'] += ST['s']
 
-    if mode=='vector':
-        requires['pre2post']=bp.types.ListConn()
+    if mode == 'vector':
+        requires['pre2post'] = bp.types.ListConn()
 
         def update(ST, pre, post, pre2post):
             num_post = post['V'].shape[0]
@@ -60,14 +62,14 @@ def get_voltage_jump(post_has_refractory=False, mode='scalar'):
                 s[post_ids] = 1.
             ST['s'] = s
 
-    elif mode=='scalar':
+    elif mode == 'scalar':
 
         def update(ST, pre):
             ST['s'] = 0.
             if pre['spike'] > 0.:
-                ST['s'] = 1.        
+                ST['s'] = 1.
 
-    elif mode=='matrix':
+    elif mode == 'matrix':
         def update(ST, pre):
             ST['s'] += pre['spike'].reshape((-1, 1))
 
@@ -75,7 +77,7 @@ def get_voltage_jump(post_has_refractory=False, mode='scalar'):
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
     return bp.SynType(name='voltage_jump_synapse',
-                      ST=bp.types.SynState(['s']), 
+                      ST=bp.types.SynState(['s']),
                       requires=requires,
                       steps=(update, output),
-                      mode = mode)
+                      mode=mode)

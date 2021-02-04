@@ -3,8 +3,9 @@
 import brainpy as bp
 import numpy as np
 
-def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57, 
-            cc_Mg=1.2, tau_decay=100., a=0.5, tau_rise=2., mode = 'scalar'):
+
+def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
+             cc_Mg=1.2, tau_decay=100., a=0.5, tau_rise=2., mode='scalar'):
     """NMDA conductance-based synapse.
 
     .. math::
@@ -86,7 +87,7 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
     def int_s(s, t, x):
         return -s / tau_decay + a * x * (1 - s)
 
-    ST=bp.types.SynState({'s': 0., 'x': 0., 'g': 0.})
+    ST = bp.types.SynState({'s': 0., 'x': 0., 'g': 0.})
 
     requires = dict(
         pre=bp.types.NeuState(['spike']),
@@ -108,8 +109,8 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
             post['input'] -= ST['g'] * (post['V'] - E) / g_inf
 
     elif mode == 'vector':
-        requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post_slice_syn']=bp.types.Array(dim=2)
+        requires['pre2syn'] = bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
+        requires['post_slice_syn'] = bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             for pre_id in range(len(pre2syn)):
@@ -125,16 +126,16 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
         @bp.delayed
         def output(ST, post, post_slice_syn):
             g_inf = 1 + cc_Mg / beta * np.exp(-alpha * post['V'])
-            
+
             num_post = post_slice_syn.shape[0]
             g = np.zeros(num_post, dtype=np.float_)
             for post_id in range(num_post):
                 pos = post_slice_syn[post_id]
-                g[post_id] = np.sum(ST['g'][pos[0]: pos[1]])  
+                g[post_id] = np.sum(ST['g'][pos[0]: pos[1]])
             post['input'] -= g * (post['V'] - E) / g_inf
 
     elif mode == 'matrix':
-        requires['conn_mat']=bp.types.MatConn()
+        requires['conn_mat'] = bp.types.MatConn()
 
         def update(ST, _t, pre, conn_mat):
             x = int_x(ST['x'], _t)
@@ -153,9 +154,7 @@ def get_NMDA(g_max=0.15, E=0, alpha=0.062, beta=3.57,
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
-
     return bp.SynType(name='NMDA_synapse',
                       ST=ST, requires=requires,
                       steps=(update, output),
-                      mode = mode)
-
+                      mode=mode)

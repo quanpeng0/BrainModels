@@ -3,7 +3,8 @@
 import brainpy as bp
 import numpy as np
 
-def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
+
+def get_STP(U=0.15, tau_f=1500., tau_d=200., mode='scalar'):
     """Short-term plasticity proposed by Tsodyks and Markram (Tsodyks 98) [1]_.
 
     The model is given by
@@ -79,7 +80,7 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
     def int_x(x, t):
         return (1 - x) / tau_d
 
-    ST=bp.types.SynState({'u': 0., 'x': 1., 'w': 1., 'g': 0.})
+    ST = bp.types.SynState({'u': 0., 'x': 1., 'w': 1., 'g': 0.})
 
     requires = dict(
         pre=bp.types.NeuState(['spike']),
@@ -91,7 +92,7 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
             u = int_u(ST['u'], _t)
             x = int_x(ST['x'], _t)
             if pre['spike'] > 0.:
-                u += U * (1-ST['u'])
+                u += U * (1 - ST['u'])
                 x -= u * ST['x']
             ST['u'] = np.clip(u, 0., 1.)
             ST['x'] = np.clip(x, 0., 1.)
@@ -102,8 +103,8 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
             post['input'] += ST['g']
 
     elif mode == 'vector':
-        requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post_slice_syn']=bp.types.Array(dim=2)
+        requires['pre2syn'] = bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
+        requires['post_slice_syn'] = bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             u = int_u(ST['u'], _t)
@@ -127,7 +128,7 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
                 post['input'] += g
 
     elif mode == 'matrix':
-        requires['conn_mat']=bp.types.MatConn()
+        requires['conn_mat'] = bp.types.MatConn()
 
         def update(ST, _t, pre, conn_mat):
             u = int_u(ST['u'], _t)
@@ -153,4 +154,4 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode = 'scalar'):
     return bp.SynType(name='STP_synapse',
                       ST=ST, requires=requires,
                       steps=(update, output),
-                      mode = mode)
+                      mode=mode)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import brainpy as bp
+
 
 def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise=0., mode='vector'):
     """
@@ -100,19 +100,16 @@ def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise=0
     def int_z(z, t, V):
         return r * (s * (V - V_rest) - z)
 
-    if mode == 'scalar' or mode == 'vector':
-        def update(ST, _t):
-            V = int_V(ST['V'], _t, ST['y'], ST['z'], ST['input'])
-            y = int_y(ST['y'], _t, ST['V'])
-            z = int_z(ST['z'], _t, ST['V'])
-            ST['V'] = V
-            ST['y'] = y
-            ST['z'] = z
-            ST['input'] = 0.
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
+    def update(ST, _t):
+        V = int_V(ST['V'], _t, ST['y'], ST['z'], ST['input'])
+        y = int_y(ST['y'], _t, ST['V'])
+        z = int_z(ST['z'], _t, ST['V'])
+        ST['V'] = V
+        ST['y'] = y
+        ST['z'] = z
+        ST['input'] = 0.
 
     return bp.NeuType(name="HindmarshRose_neuron",
                       ST=ST,
                       steps=update,
-                      mode=mode)
+                      mode='scalar')

@@ -110,7 +110,7 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
             ST['input'] = 0.  # reset input here or it will be brought to next step
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
-    
+
     return bp.NeuType(name='LIF_neuron',
                       ST=ST,
                       steps=update,
