@@ -92,7 +92,7 @@ neuron = get_Izhikevich()
 # bp.visualize.line_plot(group.mon.ts, group.mon.V, ylabel='Potential (mV)')
 # bp.visualize.line_plot(group.mon.ts, group.mon.u, ylabel='u', show=True)
 
-analyzer = bp.PhasePortraitAnalyzer(
+analyzer = bp.analysis.PhasePlane(
     model=neuron,
     target_vars=OrderedDict(V=[-100, 40], u=[-40., 40.]),
     fixed_vars={'Isyn': 30.})
@@ -100,6 +100,7 @@ plt.axvline(Vth, label='threshold')
 analyzer.plot_nullcline()
 analyzer.plot_vector_field()
 analyzer.plot_fixed_point()
-analyzer.plot_trajectory([(-10, 0., 100.), (-10, 0., (50, 100.))],
+analyzer.plot_trajectory([{'V': -10, 'u': 0.}, {'V': 50, 'u': 0.})],
+                         duration=100.,
                          inputs=('ST.input', 30.),
                          show=True)
