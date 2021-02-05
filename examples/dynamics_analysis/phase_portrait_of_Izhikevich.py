@@ -100,7 +100,7 @@ plt.axvline(Vth, label='threshold')
 analyzer.plot_nullcline()
 analyzer.plot_vector_field()
 analyzer.plot_fixed_point()
-analyzer.plot_trajectory([{'V': -10, 'u': 0.}, {'V': 50, 'u': 0.})],
+analyzer.plot_trajectory([{'V': -10, 'u': 0.}, {'V': 50, 'u': 0.}],
                          duration=100.,
                          inputs=('ST.input', 30.),
                          show=True)
