@@ -3,6 +3,7 @@
 import brainpy as bp
 import numpy as np
 
+
 def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
               a_0=.07, V_c=-50, R=1., tau=10.,
               t_refractory=0., noise=0., mode='scalar'):
@@ -114,11 +115,11 @@ def get_QuaIF(V_rest=-65., V_reset=-68., V_th=-30.,
             V[is_spike] = V_reset
             is_ref[is_spike] = 1.
             ST['t_last_spike'][is_spike] = _t
-            
+
             ST['V'] = V
             ST['spike'] = is_spike
             ST['refractory'] = is_ref
-            ST['input'] = 0. 
+            ST['input'] = 0.
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 

@@ -65,35 +65,36 @@ bp.visualize.line_plot(group.mon.ts, group.mon.z, legend='z', show=True)
 
 
 # phase plane analysis
-analyzer = bp.PhasePortraitAnalyzer(
+analyzer = bp.analysis.PhasePlane(
     model=neuron,
     target_vars={'x': [-3, 3], 'y': [-10., 5.]},
     fixed_vars={'Isyn': 1., 'z': 0.})
 analyzer.plot_nullcline()
 analyzer.plot_vector_field()
 analyzer.plot_fixed_point()
-analyzer.plot_trajectory([(0., 0., 100.)],
+analyzer.plot_trajectory([{'x': 0., 'y': 0.}],
+                         duration=100.,
                          inputs=('ST.input', 1.),
                          show=True)
 
 
 # codimension 1 bifurcation analysis
-analyzer = bp.BifurcationAnalyzer(
+analyzer = bp.analysis.Bifurcation(
     model=neuron,
     target_pars={'Isyn': [0., 1.]},
-    dynamical_vars={'x': [-3, 3], 'y': [-10., 5.]},
+    target_vars={'x': [-3, 3], 'y': [-10., 5.]},
     fixed_vars={'z': 0.},
-    par_resolution=0.0001,
+    numerical_resolution=0.0001,
 )
-analyzer.plot_bifurcation(plot_vars=['x'], show=True)
+analyzer.plot_bifurcation(show=True)
 
 
 # codimension 2 bifurcation analysis
-analyzer = bp.BifurcationAnalyzer(
+analyzer = bp.analysis.Bifurcation(
     model=neuron,
     target_pars={'Isyn': [0., 1.], 'a': [0.5, 1.5]},
-    dynamical_vars={'x': [-3, 3], 'y': [-10., 5.]},
+    target_vars={'x': [-3, 3], 'y': [-10., 5.]},
     fixed_vars={'z': 0.},
-    par_resolution=0.01,
+    numerical_resolution=0.01,
 )
-analyzer.plot_bifurcation(plot_vars=['x'], show=True)
+analyzer.plot_bifurcation(show=True)

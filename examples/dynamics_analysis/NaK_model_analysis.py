@@ -122,26 +122,27 @@ NaK_neuron = get_NaK_model()
 # ---------
 
 
-analyzer = bp.PhasePortraitAnalyzer(
+analyzer = bp.analysis.PhasePlane(
     model=NaK_neuron,
     target_vars=OrderedDict(V=[-90, 20], n=[0., 1.]),
     fixed_vars={'input': 50., 'inp': 50.})
 analyzer.plot_nullcline()
 analyzer.plot_vector_field()
 analyzer.plot_fixed_point()
-analyzer.plot_trajectory([(-10, 0.2, 100.), (-80, 0.4, 100.)],
+analyzer.plot_trajectory([{'V': -10, 'n': 0.2}, {'V': -80, 'n': 0.4}],
+                         duration=100.,
                          show=True)
 
 # ------
 # Codimension 1 bifurcation analysis
 # ------
 
-analyzer = bp.BifurcationAnalyzer(
+analyzer = bp.analysis.Bifurcation(
     model=get_NaK_model(),
     target_pars={'input': [0, 50.]},
-    dynamical_vars={"V": [-90., 20.], 'n': [0., 1.]},
-    par_resolution=0.1)
-analyzer.plot_bifurcation(plot_vars='V', show=True)
+    target_vars={"V": [-90., 20.], 'n': [0., 1.]},
+    numerical_resolution=0.1)
+analyzer.plot_bifurcation(show=True)
 
 
 # ------
@@ -149,11 +150,11 @@ analyzer.plot_bifurcation(plot_vars='V', show=True)
 # ------
 
 
-analyzer = bp.BifurcationAnalyzer(
+analyzer = bp.analysis.Bifurcation(
     model=get_NaK_model(),
     target_pars={'input': [0, 50.], 'Vn_half': [-50, -40]},
-    dynamical_vars={"V": [-90., 20.], 'n': [0., 1.]},
-    par_resolution=0.1)
+    target_vars={"V": [-90., 20.], 'n': [0., 1.]},
+    numerical_resolution=0.1)
 
-analyzer.plot_bifurcation(plot_vars='V', show=True)
+analyzer.plot_bifurcation(show=True)
 

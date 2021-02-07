@@ -30,9 +30,9 @@ def define_model():
                       steps=update)
 
 
-analyzer = bp.BifurcationAnalyzer(
+analyzer = bp.analysis.Bifurcation(
     model=define_model(),
     target_pars={'mu': [-4, 4], 'lambd': [-1, 4]},
-    dynamical_vars={'x': [-3, 3]},
-    par_resolution=0.1)
-analyzer.plot_bifurcation(plot_vars=['x'], show=True)
+    target_vars={'x': [-3, 3]},
+    numerical_resolution=0.1)
+analyzer.plot_bifurcation(show=True)

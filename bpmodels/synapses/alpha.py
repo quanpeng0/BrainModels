@@ -82,7 +82,7 @@ def get_alpha(tau_decay=2., g_max=.2, E=0.,
 
     @bp.integrate
     def int_x(x, t, s):
-        return (-2 * tau_decay * x - s) / (tau_decay**2)
+        return (-2 * tau_decay * x - s) / (tau_decay ** 2)
 
     if mode == 'scalar':
         def update(ST, _t, pre):

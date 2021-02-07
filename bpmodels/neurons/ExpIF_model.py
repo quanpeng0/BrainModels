@@ -2,7 +2,6 @@
 
 import brainpy as bp
 import numpy as np
-import sys
 
 
 def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
@@ -88,7 +87,7 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
             # update variables
             ST['spike'] = 0.
             ST['refractory'] = 1. if _t - \
-                ST['t_last_spike'] <= t_refractory else 0.
+                                     ST['t_last_spike'] <= t_refractory else 0.
             if _t - ST['t_last_spike'] <= t_refractory:
                 ST['refractory'] = 1.
             else:

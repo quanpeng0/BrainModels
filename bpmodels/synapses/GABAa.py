@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
 import numpy as np
-import sys
 
 
 def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
@@ -106,8 +105,8 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
         def update(ST, _t, pre, conn_mat):
             s = int_s(ST['s'], _t)
             for i in range(pre['spike'].shape[0]):
-            	if pre['spike'][i] > 0.:
-	                s[i] += conn_mat[i]
+                if pre['spike'][i] > 0.:
+                    s[i] += conn_mat[i]
             ST['s'] = s
             ST['g'] = g_max * s
 

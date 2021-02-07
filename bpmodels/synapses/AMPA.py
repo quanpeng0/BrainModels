@@ -3,7 +3,8 @@
 import brainpy as bp
 import numpy as np
 
-def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
+
+def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode='scalar'):
     """AMPA conductance-based synapse (type 1).
 
     .. math::
@@ -55,7 +56,7 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
     def ints(s, t):
         return - s / tau_decay
 
-    ST=bp.types.SynState(['s', 'g'], help='AMPA synapse state.')
+    ST = bp.types.SynState(['s', 'g'], help='AMPA synapse state.')
 
     requires = {
         'pre': bp.types.NeuState(['spike'], help='Pre-synaptic neuron state must have "spike" item.'),
@@ -75,8 +76,8 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
             post['input'] += post_val
 
     elif mode == 'vector':
-        requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post_slice_syn']=bp.types.Array(dim=2)
+        requires['pre2syn'] = bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
+        requires['post_slice_syn'] = bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             s = ints(ST['s'], _t)
@@ -97,7 +98,7 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
             post['input'] -= g * (post['V'] - E)
 
     elif mode == 'matrix':
-        requires['conn_mat']=bp.types.MatConn()
+        requires['conn_mat'] = bp.types.MatConn()
 
         def update(ST, _t, pre, conn_mat):
             s = ints(ST['s'], _t)
@@ -113,15 +114,13 @@ def get_AMPA1(g_max=0.10, E=0., tau_decay=2.0, mode = 'scalar'):
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
-
     return bp.SynType(name='AMPA_synapse',
                       ST=ST, requires=requires,
                       steps=(update, output),
-                      mode = mode)
+                      mode=mode)
 
 
-
-def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mode = 'scalar'):
+def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mode='scalar'):
     """AMPA conductance-based synapse (type 2).
 
     .. math::
@@ -180,10 +179,10 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
     def int_s(s, t, TT):
         return alpha * TT * (1 - s) - beta * s
 
-    ST=bp.types.SynState({'s': 0., 't_last_pre_spike': -1e7, 'g': 0.},
-                             help='AMPA synapse state.\n'
-                                  '"s": Synaptic state.\n'
-                                  '"t_last_pre_spike": Pre-synaptic neuron spike time.')
+    ST = bp.types.SynState({'s': 0., 't_last_pre_spike': -1e7, 'g': 0.},
+                           help='AMPA synapse state.\n'
+                                '"s": Synaptic state.\n'
+                                '"t_last_pre_spike": Pre-synaptic neuron spike time.')
 
     requires = dict(
         pre=bp.types.NeuState(['spike'], help='Pre-synaptic neuron state must have "spike" item.'),
@@ -205,8 +204,8 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
             post['input'] += post_val
 
     elif mode == 'vector':
-        requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post_slice_syn']=bp.types.Array(dim=2)
+        requires['pre2syn'] = bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
+        requires['post_slice_syn'] = bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             for i in np.where(pre['spike'] > 0.)[0]:
@@ -228,7 +227,7 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
 
 
     elif mode == 'matrix':
-        requires['conn_mat']=bp.types.MatConn()
+        requires['conn_mat'] = bp.types.MatConn()
 
         def update(ST, _t, pre, conn_mat):
             spike_idxs = np.where(pre['spike'] > 0.)[0]
@@ -249,4 +248,4 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
     return bp.SynType(name='AMPA_synapse',
                       ST=ST, requires=requires,
                       steps=(update, output),
-                      mode = mode)
+                      mode=mode)

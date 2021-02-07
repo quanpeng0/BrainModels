@@ -3,7 +3,7 @@ import brainpy as bp
 import numpy as np
 
 
-def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base = False):
+def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base=False):
     '''
     Single Exponential decay synapse model.
 
@@ -88,13 +88,13 @@ def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base = False
         @bp.delayed
         def output(ST, post):
             if co_base:
-                post['input'] += ST['g']* (post['V'] - E)
+                post['input'] += ST['g'] * (post['V'] - E)
             else:
                 post['input'] += ST['g']
 
     elif mode == 'vector':
-        requires['pre2syn']=bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post_slice_syn']=bp.types.Array(dim=2)
+        requires['pre2syn'] = bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
+        requires['post_slice_syn'] = bp.types.Array(dim=2)
 
         def update(ST, _t, pre, pre2syn):
             s = int_s(ST['s'], _t)
@@ -115,10 +115,10 @@ def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base = False
             if co_base:
                 post['input'] += g * (post['V'] - E)
             else:
-                post['input'] += g 
+                post['input'] += g
 
     elif mode == 'matrix':
-        requires['conn_mat']=bp.types.MatConn()
+        requires['conn_mat'] = bp.types.MatConn()
 
         def update(ST, _t, pre, conn_mat):
             s = int_s(ST['s'], _t)
@@ -130,15 +130,14 @@ def get_exponential(tau_decay=8., g_max=.1, E=0., mode='scalar', co_base = False
         def output(ST, post):
             g = np.sum(ST['g'], axis=0)
             if co_base:
-                post['input'] += g* (post['V'] - E)
+                post['input'] += g * (post['V'] - E)
             else:
                 post['input'] += g
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
-
     return bp.SynType(name='exponential_synapse',
                       ST=ST, requires=requires,
                       steps=(update, output),
-                      mode = mode)
+                      mode=mode)

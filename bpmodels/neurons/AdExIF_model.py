@@ -114,7 +114,7 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
                 ST['V'] = V
                 ST['w'] = w
             ST['input'] = 0.
-        
+
     elif mode == 'vector':
         def update(ST, _t):
             w = int_w(ST['w'], _t, ST['V'])
@@ -128,17 +128,17 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
             w[is_spike] += b
             is_ref[is_spike] = 1.
             ST['t_last_spike'][is_spike] = _t
-            
+
             ST['V'] = V
             ST['w'] = w
             ST['spike'] = is_spike
             ST['refractory'] = is_ref
-            ST['input'] = 0. 
+            ST['input'] = 0.
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 
     return bp.NeuType(name='AdExIF_neuron',
-                            ST=ST,
-                            steps=update,
-                            mode=mode)
+                      ST=ST,
+                      steps=update,
+                      mode=mode)

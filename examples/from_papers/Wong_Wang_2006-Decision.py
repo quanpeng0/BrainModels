@@ -62,14 +62,16 @@ def stimulus(coh, mu0=30., JAext=.00117):
 
 I1, I2 = stimulus(coh=.512)
 
-analyzer = bp.PhasePortraitAnalyzer(
+analyzer = bp.analysis.PhasePlane(
     model=decision_model(),
     target_vars=OrderedDict(s2=[0., 1.], s1=[0., 1.]),
     fixed_vars={'I1': I1, 'I2':I2},
-    options={'resolution': 0.001,
-            'escape_sympy_solver': True}
+    numerical_resolution=0.001,
+    options={'escape_sympy_solver': True}
 )
 
 analyzer.plot_vector_field()
-analyzer.plot_nullcline()
+analyzer.plot_nullcline(numerical_setting={
+                        'int_s1':dict(coords='s1-s2'), 
+                        'int_s2':dict(coords='s2-s1')})
 analyzer.plot_fixed_point(show=True)

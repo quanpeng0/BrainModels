@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-import sys
 
 import brainpy as bp
 import numpy as np
@@ -226,7 +225,7 @@ def get_Izhikevich(a=0.02, b=0.20, c=-65., d=8., t_refractory=0., noise=0., V_th
             ST['u'] = u
             ST['spike'] = is_spike
             ST['input'] = 0.  # reset input here or it will be brought to next step
-    
+
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
 

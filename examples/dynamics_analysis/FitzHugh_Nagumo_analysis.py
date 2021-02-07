@@ -42,33 +42,34 @@ neuron = get_model()
 
 
 # phase plane analysis
-analyzer = bp.PhasePortraitAnalyzer(
+analyzer = bp.analysis.PhasePlane(
     model=neuron,
     target_vars={'v': [-3, 3], 'w': [-3., 3.]},
     fixed_vars={'Iext': 0.8})
 analyzer.plot_nullcline()
 analyzer.plot_vector_field()
 analyzer.plot_fixed_point()
-analyzer.plot_trajectory([(-2.8, -1.8, 100.)],
+analyzer.plot_trajectory([{'v': -2.8, 'w': -1.8}],
+                         duration=100.,
                          inputs=('ST.input', 0.8),
                          show=True)
 
 
 # codimension 1 bifurcation analysis
-analyzer = bp.BifurcationAnalyzer(
+analyzer = bp.analysis.Bifurcation(
     model=neuron,
     target_pars={'Iext': [0., 1.]},
-    dynamical_vars={'v': [-3, 3], 'w': [-3., 3.]},
-    par_resolution=0.001,
+    target_vars={'v': [-3, 3], 'w': [-3., 3.]},
+    numerical_resolution=0.001,
 )
-analyzer.plot_bifurcation(plot_vars=['v'], show=True)
+analyzer.plot_bifurcation(show=True)
 
 
 # codimension 2 bifurcation analysis
-analyzer = bp.BifurcationAnalyzer(
+analyzer = bp.analysis.Bifurcation(
     model=neuron,
     target_pars={'a': [0.5, 1.], 'Iext': [0., 1.]},
-    dynamical_vars={'v': [-3, 3], 'w': [-3., 3.]},
-    par_resolution=0.01,
+    target_vars={'v': [-3, 3], 'w': [-3., 3.]},
+    numerical_resolution=0.01,
 )
-analyzer.plot_bifurcation(plot_vars=['v'], show=True)
+analyzer.plot_bifurcation(show=True)

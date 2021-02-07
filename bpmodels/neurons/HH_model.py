@@ -162,7 +162,6 @@ def get_HH(V_th=V_THRESHOLD, C=C, E_Na=E_NA, E_K=E_K,
             ST['h'] = h
             ST['n'] = n
             ST['input'] = 0.  # reset input
-    
 
     elif mode == 'vector':
         def update(ST, _t):
@@ -180,7 +179,7 @@ def get_HH(V_th=V_THRESHOLD, C=C, E_Na=E_NA, E_K=E_K,
     else:
         raise ValueError
 
-    return  bp.NeuType(name='HH_neuron',
-                        ST=ST,
-                        steps=update,
-                        mode=mode)
+    return bp.NeuType(name='HH_neuron',
+                      ST=ST,
+                      steps=update,
+                      mode=mode)
