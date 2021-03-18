@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 print("version：", bp.__version__)
 ## set global params
-dt = 0.125  # update variables per <dt> ms
+dt = 0.01  # update variables per <dt> ms
 duration = 350.  # simulate duration
 bp.profile.set(jit=True, dt=dt, merge_steps=True, show_code=False)
 
