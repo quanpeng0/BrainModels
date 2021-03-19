@@ -17,7 +17,7 @@ def get_voltage_jump(post_has_refractory=False, mode='scalar'):
     =============== ================= =========================================================
     **Member name** **Initial Value** **Explanation**
     --------------- ----------------- ---------------------------------------------------------
-    g               0.                Synapse conductance on post-synaptic neuron.
+    s               0.                Gating variable of the post-synaptic neuron.
     =============== ================= =========================================================
     
     Note that all ST members are saved as floating point type in BrainPy, 
@@ -63,7 +63,6 @@ def get_voltage_jump(post_has_refractory=False, mode='scalar'):
             ST['s'] = s
 
     elif mode == 'scalar':
-
         def update(ST, pre):
             ST['s'] = 0.
             if pre['spike'] > 0.:
