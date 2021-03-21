@@ -205,26 +205,18 @@ print(f"the structured weight is: w_pos = {w_pos}, w_neg = {w_neg}")
 # inside select group: w = w+
 # between group / from non-select group to select group: w = w-
 # A2A B2B w+, A2B B2A w-, non2A non2B w-
-weight_NMDA = np.ones((N_E, N_E), dtype=np.float)
+weight = np.ones((N_E, N_E), dtype=np.float)
 for i in range(N_A):
-    weight_NMDA[i, 0: N_A] = w_pos
-    weight_NMDA[i, N_A: N_A + N_B] = w_neg
+    weight[i, 0: N_A] = w_pos
+    weight[i, N_A: N_A + N_B] = w_neg
 for i in range(N_A, N_A+N_B):
-    weight_NMDA[i, N_A: N_A + N_B] = w_pos
-    weight_NMDA[i, 0: N_A] = w_neg
+    weight[i, N_A: N_A + N_B] = w_pos
+    weight[i, 0: N_A] = w_neg
 for i in range(N_A + N_B, N_E):
-    weight_NMDA[i, 0: N_A + N_B] = w_neg
-
-weight_AMPA = np.ones((N_E, N_E), dtype=np.float)
-for i in range(N_A):
-    weight_AMPA[i, 0: N_A] = w_pos
-    weight_AMPA[i, N_A: N_A + N_B] = w_neg
-for i in range(N_A, N_A+N_B):
-    weight_AMPA[i, N_A: N_A + N_B] = w_pos
-    weight_AMPA[i, 0: N_A] = w_neg
+    weight[i, 0: N_A + N_B] = w_neg
 
 # Note: here use different weights for AMPA and NMDA
-print(f"Check contraints: Weight sum {weight_NMDA.sum(axis=0)[0]} \
+print(f"Check contraints: Weight sum {weight.sum(axis=0)[0]} \
         should be equal to N_E = {N_E}")
 
 # set background params
@@ -275,7 +267,7 @@ syn_E2E_AMPA = bp.SynConn(model=AMPA_syn,
                           pre_group=neu_E, post_group=neu_E,
                           conn=bp.connect.All2All(),
                           delay=delay_syn)
-syn_E2E_AMPA.pars['g_max'] = g_max_E2E_AMPA * weight_NMDA
+syn_E2E_AMPA.pars['g_max'] = g_max_E2E_AMPA * weight
 syn_E2E_AMPA.pars['E'] = E_AMPA
 syn_E2E_AMPA.pars['tau_decay'] = tau_decay_AMPA
 
@@ -283,7 +275,7 @@ syn_E2E_NMDA = bp.SynConn(model=NMDA_syn,
                           pre_group=neu_E, post_group=neu_E,
                           conn=bp.connect.All2All(),
                           delay=delay_syn)
-syn_E2E_NMDA.pars['g_max'] = g_max_E2E_NMDA * weight_NMDA
+syn_E2E_NMDA.pars['g_max'] = g_max_E2E_NMDA * weight
 syn_E2E_NMDA.pars['E'] = E_NMDA
 syn_E2E_NMDA.pars['alpha'] = alpha_NMDA
 syn_E2E_NMDA.pars['beta'] = beta_NMDA
