@@ -4,7 +4,7 @@ import brainpy as bp
 import numpy as np
 
 
-def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar', co_base=False):
+def get_two_exponentials(g_max=.2, E=0., tau_1=1., tau_2=3., mode='scalar', co_base=False):
     '''
     two_exponentials synapse model.
 
@@ -12,7 +12,7 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
 
         &\\frac {ds} {dt} = x
         
-        \\tau_{rise} \\tau_{decay} \\frac {dx}{dt} = - & (\\tau_{rise}+\\tau_{decay})x 
+        \\tau_{1} \\tau_{2} \\frac {dx}{dt} = - & (\\tau_{1}+\\tau_{2})x 
         -s + \\sum \\delta(t-t^f)
 
 
@@ -35,9 +35,9 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
     ============= ============== ======== ===================================================================================
     **Parameter** **Init Value** **Unit** **Explanation**
     ------------- -------------- -------- -----------------------------------------------------------------------------------
-    tau_decay     3.             ms       The time constant of decay.
+    tau_1         1.             ms       Time constant.
 
-    tau_rise      1.             ms       The time to peak of the conductance change.
+    tau_2         3.             ms       Time constant.
 
     g_max         .2             µmho(µS) Maximum conductance.
 
@@ -87,7 +87,7 @@ def get_two_exponentials(g_max=.2, E=0., tau_decay=3., tau_rise=1., mode='scalar
 
     @bp.integrate
     def int_x(x, t, s):
-        return (-(tau_decay + tau_rise) * x - s) / (tau_decay * tau_rise)
+        return (-(tau_1 + tau_2) * x - s) / (tau_1 * tau_2)
 
     if mode == 'scalar':
         def update(ST, _t, pre):
