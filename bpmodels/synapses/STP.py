@@ -4,7 +4,7 @@ import brainpy as bp
 import numpy as np
 
 
-def get_STP(U=0.15, tau_f=1500., tau_d=200., mode='scalar'):
+def get_STP(U=0.15, tau_f=1500., tau_d=200., tau_s=8, mode='scalar'):
     """Short-term plasticity proposed by Tsodyks and Markram (Tsodyks 98) [1]_.
 
     The model is given by
@@ -79,8 +79,12 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode='scalar'):
     @bp.integrate
     def int_x(x, t):
         return (1 - x) / tau_d
+    
+    @bp.integrate
+    def int_s(s, t):
+        return -s / tau_s
 
-    ST = bp.types.SynState({'u': 0., 'x': 1., 'w': 1., 'g': 0.})
+    ST = bp.types.SynState({'u': 0., 'x': 1., 'w': 1., 's': 0.})
 
     requires = dict(
         pre=bp.types.NeuState(['spike']),
@@ -91,16 +95,20 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode='scalar'):
         def update(ST, _t, pre):
             u = int_u(ST['u'], _t)
             x = int_x(ST['x'], _t)
+            s = int_s(ST['s'], _t)
             if pre['spike'] > 0.:
                 u += U * (1 - ST['u'])
+                u = np.clip(u, 0., 1.)
                 x -= u * ST['x']
-            ST['u'] = np.clip(u, 0., 1.)
-            ST['x'] = np.clip(x, 0., 1.)
-            ST['g'] = ST['w'] * ST['u'] * ST['x']
+                x = np.clip(x, 0., 1.)
+                s += ST['w'] * u * x
+            ST['u'] = u
+            ST['x'] = x
+            ST['s'] = s
 
         @bp.delayed
         def output(ST, post):
-            post['input'] += ST['g']
+            post['input'] += ST['s']
 
     elif mode == 'vector':
         requires['pre2syn'] = bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
@@ -109,14 +117,18 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode='scalar'):
         def update(ST, _t, pre, pre2syn):
             u = int_u(ST['u'], _t)
             x = int_x(ST['x'], _t)
+            s = int_s(ST['s'], _t)
             for pre_id in np.where(pre['spike'] > 0.)[0]:
                 syn_ids = pre2syn[pre_id]
                 u_syn = u[syn_ids] + U * (1 - ST['u'][syn_ids])
                 u[syn_ids] = u_syn
                 x[syn_ids] -= u_syn * ST['x'][syn_ids]
-            ST['u'] = np.clip(u, 0., 1.)
-            ST['x'] = np.clip(x, 0., 1.)
-            ST['g'] = ST['w'] * ST['u'] * ST['x']
+                u = np.clip(u, 0., 1.)
+                x = np.clip(x, 0., 1.)
+                s += ST['w'] * u * x
+            ST['u'] = u
+            ST['x'] = x
+            ST['s'] = s
 
         @bp.delayed
         def output(ST, post, post_slice_syn):
@@ -124,7 +136,7 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode='scalar'):
             g = np.zeros(num_post, dtype=np.float_)
             for post_id in range(num_post):
                 pos = post_slice_syn[post_id]
-                g[post_id] = np.sum(ST['g'][pos[0]: pos[1]])
+                g[post_id] = np.sum(ST['s'][pos[0]: pos[1]])
                 post['input'] += g
 
     elif mode == 'matrix':
@@ -133,6 +145,7 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode='scalar'):
         def update(ST, _t, pre, conn_mat):
             u = int_u(ST['u'], _t)
             x = int_x(ST['x'], _t)
+            s = int_s(ST['s'], _t)
             spike_idxs = np.where(pre['spike'] > 0.)[0]
             #
             u_syn = u[spike_idxs] + U * (1 - ST['u'][spike_idxs])
@@ -141,12 +154,13 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., mode='scalar'):
             #
             ST['u'] = np.clip(u, 0., 1.)
             ST['x'] = np.clip(x, 0., 1.)
-            ST['g'] = ST['w'] * ST['u'] * ST['x']
+            s[spike_idxs] += ST['w'][spike_idxs] * u[spike_idxs] * x[spike_idxs]
+            ST['s'] = s
 
         @bp.delayed
         def output(ST, post):
-            g = np.sum(ST['g'], axis=0)
-            post['input'] += g
+            s = np.sum(ST['s'], axis=0)
+            post['input'] += s
 
     else:
         raise ValueError("BrainPy does not support mode '%s'." % (mode))
