@@ -37,7 +37,7 @@ Working Memory
 .. toctree::
    :maxdepth: 1
 
-   from_papers/Wang_2000_working_memory
+   from_papers/Compte_2000_working_memory
    from_papers/Mi_2017_working_memory_capacity
    from_papers/Bouchacourt_2019_Flexible_working_memory
 
