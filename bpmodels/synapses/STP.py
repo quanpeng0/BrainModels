@@ -99,9 +99,11 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., tau_s=8, mode='scalar'):
             if pre['spike'] > 0.:
                 u += U * (1 - ST['u'])
                 u = np.clip(u, 0., 1.)
+
+                s += ST['w'] * u * ST['x']
+                
                 x -= u * ST['x']
                 x = np.clip(x, 0., 1.)
-                s += ST['w'] * u * x
             ST['u'] = u
             ST['x'] = x
             ST['s'] = s
@@ -125,7 +127,7 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., tau_s=8, mode='scalar'):
                 x[syn_ids] -= u_syn * ST['x'][syn_ids]
                 u = np.clip(u, 0., 1.)
                 x = np.clip(x, 0., 1.)
-                s += ST['w'] * u * x
+                s += ST['w'] * u * ST['x']
             ST['u'] = u
             ST['x'] = x
             ST['s'] = s
@@ -154,7 +156,7 @@ def get_STP(U=0.15, tau_f=1500., tau_d=200., tau_s=8, mode='scalar'):
             #
             ST['u'] = np.clip(u, 0., 1.)
             ST['x'] = np.clip(x, 0., 1.)
-            s[spike_idxs] += ST['w'][spike_idxs] * u[spike_idxs] * x[spike_idxs]
+            s[spike_idxs] += ST['w'][spike_idxs] * u[spike_idxs] * ST['x'][spike_idxs]
             ST['s'] = s
 
         @bp.delayed
