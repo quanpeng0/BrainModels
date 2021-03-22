@@ -2,21 +2,14 @@ import brainpy as bp
 import bpmodels
 import matplotlib.pyplot as plt
 
-
-LIF = bpmodels.neurons.get_LIF(V_rest=-65., V_reset=-65., V_th=-55)
-
-neu = bp.NeuGroup(LIF, 1, monitors=['V'])
-neu.ST['V'] = -65.
-
-duration=300
-I = bp.inputs.spike_current([10, 90, 150, 200, 220], bp.profile._dt, 1., duration=duration)
+hh1 = bpmodels.neurons.HH(1, monitors=['V'])
+hh2 = bpmodels.neurons.HH(1, monitors=['V'])
 
 # f
-syn_model = bpmodels.synapses.get_STP(U=0.1, tau_d=100, tau_f=2000.)
-syn = bp.SynConn(syn_model, pre_group=neu, post_group=neu, 
-                conn=bp.connect.All2All(), monitors=['u', 'x', 's'])
-net = bp.Network(neu, syn)
-net.run(duration=duration, inputs=(syn, 'pre.spike', I, '='))
+syn= bpmodels.synapses.STP(U=0.1, tau_d=100, tau_f=2000., pre=hh1, post=hh2, conn=bp.connect.All2All(),
+                    delay=0., monitors=['s', 'u', 'x'] )
+net = bp.Network(hh1, hh2, syn)
+net.run(duration=300., inputs=(hh1, 'input', 10.))
 
 fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
 
@@ -34,11 +27,10 @@ plt.show()
 
 
 # d
-syn_model = bpmodels.synapses.get_STP(U=0.55, tau_d=1500., tau_f=50.)
-syn = bp.SynConn(syn_model, pre_group=neu, post_group=neu, 
-                conn=bp.connect.All2All(), monitors=['u', 'x', 's'])
-net = bp.Network(neu, syn)
-net.run(duration=duration, inputs=(syn, 'pre.spike', I, '='))
+syn= bpmodels.STP(U=0.55, tau_d=1500, tau_f=50., pre=hh1, post=hh2, conn=bp.connect.All2All(),
+                    delay=0., monitors=['s', 'u', 'x'] )
+net = bp.Network(hh1, hh2, syn)
+net.run(duration=300., inputs=(hh1, 'input', 10.))
 
 fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
 

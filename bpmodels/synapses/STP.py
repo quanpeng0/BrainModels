@@ -1,173 +1,60 @@
 # -*- coding: utf-8 -*-
-
 import brainpy as bp
 import numpy as np
+from numba import prange
+
+bp.integrators.set_default_odeint('rk4')
+bp.backend.set(backend='numba', dt=0.01)
+
+class STP(bp.TwoEndConn):
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
+
+    def __init__(self, pre, post, conn, delay=0., U=0.15, tau_f=1500., tau_d=200., tau=8.,  **kwargs):
+        # parameters
+        self.tau_d = tau_d
+        self.tau_f = tau_f
+        self.tau = tau
+        self.U = U
+        self.delay = delay
+
+        # connections (requires)
+        self.conn = conn(pre.size, post.size)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
+
+        # data （ST)
+        self.s = bp.backend.zeros(self.size)
+        self.x = bp.backend.ones(self.size)
+        self.u = bp.backend.zeros(self.size)
+        self.w = bp.backend.ones(self.size)
+        self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
 
-def get_STP(U=0.15, tau_f=1500., tau_d=200., tau_s=8, mode='scalar'):
-    """Short-term plasticity proposed by Tsodyks and Markram (Tsodyks 98) [1]_.
+        super(STP, self).__init__(steps=[self.update, ],
+                                        pre=pre, post=post, **kwargs)
 
-    The model is given by
+    @staticmethod
+    @bp.odeint(method='euler')
+    def integral(s, u, x, t, tau, tau_d, tau_f):
+        dsdt = -s / tau
+        dudt = - u / tau_f
+        dxdt = (1 - x) / tau_d
+        return dsdt, dudt, dxdt
 
-    .. math::
+    # update and output
+    def update(self, _t):
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
 
-        \\frac{du}{dt} = -\\frac{u}{\\tau_f}+U(1-u^-)\\delta(t-t_{spike})
+            self.s[i], u, x = self.integral(self.s[i], self.u[i], self.x[i], _t, self.tau, self.tau_d, self.tau_f)
+            
+            if self.pre.spike[pre_id] > 0:
+                u += self.U * (1 - self.u[i])
+                self.s[i] += self.w[i] * u * self.x[i]
+                x -= u * self.x[i]
+            self.u[i] = u
+            self.x[i] = x
 
-        \\frac{dx}{dt} = \\frac{1-x}{\\tau_d}-u^+x^-\\delta(t-t_{spike})
-
-    where :math:`t_{spike}` denotes the spike time and :math:`U` is the increment
-    of :math:`u` produced by a spike.
-
-    The synaptic current generated at the synapse by the spike arriving
-    at :math:`t_{spike}` is then given by
-
-    .. math::
-
-        \\Delta I(t_{spike}) = Au^+x^-
-
-    where :math:`A` denotes the response amplitude that would be produced
-    by total release of all the neurotransmitter (:math:`u=x=1`), called
-    absolute synaptic efficacy of the connections.
-
-
-    **Synapse Parameters**
-
-    ============= ============== ======== ===========================================
-    **Parameter** **Init Value** **Unit** **Explanation**
-    ------------- -------------- -------- -------------------------------------------
-    tau_d         200.           ms       Time constant of short-term depression.
-
-    tau_f         1500.          ms       Time constant of short-term facilitation.
-
-    U             .15            \        The increment of :math:`u` produced by a spike.
-
-    mode          'scalar'       \        Data structure of ST members.
-    ============= ============== ======== ===========================================    
-    
-    Returns:
-        bp.Syntype: return description of the Short-term plasticity synapse model.
-
-    **Synapse State**
-
-    ST refers to the synapse state, items in ST are listed below:
-    
-    =============== ================== =====================================================================
-    **Member name** **Initial values** **Explanation**
-    --------------- ------------------ ---------------------------------------------------------------------
-    u                 0                 Release probability of the neurotransmitters.
-
-    x                 1                 A Normalized variable denoting the fraction of remain neurotransmitters.
-
-    w                 1                 Synapse weight.
-
-    g                 0                 Synapse conductance.
-    =============== ================== =====================================================================
-    
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-
-
-    References:
-        .. [1] Tsodyks, Misha, Klaus Pawelzik, and Henry Markram. "Neural networks
-                with dynamic synapses." Neural computation 10.4 (1998): 821-835.
-    """
-
-    @bp.integrate
-    def int_u(u, t):
-        return - u / tau_f
-
-    @bp.integrate
-    def int_x(x, t):
-        return (1 - x) / tau_d
-    
-    @bp.integrate
-    def int_s(s, t):
-        return -s / tau_s
-
-    ST = bp.types.SynState({'u': 0., 'x': 1., 'w': 1., 's': 0.})
-
-    requires = dict(
-        pre=bp.types.NeuState(['spike']),
-        post=bp.types.NeuState(['V', 'input'])
-    )
-
-    if mode == 'scalar':
-        def update(ST, _t, pre):
-            u = int_u(ST['u'], _t)
-            x = int_x(ST['x'], _t)
-            s = int_s(ST['s'], _t)
-            if pre['spike'] > 0.:
-                u += U * (1 - ST['u'])
-                u = np.clip(u, 0., 1.)
-
-                s += ST['w'] * u * ST['x']
-                
-                x -= u * ST['x']
-                x = np.clip(x, 0., 1.)
-            ST['u'] = u
-            ST['x'] = x
-            ST['s'] = s
-
-        @bp.delayed
-        def output(ST, post):
-            post['input'] += ST['s']
-
-    elif mode == 'vector':
-        requires['pre2syn'] = bp.types.ListConn(help='Pre-synaptic neuron index -> synapse index')
-        requires['post_slice_syn'] = bp.types.Array(dim=2)
-
-        def update(ST, _t, pre, pre2syn):
-            u = int_u(ST['u'], _t)
-            x = int_x(ST['x'], _t)
-            s = int_s(ST['s'], _t)
-            for pre_id in np.where(pre['spike'] > 0.)[0]:
-                syn_ids = pre2syn[pre_id]
-                u_syn = u[syn_ids] + U * (1 - ST['u'][syn_ids])
-                u[syn_ids] = u_syn
-                x[syn_ids] -= u_syn * ST['x'][syn_ids]
-                u = np.clip(u, 0., 1.)
-                x = np.clip(x, 0., 1.)
-                s += ST['w'] * u * ST['x']
-            ST['u'] = u
-            ST['x'] = x
-            ST['s'] = s
-
-        @bp.delayed
-        def output(ST, post, post_slice_syn):
-            num_post = post_slice_syn.shape[0]
-            g = np.zeros(num_post, dtype=np.float_)
-            for post_id in range(num_post):
-                pos = post_slice_syn[post_id]
-                g[post_id] = np.sum(ST['s'][pos[0]: pos[1]])
-                post['input'] += g
-
-    elif mode == 'matrix':
-        requires['conn_mat'] = bp.types.MatConn()
-
-        def update(ST, _t, pre, conn_mat):
-            u = int_u(ST['u'], _t)
-            x = int_x(ST['x'], _t)
-            s = int_s(ST['s'], _t)
-            spike_idxs = np.where(pre['spike'] > 0.)[0]
-            #
-            u_syn = u[spike_idxs] + U * (1 - ST['u'][spike_idxs])
-            u[spike_idxs] = u_syn
-            x[spike_idxs] -= u_syn * ST['x'][spike_idxs]
-            #
-            ST['u'] = np.clip(u, 0., 1.)
-            ST['x'] = np.clip(x, 0., 1.)
-            s[spike_idxs] += ST['w'][spike_idxs] * u[spike_idxs] * ST['x'][spike_idxs]
-            ST['s'] = s
-
-        @bp.delayed
-        def output(ST, post):
-            s = np.sum(ST['s'], axis=0)
-            post['input'] += s
-
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.SynType(name='STP_synapse',
-                      ST=ST, requires=requires,
-                      steps=(update, output),
-                      mode=mode)
+            # output
+            post_id = self.post_ids[i]
+            self.post.input[post_id] += self.s[i]
