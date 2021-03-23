@@ -33,7 +33,7 @@ class NMDA_vec(bp.TwoEndConn):
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
 
-        super(NMDA_vec, self).__init__(steps=[self.update, ],
+        super(NMDA_vec, self).__init__(
                                         pre=pre, post=post, **kwargs)
 
     @staticmethod

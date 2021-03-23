@@ -1,154 +1,68 @@
 # -*- coding: utf-8 -*-
-
 import brainpy as bp
 import numpy as np
+from numba import prange
+
+# bp.integrators.set_default_odeint('rk4')
+bp.backend.set(backend='numba', dt=0.01)
+
+class Gap_junction(bp.TwoEndConn):
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
+
+    def __init__(self, pre, post, conn, delay=0., **kwargs):
+        # connections (requires)
+        self.conn = conn(pre.size, post.size)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
+        self.delay = delay
+
+        # data （ST)
+        self.w = bp.backend.ones(self.size)
+
+        super(Gap_junction, self).__init__(
+                                        pre=pre, post=post, **kwargs)
 
 
-def get_gap_junction(mode='scalar'):
-    """
-    synapse with gap junction.
+    # update and output
+    def update(self, _t):
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+            post_id = self.post_ids[i]
 
-    .. math::
-
-        I_{syn} = w (V_{pre} - V_{post})
-
-    **Synapse State**
-
-    ST refers to synapse state, members of ST are listed below:
-
-    =============== ================= =========================================================
-    **Member name** **Initial Value** **Explanation**
-    --------------- ----------------- ---------------------------------------------------------
-    w                0.                Synapse weights.
-    =============== ================= =========================================================
-
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-
-    Args:
-        mode (string): data structure of ST members.
-
-    Returns:
-        bp.SynType: return description of synapse model with gap junction.
-
-    Reference:
-        .. [1] Chow, Carson C., and Nancy Kopell. 
-                "Dynamics of spiking neurons with electrical coupling." 
-                Neural computation 12.7 (2000): 1643-1678.
-
-    """
-
-    ST = bp.types.SynState('w')
-
-    requires = dict(
-        pre=bp.types.NeuState('V'),
-        post=bp.types.NeuState(['V', 'input'])
-    )
-
-    if mode == 'scalar':
-        def update(ST, pre, post):
-            post['input'] += ST['w'] * (pre['V'] - post['V'])
-
-    elif mode == 'vector':
-        requires['post2pre'] = bp.types.ListConn(help='post-to-pre connection.')
-        requires['pre_ids'] = bp.types.Array(dim=1, help='Pre-synaptic neuron indices.')
-
-        def update(ST, pre, post, post2pre, pre_ids):
-            num_post = len(post2pre)
-            for post_id in range(num_post):
-                pre_id = pre_ids[post_id]
-                post['input'][post_id] += ST['w'] * np.sum(pre['V'][pre_id] - post['V'][post_id])
-
-    elif mode == 'matrix':
-        requires['conn_mat'] = bp.types.MatConn()
-
-        def update(ST, pre, post, conn_mat):
-            # reshape
-            dim = np.shape(ST['w'])
-            v_post = np.vstack((post['V'],) * dim[0])
-            v_pre = np.vstack((pre['V'],) * dim[1]).T
-
-            # update         
-            post['input'] += ST['w'] * (v_pre - v_post) * conn_mat
-
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.SynType(name='gap_junction_synapse',
-                      ST=ST, requires=requires,
-                      steps=update,
-                      mode=mode)
+            self.post.input[post_id] += self.w[i] * (self.pre.V[pre_id] - self.post.V[post_id])
 
 
-def get_gap_junction_lif(k_spikelet=0.1, post_has_refractory=False, mode='scalar'):
-    """
-    synapse with gap junction.
 
-    .. math::
+class Gap_junction_lif(bp.TwoEndConn):
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
 
-        I_{syn} = w (V_{pre} - V_{post})
+    def __init__(self, pre, post, conn, delay=0., k_spikelet=0.1, post_refractory=False,  **kwargs):
+        # connections (requires)
+        self.conn = conn(pre.size, post.size)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
+        self.delay = delay
+        self.k_spikelet = k_spikelet
+        self.post_refractory = post_refractory
 
-    ST refers to synapse state, members of ST are listed below:
+        # data （ST)
+        self.w = bp.backend.ones(self.size)
+        self.spikelet = self.register_constant_delay('spikelet', size=self.size, delay_time=delay)
 
-    =============== ================= =========================================================
-    **Member name** **Initial Value** **Explanation**
-    --------------- ----------------- ---------------------------------------------------------
-    w                0.                Synapse weights.
-    
-    spikelet         0.                conductance for post-synaptic neuron
-    =============== ================= =========================================================
+        super(Gap_junction_lif, self).__init__(
+                                        pre=pre, post=post, **kwargs)
 
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
 
-    Args:
-        k_spikelet (float): 
+    def update(self, _t):
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+            post_id = self.post_ids[i]
 
-    Returns:
-        bp.SynType: return description of synapse model with gap junction.
+            self.post.input[post_id] += self.w[i] * (self.pre.V[pre_id] - self.post.V[post_id])
 
-    References:
-        .. [1] Chow, Carson C., and Nancy Kopell. 
-                "Dynamics of spiking neurons with electrical coupling." 
-                Neural computation 12.7 (2000): 1643-1678.
-
-    """
-
-    ST = bp.types.SynState('w', 'spikelet')
-
-    requires = dict(
-        pre=bp.types.NeuState(['V', 'spike'])
-    )
-
-    if post_has_refractory:
-        requires['post']=bp.types.NeuState(['V', 'input','refractory'])
-    else:
-        requires['post']=bp.types.NeuState(['V', 'input'])
-
-    if mode == 'scalar':
-        def update(ST, pre, post):
-            # gap junction sub-threshold
-            post['input'] += ST['w'] * (pre['V'] - post['V'])
-            # gap junction supra-threshold
-            ST['spikelet'] = ST['w'] * k_spikelet * pre['spike']
-
-        if post_has_refractory:
-            @bp.delayed
-            def output(ST, post):
-                if post['refractory']== 0.:
-                    post['V'] += ST['spikelet']
-        else:
-            @bp.delayed
-            def output(ST, post):
-                post['V'] += ST['spikelet']
-
-        steps = (update, output)
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.SynType(name='gap_junctin_synapse_for_LIF',
-                      ST=ST, requires=requires,
-                      steps=steps,
-                      mode=mode)
-
-    
+            if self.post_refractory:
+                self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id] * (1. - self.post.refractory[post_id]))
+            else:
+                self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id])
+            
+            self.post.V[post_id] += self.spikelet.pull(i)

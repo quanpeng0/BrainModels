@@ -30,7 +30,7 @@ class STP(bp.TwoEndConn):
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
 
-        super(STP, self).__init__(steps=[self.update, ],
+        super(STP, self).__init__(
                                         pre=pre, post=post, **kwargs)
 
     @staticmethod

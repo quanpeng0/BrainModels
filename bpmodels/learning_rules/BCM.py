@@ -1,144 +1,58 @@
 # -*- coding: utf-8 -*-
-
 import brainpy as bp
 import numpy as np
-import matplotlib.pyplot as plt
-import sys
+from numba import prange
 
-def get_BCM(learning_rate=0.005, w_max=2., w_min = 0., r_0 = 0., mode='matrix'):
-    """
-    Bienenstock-Cooper-Munro (BCM) rule.
+bp.integrators.set_default_odeint('rk4')
+bp.backend.set(backend='numpy', dt=0.01)
 
-    .. math::
+class BCM(bp.TwoEndConn):
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
 
-        r_i = \\sum_j w_{ij} r_j 
+    def __init__(self, pre, post, conn, delay=0., lr=0.005, w_max=2., w_min=0., r_0 = 0., **kwargs):
+        # parameters
+        self.lr = lr
+        self.w_max = w_max
+        self.w_min = w_min
+        self.r0 = r_0
+        self.delay = delay
+        self.dt = bp.backend._dt
 
-        \\frac d{dt} w_{ij} = \\eta \\cdot r_i (r_i - r_{\\theta}) r_j
+        # connections
+        self.conn = conn(pre.size, post.size)
+        self.conn_mat = conn.requires('conn_mat')
+        self.size = bp.backend.shape(self.conn_mat)
 
-    where :math:`\\eta` is some learning rate, and :math:`r_{\\theta}` is the 
-    plasticity threshold,
-    which is a function of the averaged postsynaptic rate, we take:
+        # data （ST)
+        self.w = bp.backend.ones(self.size)
+        self.sum_post_r = bp.backend.zeros(post.size[0])
 
-    .. math::
+        super(BCM, self).__init__(pre=pre, post=post, **kwargs)
 
-        r_{\\theta} = < r_i >
-
-    **Learning Rule Parameters**
-    
-    ============= ============== ======== ================================
-    **Parameter** **Init Value** **Unit** **Explanation**
-    ------------- -------------- -------- --------------------------------
-    learning_rate 0.005          \        Learning rate.
-
-    w_max         2.             \        Maximal possible synapse weight.
-
-    w_min         0.             \        Minimal possible synapse weight.
-
-    mode          'matrix'       \        Data structure of ST members.
-    ============= ============== ======== ================================
-
-    Returns:
-        bp.Syntype: return description of the BCM rule.
-        
-    
-    **Learning Rule State**
-
-    ST refers to synapse state (note that BCM learning rule can be implemented as synapses),
-    members of ST are listed below:
-
-    ================ ================= =========================================================
-    **Member name**  **Initial Value** **Explanation**
-    ---------------- ----------------- ---------------------------------------------------------                                  
-    w                1.                Synapse weights.
-    ================ ================= =========================================================
-
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-
-    References:
-        .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
-               neurons to networks and models of cognition. Cambridge 
-               University Press, 2014.
-    """
-    ST=bp.types.SynState(
-            {'w': 1.}, 
-            help='BCM synapse state.')
-
-    requires = dict(
-        pre=bp.types.NeuState(
-            ['r'], help='Pre-synaptic neuron state must have "spike" item.'),
-        post=bp.types.NeuState(
-            ['r'], help='Post-synaptic neuron state must have "spike" item.'),
-        sum_post_r = bp.types.Array(dim=1)        
-    )
-
-    dt = bp.profile._dt
-
-    @bp.integrate
-    def int_w(w, t, r_pre, r_post, r_th):
-        dwdt = learning_rate * r_post * (r_post - r_th) * r_pre
+    @staticmethod
+    @bp.odeint
+    def int_w(w, t, lr, r_pre, r_post, r_th):
+        dwdt = lr * r_post * (r_post - r_th) * r_pre
         return dwdt
 
-    if mode == 'scalar':
-        raise ValueError("mode of function '%s' can not be '%s'." % (sys._getframe().f_code.co_name, mode))
+    # update and output
+    def update(self, _t):
+        post_r_i = self.post.r
+        w = self.w * self.conn_mat
+        pre_r = self.pre.r
 
-    elif mode == 'vector':
-        requires['post2syn']=bp.types.ListConn()
-        requires['post2pre']=bp.types.ListConn()
+        # threshold
+        self.sum_post_r += post_r_i
+        r_th = self.sum_post_r / (_t / self.dt + 1) 
 
-        def learn(ST, _t, pre, post, post2syn, post2pre, sum_post_r):
-            for post_id , post_r_i in enumerate(post['r']):
-                if post_r_i < r_0:
-                    post['r'][post_id] = post_r_i
-                elif post2syn[post_id].size > 0:
-                    # mapping
-                    syn_ids = post2syn[post_id]
-                    pre_ids = post2pre[post_id]
-                    pre_r = pre['r'][pre_ids]
-                    w = ST['w'][syn_ids]
+        # BCM rule
+        dim = np.shape(w)
+        reshape_th = np.vstack((r_th,)*dim[0])
+        reshape_post = np.vstack((post_r_i,)*dim[0])
+        reshape_pre = np.vstack((pre_r,)*dim[1]).T
+        w = self.int_w(w, _t, self.lr, reshape_pre, reshape_post, reshape_th)
+        w = np.clip(w, self.w_min, self.w_max)
+        self.w = w
 
-                    # threshold
-                    sum_post_r[post_id] += post_r_i
-                    r_threshold = sum_post_r[post_id] / (_t / dt + 1)
-                    
-                    # BCM rule
-                    w = int_w(w, _t, pre_r, post_r_i, r_threshold)
-                    w = np.clip(w, w_min, w_max)
-                    ST['w'][syn_ids] = w
-
-                    # output
-                    post['r'][post_id] = np.dot(w, pre_r)
-
-
-    elif mode == 'matrix':
-        requires['conn_mat']=bp.types.MatConn()
-
-        def learn(ST, _t, pre, post, conn_mat, sum_post_r):
-            post_r_i = post['r']
-            w = ST['w'] * conn_mat
-            pre_r = pre['r']
-
-            # threshold
-            sum_post_r += post_r_i
-            r_th = sum_post_r / (_t / dt + 1) 
-
-            # BCM rule
-            dim = np.shape(w)
-            reshape_th = np.vstack((r_th,)*dim[0])
-            reshape_post = np.vstack((post_r_i,)*dim[0])
-            reshape_pre = np.vstack((pre_r,)*dim[1]).T
-            w = int_w(w, _t, reshape_pre, reshape_post, reshape_th)
-            w = np.clip(w, w_min, w_max)
-            ST['w'] = w
-
-            # output
-            post['r'] = np.dot(w.T, pre_r)
-
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.SynType(name='BCM_synapse',
-                      ST=ST,
-                      requires=requires,
-                      steps=learn,
-                      mode=mode)
+        # output
+        self.post.r = np.dot(w.T, pre_r)

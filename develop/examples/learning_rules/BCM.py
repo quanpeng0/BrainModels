@@ -1,65 +1,55 @@
 import brainpy as bp
+import bpmodels
 import numpy as np
 import matplotlib.pyplot as plt
-from bpmodels.learning_rules import get_BCM
 
+print(bp.__version__)
+bp.backend.set(backend='numpy', dt=.1)
 
-def rate_neuron():
-    ST = bp.types.NeuState(['r', 'input'])
+class neu(bp.NeuGroup):
+    target_backend = 'general'
 
-    def g(r, I):
-        r += I
-        return r
+    def __init__(self, size, tau=10., **kwargs):
+        self.tau = tau
+        
+        self.r = bp.backend.zeros(size)
+        self.input = bp.backend.zeros(size)
 
-    def update(ST):
-        ST['r'] = g(ST['r'], ST['input'])
-    
-    def reset(ST):
-        ST['input'] = 0.
+        super(neu, self).__init__(size=size, **kwargs)
 
-    return bp.NeuType(name='rate', steps=[update, reset], ST=ST, mode='vector')
+    @staticmethod
+    @bp.odeint
+    def g(r, t, I, tau):
+        return -r / tau + I
+
+    def update(self, _t):
+        self.r = self.g(self.r, _t, self.input, self.tau)
+        self.input[:] = 0
+
 
 w_max = 2.
-
-bp.profile.set(dt=.1)
-
 n_post = 1
-
-neuron = rate_neuron()
-post = bp.NeuGroup(neuron, n_post, monitors=['r'])
-pre = bp.NeuGroup(neuron, 20, monitors=['r'])
-
-mode = 'matrix'
-#mode = 'vector'
-print(mode)
-
-bcm1 = get_BCM(learning_rate=0.005, w_max=w_max, mode=mode)
-bcm = bp.SynConn(model=bcm1, pre_group=pre, post_group=post,
-                    conn=bp.connect.All2All(), 
-                    monitors=['w'])
-bcm.sum_post_r = np.zeros(n_post)
-
-
-net = bp.Network(pre, bcm, post)
+n_pre = 20
 
 # group selection
-
-group1, duration = bp.inputs.constant_current(([1.5, 1], [0, 1])*20)
-group2, duration = bp.inputs.constant_current(([0, 1], [1., 1])*20)
+group1, duration = bp.inputs.constant_current(([1.5, 1], [0, 1])*10)
+group2, duration = bp.inputs.constant_current(([0, 1], [1., 1])*10)
 
 input_r = np.vstack((
                     (group1,)*10, (group2,)*10
                     ))
 
+pre = neu(n_pre, monitors=['r'])
+post = neu(n_post, monitors=['r'])
+bcm = bpmodels.BCM(pre=pre, post=post, 
+                    conn=bp.connect.All2All(),
+                    monitors=['w'])
 
-net.run(duration, inputs=(pre, 'ST.r', input_r.T, "="), report=True)
+net=bp.Network(pre, bcm, post)
+net.run(duration, inputs=(pre, 'r', input_r.T, "="))
 
-if mode == 'matrix':
-    w1 = np.mean(bcm.mon.w[:,:10,0], 1)
-    w2 = np.mean(bcm.mon.w[:,10:,0], 1)
-else:
-    w1 = np.mean(bcm.mon.w[:,:10], 1)
-    w2 = np.mean(bcm.mon.w[:,10:], 1)
+w1 = np.mean(bcm.mon.w[:,:10,0], 1)
+w2 = np.mean(bcm.mon.w[:,10:,0], 1)
 
 r1 = np.mean(pre.mon.r[:, :10], 1)
 r2 = np.mean(pre.mon.r[:, 10:], 1)
@@ -90,3 +80,4 @@ plt.xlabel("t")
 plt.legend()
 
 plt.show()
+

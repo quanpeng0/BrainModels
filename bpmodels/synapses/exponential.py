@@ -26,7 +26,7 @@ class Exponential_vec(bp.TwoEndConn):
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
 
-        super(Exponential_vec, self).__init__(steps=[self.update, ],
+        super(Exponential_vec, self).__init__(
                                         pre=pre, post=post, **kwargs)
 
     @staticmethod

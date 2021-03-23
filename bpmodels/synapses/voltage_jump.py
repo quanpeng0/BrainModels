@@ -1,82 +1,44 @@
 # -*- coding: utf-8 -*-
-
 import brainpy as bp
 import numpy as np
+from numba import prange
 
+bp.integrators.set_default_odeint('rk4')
+bp.backend.set(backend='numba', dt=0.01)
 
-def get_voltage_jump(post_has_refractory=False, mode='scalar'):
-    """Voltage jump synapses without post-synaptic neuron refractory.
+class Voltage_jump(bp.TwoEndConn):
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
 
-    .. math::
+    def __init__(self, pre, post, conn, delay=0., post_refractory=False,  **kwargs):
+        # parameters
+        self.delay = delay
+        self.post_refractory = post_refractory
 
-        I_{syn} = \sum J \delta(t-t_j)
+        # connections (requires)
+        self.conn = conn(pre.size, post.size)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
+        # data （ST)
+        self.s = bp.backend.zeros(self.size)
+        self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-    ST refers to synapse state, members of ST are listed below:
-    
-    =============== ================= =========================================================
-    **Member name** **Initial Value** **Explanation**
-    --------------- ----------------- ---------------------------------------------------------
-    s               0.                Gating variable of the post-synaptic neuron.
-    =============== ================= =========================================================
-    
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
+        super(Voltage_jump, self).__init__(
+                                        pre=pre, post=post, **kwargs)
 
-    Args:
-        post_has_refractory (bool): whether the post-synaptic neuron have refractory.
+    # @staticmethod
 
-    Returns:
-        bp.SynType.
-    
-  
-    """
+    # update and output
+    def update(self, _t):
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+            self.s[i] = self.pre.spike[pre_id]
 
-    requires = dict(
-        pre=bp.types.NeuState(['spike'])
-    )
-
-    if post_has_refractory:
-        requires['post'] = bp.types.NeuState(['V', 'refractory'])
-
-        @bp.delayed
-        def output(ST, post):
-            post['V'] += ST['s'] * (1. - post['refractory'])
-
-    else:
-        requires['post'] = bp.types.NeuState(['V'])
-
-        @bp.delayed
-        def output(ST, post):
-            post['V'] += ST['s']
-
-    if mode == 'vector':
-        requires['pre2post'] = bp.types.ListConn()
-
-        def update(ST, pre, post, pre2post):
-            num_post = post['V'].shape[0]
-            s = np.zeros_like(num_post, dtype=np.float_)
-            spike_idx = np.where(pre['spike'] > 0.)[0]
-            for i in spike_idx:
-                post_ids = pre2post[i]
-                s[post_ids] = 1.
-            ST['s'] = s
-
-    elif mode == 'scalar':
-        def update(ST, pre):
-            ST['s'] = 0.
-            if pre['spike'] > 0.:
-                ST['s'] = 1.
-
-    elif mode == 'matrix':
-        def update(ST, pre):
-            ST['s'] += pre['spike'].reshape((-1, 1))
-
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.SynType(name='voltage_jump_synapse',
-                      ST=bp.types.SynState(['s']),
-                      requires=requires,
-                      steps=(update, output),
-                      mode=mode)
+            # output
+            post_id = self.post_ids[i]
+            if self.post_refractory:
+                self.g.push(i, self.s[i] * (1. - self.post.refractory[post_id]))
+            else:
+                self.g.push(i, self.s[i])
+            
+            self.post.V[post_id] += self.g.pull(i)

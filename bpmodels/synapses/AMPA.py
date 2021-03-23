@@ -26,7 +26,7 @@ class AMPA1_vec(bp.TwoEndConn):
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-        super(AMPA1_vec, self).__init__(steps=[self.update, ],
+        super(AMPA1_vec, self).__init__(
                                         pre=pre, post=post, **kwargs)
 
     @staticmethod
@@ -62,7 +62,7 @@ class AMPA1_mat(bp.TwoEndConn):
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-        super(AMPA1_mat, self).__init__(steps=[self.update, ],
+        super(AMPA1_mat, self).__init__(
                                         pre=pre, post=post, **kwargs)
 
     @staticmethod
@@ -104,8 +104,7 @@ class AMPA2_vec(bp.TwoEndConn):
         self.t_last_pre_spike = -1e7
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-        super(AMPA2_vec, self).__init__(steps=[self.update, ],
-                                        pre=pre, post=post, **kwargs)
+        super(AMPA2_vec, self).__init__(pre=pre, post=post, **kwargs)
 
     @staticmethod
     @bp.odeint(method='euler')
