@@ -2,10 +2,11 @@
 
 import brainpy as bp
 import numpy as np
+from numba import prange
 
+bp.backend.set('numba', dt = 0.01)
 
-def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
-              R=10., C=1., tau=10., t_refractory=1.7, noise=0., mode='scalar'):
+class ExpIF(bp.NeuGroup):
     """Exponential Integrate-and-Fire neuron model.
 
     .. math::
@@ -73,54 +74,58 @@ def get_ExpIF(V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
                mechanisms determine the neuronal response to fluctuating 
                inputs." Journal of Neuroscience 23.37 (2003): 11628-11640.
     """
+    target_backend = 'general'  #TODO: the relation between backend and relization.
 
-    ST = bp.types.NeuState('V', 'input', 'spike',
-                           'refractory', t_last_spike=-1e7)
+    def __init__(self, size, V_rest=-65., V_reset=-68., 
+                 V_th=-30., V_T=-59.9, delta_T=3.48, 
+                 R=10., C=1., tau=10., t_refractory=1.7, 
+                 **kwargs):
+        
+        # parameters
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.V_T = V_T
+        self.delta_T = delta_T
+        self.R = R
+        self.C = C
+        self.tau = tau
+        self.t_refractory = t_refractory
 
-    @bp.integrate
-    def int_V(V, t, I_ext):  # integrate u(t)
-        return (- (V - V_rest) + delta_T * np.exp((V - V_T) / delta_T) + R * I_ext) / tau, noise / tau
+        # variables
+        self.V = bp.backend.zeros(size)
+        self.input = bp.backend.zeros(size)
+        self.spike = bp.backend.zeros(size)
+        self.refractory = bp.backend.zeros(size)
+        self.t_last_spike = bp.backend.ones(size) * -1e7
 
-    if mode == 'scalar':
+        super(ExpIF, self).__init__(size = size, **kwargs)
 
-        def update(ST, _t):
-            # update variables
-            ST['spike'] = 0.
-            ST['refractory'] = 1. if _t - \
-                                     ST['t_last_spike'] <= t_refractory else 0.
-            if _t - ST['t_last_spike'] <= t_refractory:
-                ST['refractory'] = 1.
-            else:
-                ST['refractory'] = 0.
-                V = int_V(ST['V'], _t, ST['input'])
-                if V >= V_th:
-                    V = V_reset
-                    ST['spike'] = 1.
-                    ST['t_last_spike'] = _t
-                ST['V'] = V
-            ST['input'] = 0.  # reset input here or it will be brought to next step
+    @staticmethod
+    @bp.odeint()
+    def integral(V, t, I_ext, V_rest, delta_T, V_T, R, tau):  # integrate u(t)
+        return (- (V - V_rest) + delta_T * np.exp((V - V_T) / delta_T) + R * I_ext) / tau
 
-    elif mode == 'vector':
+    def update(self, _t):
+        #TODO: may I consider which backend and judge if I need prange?
+        for i in prange(self.size[0]):
+            spike = 0.
+            refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
+            if not refractory:
+                V = self.integral(self.V[i], _t, self.input[i], 
+                                  self.V_rest, self.delta_T, 
+                                  self.V_T, self.R, self.tau)
+                spike = (V >= self.V_th)
+                if spike:
+                    V = self.V_rest
+                    self.t_last_spike[i] = _t
+                self.V[i] = V
+            self.spike[i] = spike
+            self.refractory[i] = refractory
+            self.input[i] = 0.  # reset input here or it will be brought to next step
 
-        def update(ST, _t):
-            V = int_V(ST['V'], _t, ST['input'])
+if __name__ == "__main__":
+    group = ExpIF(100, monitors=['V'], show_code=False)
 
-            is_ref = _t - ST['t_last_spike'] < t_refractory
-            V = np.where(is_ref, ST['V'], V)
-            is_spike = V > V_th
-
-            V[is_spike] = V_reset
-            is_ref[is_spike] = 1.
-            ST['t_last_spike'][is_spike] = _t
-
-            ST['refractory'] = is_ref
-            ST['spike'] = is_spike
-            ST['V'] = V
-            ST['input'] = 0  # reset input here or it will be brought to next step
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.NeuType(name='ExpIF_neuron',
-                      ST=ST,
-                      steps=update,
-                      mode=mode)
+    group.run(duration = 200., inputs=('input', 0.3), report=True)
+    bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)

@@ -2,8 +2,9 @@
 
 import brainpy as bp
 
+bp.backend.set('numba', dt = 0.02)
 
-def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise=0., mode='vector'):
+class HindmarshRose(bp.NeuGroup):
     """
     Hindmarsh-Rose neuron model.
 
@@ -85,31 +86,59 @@ def get_HindmarshRose(a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6, noise=0
                Chaos: An Interdisciplinary Journal of Nonlinear Science 18.3 (2008): 
                033128.
     """
+    target_backend = 'general'
 
-    ST = bp.types.NeuState('z', 'input', V=-1.6, y=-10.)
+    def __init__(self, size, a=1., b=3., 
+                 c=1., d=5., r=0.01, s=4., 
+                 V_rest=-1.6, **kwargs):
+        # parameters
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+        self.r = r
+        self.s = s
+        self.V_rest = V_rest
 
-    @bp.integrate
-    def int_V(V, t, y, z, I_ext):
-        return y - a * V * V * V + b * V * V - z + I_ext, noise
+        #variables
+        self.z = bp.backend.zeros(size)
+        self.input = bp.backend.zeros(size)
+        self.V = bp.backend.ones(size) * -1.6
+        self.y = bp.backend.ones(size) * -10.
 
-    @bp.integrate
-    def int_y(y, t, V):
-        return c - d * V * V - y
+        super(HindmarshRose, self).__init__(size = size, **kwargs)
 
-    @bp.integrate
-    def int_z(z, t, V):
-        return r * (s * (V - V_rest) - z)
+    @staticmethod
+    @bp.odeint()
+    def integral(V, y, z, t, a, b, I_ext, c, d, r, s, V_rest):
+        dVdt = y - a * V * V * V + b * V * V - z + I_ext
+        dydt = c - d * V * V - y
+        dzdt = r * (s * (V - V_rest) - z)
+        return dVdt, dydt, dzdt
 
-    def update(ST, _t):
-        V = int_V(ST['V'], _t, ST['y'], ST['z'], ST['input'])
-        y = int_y(ST['y'], _t, ST['V'])
-        z = int_z(ST['z'], _t, ST['V'])
-        ST['V'] = V
-        ST['y'] = y
-        ST['z'] = z
-        ST['input'] = 0.
+    def update(self, _t):
+        V, y, z = self.integral(self.V, self.y, self.z, _t, 
+                                self.a, self.b, self.input, 
+                                self.c, self.d, self.r, self.s, 
+                                self.V_rest)
+        self.V = V
+        self.y = y
+        self.z = z
+        self.input[:] = 0.
 
-    return bp.NeuType(name="HindmarshRose_neuron",
-                      ST=ST,
-                      steps=update,
-                      mode='scalar')
+if __name__ == "__main__":
+    mode = 'irregular_bursting'
+    param= {'quiescence':         [1.0, 2.0],  #a
+            'spiking':            [3.5, 5.0],  #c
+            'bursting':           [2.5, 3.0],  #d
+            'irregular_spiking':  [2.95, 3.3], #h
+            'irregular_bursting': [2.8, 3.7],  #g
+            }  
+    #set params of b and I_ext corresponding to different firing mode
+    print(f"parameters is set to firing mode <{mode}>")
+
+    group = HindmarshRose(size = 10, b = param[mode][0],
+                          monitors=['V'])
+
+    group.run(350., inputs=('input', param[mode][1]), report=True)
+    bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)

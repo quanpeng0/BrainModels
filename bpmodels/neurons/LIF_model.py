@@ -2,45 +2,35 @@
 
 import brainpy as bp
 import numpy as np
+from numba import prange
+import pdb
 
+bp.backend.set('numba', dt=0.02)
 
-def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
-            tau=10., t_refractory=5., noise=0., mode='scalar'):
+class LIF(bp.NeuGroup):
     """Leaky Integrate-and-Fire neuron model.
         
     .. math::
-
         \\tau \\frac{d V}{d t}=-(V-V_{rest}) + RI(t)
 
     **Neuron Parameters**
-
     ============= ============== ======== =========================================
     **Parameter** **Init Value** **Unit** **Explanation**
     ------------- -------------- -------- -----------------------------------------
     V_rest        0.             mV       Resting potential.
-
     V_reset       -5.            mV       Reset potential after spike.
-
     V_th          20.            mV       Threshold potential of spike.
-
     R             1.             \        Membrane resistance.
-
     tau           10.            \        Membrane time constant. Compute by R * C.
-
     t_refractory  5.             ms       Refractory period length.(ms)
-
     noise         0.             \        noise.
-
     mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== =========================================
         
     Returns:
         bp.Neutype: return description of LIF model.
-
-    **Neuron State**
-
-    ST refers to neuron state, members of ST are listed below:
     
+    **Neuron Variables**    
     =============== ================= =========================================================
     **Member name** **Initial Value** **Explanation**
     --------------- ----------------- ---------------------------------------------------------
@@ -59,59 +49,66 @@ def get_LIF(V_rest=0., V_reset=-5., V_th=20., R=1.,
     t_last_spike    -1e7              Last spike time stamp.
     =============== ================= =========================================================
     
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
+    Both parameters and variables are objects of Class LIF. 
+    Note that variables are saved as vectors of NeuGroup size.
         
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
                neurons to networks and models of cognition. Cambridge 
                University Press, 2014.
     """
+    target_backend = 'general'  #TODO: the relation between backend and relization.
 
-    ST = bp.types.NeuState(
-        {'V': 0, 'input': 0, 'spike': 0, 'refractory': 0, 't_last_spike': -1e7}
-    )
+    def __init__(self, size, V_rest = 0., V_reset= -5., 
+                 V_th = 20., R = 1., tau = 10., 
+                 t_refractory = 5., **kwargs):
+        
+        # parameters
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.R = R
+        self.tau = tau
+        self.t_refractory = t_refractory
 
-    @bp.integrate
-    def int_V(V, t, I_ext):  # integrate u(t)
-        return (- (V - V_rest) + R * I_ext) / tau, noise / tau
+        # variables
+        self.V = bp.backend.zeros(size)
+        self.input = bp.backend.zeros(size)
+        self.spike = bp.backend.zeros(size)
+        self.refractory = bp.backend.zeros(size)
+        self.t_last_spike = bp.backend.ones(size) * -1e7
 
-    if mode == 'scalar':
-        def update(ST, _t):
-            # update variables
-            ST['spike'] = 0.
-            if _t - ST['t_last_spike'] <= t_refractory:
-                ST['refractory'] = 1.
-            else:
-                ST['refractory'] = 0.
-                V = int_V(ST['V'], _t, ST['input'])
-                if V >= V_th:
-                    V = V_reset
-                    ST['spike'] = 1
-                    ST['t_last_spike'] = _t
-                ST['V'] = V
-            ST['input'] = 0.  # reset input here or it will be brought to next step
+        super(LIF, self).__init__(size = size, **kwargs)
 
-    elif mode == 'vector':
+    @staticmethod
+    @bp.odeint()
+    def integral(V, t, I_ext, V_rest, R, tau):  # integrate u(t)
+        return (- (V - V_rest) + R * I_ext) / tau
+    
+    def update(self, _t):
+        # update variables
+        #pdb.set_trace()
+        #TODO: may I consider which backend and judge if I need prange?
+        for i in prange(self.size[0]):
+            spike = 0.
+            refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
+            if not refractory:
+                V = self.integral(self.V[i], _t, self.input[i], self.V_rest, self.R, self.tau)
+                spike = (V >= self.V_th)
+                if spike:
+                    V = self.V_rest
+                    self.t_last_spike[i] = _t
+                self.V[i] = V
+            self.spike[i] = spike
+            self.refractory[i] = refractory
+            self.input[i] = 0.  # reset input here or it will be brought to next step
 
-        def update(ST, _t):
-            V = int_V(ST['V'], _t, ST['input'])
-            is_ref = _t - ST['t_last_spike'] < t_refractory
-            V = np.where(is_ref, ST['V'], V)
-            is_spike = V > V_th
-            spike_idx = np.where(is_spike)[0]
-            if len(spike_idx):
-                V[spike_idx] = V_reset
-                is_ref[spike_idx] = 1.
-                ST['t_last_spike'][spike_idx] = _t
-            ST['V'] = V
-            ST['spike'] = is_spike
-            ST['refractory'] = is_ref
-            ST['input'] = 0.  # reset input here or it will be brought to next step
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
+if __name__ == "__main__":
+    group = LIF(10, monitors=['V'])
 
-    return bp.NeuType(name='LIF_neuron',
-                      ST=ST,
-                      steps=update,
-                      mode=mode)
+    group.run(duration = 200., inputs=('input', 26.), report=True)
+    bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
+
+    group.t_refractory = 10.
+    group.run(duration = (200., 400.), inputs=('input', 26.), report=True)
+    bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
