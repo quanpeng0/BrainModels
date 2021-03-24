@@ -47,18 +47,17 @@ class CANN(bp.NeuGroup):
 
     @staticmethod
     @bp.odeint(method='rk4')
-    def integral(u, t, Jxx, Iext, k, rho, dx, tau):
-        r1 = np.square(u)
-        r2 = 1.0 + k * rho * bp.backend.sum(r1) * dx
-        r = r1 / r2
-        Irec = rho * np.dot(Jxx, r) * dx
-        dudt = (-u + Irec + Iext) / tau
+    def integral(u, t, J_xx, I_ext, k, rho, dx, tau):
+        r_num = np.square(u)
+        r_den = 1.0 + k * rho * bp.backend.sum(r_num) * dx
+        r = r_num / r_den
+        I_rec = rho * np.dot(J_xx, r) * dx
+        dudt = (-u + I_rec + I_ext) / tau
         return dudt
-
 
     def update(self, _t):
         self.u = self.integral(self.u, _t, self.Jxx, self.input, 
-                                        self.k, self.rho, self.dx, self.tau)
+                                self.k, self.rho, self.dx, self.tau)
         self.input[:] = 0
 
 # connection #

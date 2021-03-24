@@ -7,6 +7,32 @@ bp.integrators.set_default_odeint('rk4')
 bp.backend.set(backend='numba', dt=0.01)
 
 class Voltage_jump(bp.TwoEndConn):
+    """Voltage jump synapses without post-synaptic neuron refractory.
+
+    .. math::
+
+        I_{syn} = \sum J \delta(t-t_j)
+
+
+    ST refers to synapse state, members of ST are listed below:
+    
+    =============== ================= =========================================================
+    **Member name** **Initial Value** **Explanation**
+    --------------- ----------------- ---------------------------------------------------------
+    s               0.                Gating variable of the post-synaptic neuron.
+    =============== ================= =========================================================
+    
+    Note that all ST members are saved as floating point type in BrainPy, 
+    though some of them represent other data types (such as boolean).
+
+    Args:
+        post_has_refractory (bool): whether the post-synaptic neuron have refractory.
+
+    Returns:
+        bp.SynType.
+    
+    """
+        
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
 
     def __init__(self, pre, post, conn, delay=0., post_refractory=False,  **kwargs):

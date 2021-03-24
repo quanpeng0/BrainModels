@@ -7,6 +7,73 @@ bp.integrators.set_default_odeint('rk4')
 bp.backend.set(backend='numba', dt=0.01)
 
 class STP(bp.TwoEndConn):
+    """Short-term plasticity proposed by Tsodyks and Markram (Tsodyks 98) [1]_.
+
+    The model is given by
+
+    .. math::
+
+        \\frac{du}{dt} = -\\frac{u}{\\tau_f}+U(1-u^-)\\delta(t-t_{spike})
+
+        \\frac{dx}{dt} = \\frac{1-x}{\\tau_d}-u^+x^-\\delta(t-t_{spike})
+
+    where :math:`t_{spike}` denotes the spike time and :math:`U` is the increment
+    of :math:`u` produced by a spike.
+
+    The synaptic current generated at the synapse by the spike arriving
+    at :math:`t_{spike}` is then given by
+
+    .. math::
+
+        \\Delta I(t_{spike}) = Au^+x^-
+
+    where :math:`A` denotes the response amplitude that would be produced
+    by total release of all the neurotransmitter (:math:`u=x=1`), called
+    absolute synaptic efficacy of the connections.
+
+
+    **Synapse Parameters**
+
+    ============= ============== ======== ===========================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -------------------------------------------
+    tau_d         200.           ms       Time constant of short-term depression.
+
+    tau_f         1500.          ms       Time constant of short-term facilitation.
+
+    U             .15            \        The increment of :math:`u` produced by a spike.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ===========================================    
+    
+    Returns:
+        bp.Syntype: return description of the Short-term plasticity synapse model.
+
+    **Synapse State**
+
+    ST refers to the synapse state, items in ST are listed below:
+    
+    =============== ================== =====================================================================
+    **Member name** **Initial values** **Explanation**
+    --------------- ------------------ ---------------------------------------------------------------------
+    u                 0                 Release probability of the neurotransmitters.
+
+    x                 1                 A Normalized variable denoting the fraction of remain neurotransmitters.
+
+    w                 1                 Synapse weight.
+
+    g                 0                 Synapse conductance.
+    =============== ================== =====================================================================
+    
+    Note that all ST members are saved as floating point type in BrainPy, 
+    though some of them represent other data types (such as boolean).
+
+
+    References:
+        .. [1] Tsodyks, Misha, Klaus Pawelzik, and Henry Markram. "Neural networks
+                with dynamic synapses." Neural computation 10.4 (1998): 821-835.
+    """
+
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
 
     def __init__(self, pre, post, conn, delay=0., U=0.15, tau_f=1500., tau_d=200., tau=8.,  **kwargs):

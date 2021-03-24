@@ -7,6 +7,53 @@ bp.integrators.set_default_odeint('rk4')
 bp.backend.set(backend='numpy', dt=0.01)
 
 class BCM(bp.TwoEndConn):
+    """
+    Bienenstock-Cooper-Munro (BCM) rule.
+
+    .. math::
+
+        r_i = \\sum_j w_{ij} r_j 
+
+        \\frac d{dt} w_{ij} = \\eta \\cdot r_i (r_i - r_{\\theta}) r_j
+
+    where :math:`\\eta` is some learning rate, and :math:`r_{\\theta}` is the 
+    plasticity threshold,
+    which is a function of the averaged postsynaptic rate, we take:
+
+    .. math::
+
+        r_{\\theta} = < r_i >
+
+    **Learning Rule Parameters**
+    
+    ============= ============== ======== ================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- --------------------------------
+    learning_rate 0.005          \        Learning rate.
+
+    w_max         2.             \        Maximal possible synapse weight.
+
+    w_min         0.             \        Minimal possible synapse weight.
+    ============= ============== ======== ================================
+
+    Returns:
+        bp.Syntype: return description of the BCM rule.
+        
+    
+    **Learning Rule State**
+
+    ================ ================= =========================================================
+    **Member name**  **Initial Value** **Explanation**
+    ---------------- ----------------- ---------------------------------------------------------                                  
+    w                1.                Synapse weights.
+    ================ ================= =========================================================
+
+    References:
+        .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
+               neurons to networks and models of cognition. Cambridge 
+               University Press, 2014.
+    """
+
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
 
     def __init__(self, pre, post, conn, lr=0.005, w_max=2., w_min=0., **kwargs):
