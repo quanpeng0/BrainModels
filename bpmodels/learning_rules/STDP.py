@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
 import numpy as np
-import sys
+from numba import prange
 
+bp.backend.set(backend='numba', dt=0.01)
 
-def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s=10., tau_t=10.,
-             w_min=0., w_max=20., delta_A_s=0.5, delta_A_t=0.5, mode='vector'):
+class STDP(bp.TwoEndConn):
     """
     Spike-time dependent plasticity.
 
@@ -19,7 +19,7 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s=10., tau_t=10.,
 
     .. math::      
 
-        g_{post}&= g_{post}+w
+        s_{post}&= s_{post}+w
 
         A_{source}&= A_{source} + \\Delta A_{source}
 
@@ -38,11 +38,7 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s=10., tau_t=10.,
     ============= ============== ======== =================================================================
     **Parameter** **Init Value** **Unit** **Explanation**
     ------------- -------------- -------- -----------------------------------------------------------------
-    g_max         0.1            \        Maximum conductance.
-
-    E             0.             \        Reversal potential.
-
-    tau_decay     10.            ms       Time constant of decay.
+    tau           10.            ms       Time constant of decay.
 
     tau_s         10.            ms       Time constant of source neuron 
 
@@ -64,7 +60,6 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s=10., tau_t=10.,
 
                                           a target neuron spike.
 
-    mode          'vector'       \        Data structure of ST members.
     ============= ============== ======== =================================================================
 
     Returns:
@@ -83,7 +78,7 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s=10., tau_t=10.,
 
     A_t              0.                Target neuron trace.
 
-    g                0.                Synapse conductance on post-synaptic neuron.
+    s                0.                Gating variable on post-synaptic neuron.
 
     w                0.                Synapse weight.
     ================ ================= =========================================================
@@ -96,125 +91,66 @@ def get_STDP(g_max=0.10, E=0., tau_decay=10., tau_s=10., tau_t=10.,
                simulations." Frontiers in neuroinformatics 8 (2014): 6.
     """
 
-    ST = bp.types.SynState('A_s', 'A_t', 'g', 'w')
+    target_backend = ['numpy', 'numba', 'numba-parallel']
 
-    requires = dict(
-        pre=bp.types.NeuState(['spike'], help='Pre-synaptic neuron state \
-                                               must have "spike" item.'),
-        post=bp.types.NeuState(['V', 'input', 'spike'],
-                               help='Pre-synaptic neuron state must \
-                                     have "V", "input" and "spike" item.'),
-    )
+    def __init__(self, pre, post, conn, delay=0., 
+                delta_A_s=0.5, delta_A_t=0.5, w_min=0., w_max=20., 
+                tau_s=10., tau_t=10., tau=10., **kwargs):
+        # parameters
+        self.tau_s = tau_s
+        self.tau_t = tau_t
+        self.tau = tau
+        self.delta_A_s = delta_A_s
+        self.delta_A_t = delta_A_t
+        self.w_min = w_min
+        self.w_max = w_max
+        self.delay = delay
 
-    @bp.integrate
-    def int_A_s(A_s, t):
-        return -A_s / tau_s
+        # connections
+        self.conn = conn(pre.size, post.size)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
-    @bp.integrate
-    def int_A_t(A_t, t):
-        return -A_t / tau_t
+        # variables
+        self.s = bp.backend.zeros(self.size)
+        self.A_s = bp.backend.ones(self.size)
+        self.A_t = bp.backend.zeros(self.size)
+        self.w = bp.backend.ones(self.size) * 10.
+        self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
-    @bp.integrate
-    def int_g(g, t):
-        return -g / tau_decay
+        super(STDP, self).__init__(pre=pre, post=post, **kwargs)
 
-    if mode == 'scalar':
-        def my_relu(w):
-            return w if w > 0 else 0
+    @staticmethod
+    @bp.odeint(method='euler')
+    def integral(s, A_s, A_t, t, tau, tau_s, tau_t):
+        dsdt = -s / tau
+        dAsdt = - A_s / tau_s
+        dAtdt = - A_t / tau_t
+        return dsdt, dAsdt, dAtdt
 
-        def update(ST, _t, pre, post):
-            A_s = int_A_s(ST['A_s'], _t)
-            A_t = int_A_t(ST['A_t'], _t)
-            g = int_g(ST['g'], _t)
-            w = ST['w']
-            if pre['spike']:
-                g += ST['w']
-                A_s = A_s + delta_A_s
-                w = np.clip(my_relu(ST['w'] - A_t), w_min, w_max)
-            if post['spike']:
-                A_t = A_t + delta_A_t
-                w = np.clip(my_relu(ST['w'] + A_s), w_min, w_max)
-            ST['A_s'] = A_s
-            ST['A_t'] = A_t
-            ST['g'] = g
-            ST['w'] = w
+    
+    def update(self, _t):
+        for i in range(self.size):
+            pre_id = self.pre_ids[i]
+            post_id = self.post_ids[i]
 
-        @bp.delayed
-        def output(ST, post):
-            I_syn = - g_max * ST['g'] * (post['V'] - E)
-            post['input'] += I_syn
+            s, A_s, A_t = self.integral(self.s[i], self.A_s[i], self.A_t[i], _t, self.tau, self.tau_s, self.tau_t)
+            
+            w = self.w[i]
+            if self.pre.spike[pre_id] > 0:
+                s += w
+                A_s += self.delta_A_s
+                w -= A_t
+                w = np.clip(w, self.w_min, self.w_max)
+            if self.post.spike[post_id] > 0:
+                A_t += self.delta_A_t
+                w += A_s
+                w = np.clip(w, self.w_min, self.w_max)
+            self.A_s[i] = A_s
+            self.A_t[i] = A_t
+            self.w[i] = w
+            self.s[i] = s
 
-    elif mode == 'vector':
-
-        requires['pre2syn'] = bp.types.ListConn(
-            help='Pre-synaptic neuron index -> synapse index')
-        requires['post2syn'] = bp.types.ListConn(
-            help='Post-synaptic neuron index -> synapse index')
-
-        def update(ST, _t, pre, post, pre2syn, post2syn):
-            A_s = int_A_s(ST['A_s'], _t)
-            A_t = int_A_t(ST['A_t'], _t)
-            g = int_g(ST['g'], _t)
-            w = ST['w']
-            for i in np.where(pre['spike'] > 0.)[0]:
-                syn_ids = pre2syn[i]
-                g[syn_ids] += ST['w'][syn_ids]
-                A_s[syn_ids] = A_s[syn_ids] + delta_A_s
-                w[syn_ids] = np.clip(ST['w'][syn_ids] -
-                                     ST['A_t'][syn_ids], w_min, w_max)
-            for i in np.where(post['spike'] > 0.)[0]:
-                syn_ids = post2syn[i]
-                A_t[syn_ids] = A_t[syn_ids] + delta_A_t
-                w[syn_ids] = np.clip(ST['w'][syn_ids] +
-                                     ST['A_s'][syn_ids], w_min, w_max)
-            ST['A_s'] = A_s
-            ST['A_t'] = A_t
-            ST['g'] = g
-            ST['w'] = w
-
-        @bp.delayed
-        def output(ST, post, post_slice_syn):
-            post_cond = np.zeros(len(post_slice_syn), dtype=np.float_)
-            for i, [s, e] in enumerate(post_slice_syn):
-                post_cond[i] = np.sum(g_max * ST['g'][s:e])
-            post['input'] -= post_cond * (post['V'] - E)
-
-    elif mode == 'matrix':
-        requires['conn_mat'] = bp.types.MatConn(
-            help='Connectivity matrix with shape of (num_pre, num_post)')
-
-        def update(ST, _t, pre, post, conn_mat):
-            A_s = int_A_s(ST['A_s'], _t)
-            A_t = int_A_t(ST['A_t'], _t)
-            g = int_g(ST['g'], _t)
-            w = ST['w']
-
-            pre_spike = pre['spike'].reshape((-1, 1)) * conn_mat
-            g += pre_spike * ST['w']
-            A_s += pre_spike * delta_A_s
-            w -= pre_spike * ST['A_t']
-            w = np.clip(w, w_min, w_max)
-
-            post_spike = (post['spike'].reshape((-1, 1)) * conn_mat.T).T
-            A_t += post_spike * delta_A_t
-            w += post_spike * ST['A_s']
-            w = np.clip(w, w_min, w_max)
-
-            ST['A_s'] = A_s
-            ST['A_t'] = A_t
-            ST['g'] = g
-            ST['w'] = w
-
-        @bp.delayed
-        def output(ST, post):
-            g = g_max * np.sum(ST['g'], axis=0)
-            post['input'] -= g * (post['V'] - E)
-
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.SynType(name='STDP_synapse',
-                      ST=ST,
-                      requires=requires,
-                      steps=(update, output),
-                      mode=mode)
+            # output
+            self.out.push(i, self.s[i])
+            self.post.input[post_id] += self.out.pull(i)
