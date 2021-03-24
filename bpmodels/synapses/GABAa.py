@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
 import numpy as np
+import bpmodels
+from numba import prange
+import matplotlib.pyplot as plt
 
-
-def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
+class GABAa1_vec(bp.TwoEndConn):    
     """
     GABAa conductance-based synapse model.
 
@@ -52,77 +54,176 @@ def get_GABAa1(g_max=0.4, E=-80., tau_decay=6., mode='vector'):
                neurons to networks and models of cognition. Cambridge 
                University Press, 2014.
     """
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
-    ST = bp.types.SynState('s', 'g')
+    def __init__(self, pre, post, conn, delay=0., 
+                 g_max=0.4, E=-80., tau_decay=6., 
+                 **kwargs):
+        # parameters
+        self.g_max = g_max
+        self.E = E
+        self.tau_decay = tau_decay
+        self.delay = delay
 
-    requires = dict(
-        pre=bp.types.NeuState('spike'),
-        post=bp.types.NeuState('V', 'input'),
-    )
+        # connections
+        self.conn = conn(pre.size, post.size)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
-    @bp.integrate
-    def int_s(s, t):
+        # data
+        self.s = bp.backend.zeros(self.size)
+        self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
+
+        super(GABAa1_vec, self).__init__(pre=pre, post=post, **kwargs)
+
+    @staticmethod
+    @bp.odeint(method='euler')
+    def integral(s, t, tau_decay):
         return - s / tau_decay
 
-    if mode == 'scalar':
+    def update(self, _t):
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+            self.s[i] = self.integral(self.s[i], _t, self.tau_decay)
+            self.s[i] += self.pre.spike[pre_id]
+            self.g.push(i,self.g_max * self.s[i])
+            post_id = self.post_ids[i]
+            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
 
-        def update(ST, _t, pre):
-            s = int_s(ST['s'], _t)
-            s += pre['spike']
-            ST['s'] = s
-            ST['g'] = g_max * s
 
-        @bp.delayed
-        def output(ST, _t, post):
-            I_syn = ST['g'] * (post['V'] - E)
-            post['input'] -= I_syn
+class GABAa1_mat(bp.TwoEndConn):
+    target_backend = ['numpy', 'numba', 'numba-parallel']
 
-    elif mode == 'vector':
+    def __init__(self, pre, post, conn, delay=0., 
+                 g_max=0.4, E=-80., tau_decay=6., 
+                 **kwargs):
+        # parameters
+        self.g_max = g_max
+        self.E = E
+        self.tau_decay = tau_decay
+        self.delay = delay
 
-        requires['pre2syn'] = bp.types.ListConn()
-        requires['post_slice_syn'] = bp.types.Array(dim=2)
+        # connections
+        self.conn = conn(pre.size, post.size)
+        self.conn_mat = conn.requires('conn_mat')
+        self.size = bp.backend.shape(self.conn_mat)
 
-        def update(ST, pre, pre2syn):
-            s = int_s(ST['s'], 0.)
-            for pre_id in np.where(pre['spike'] > 0.)[0]:
-                syn_ids = pre2syn[pre_id]
-                s[syn_ids] += 1
-            ST['s'] = s
-            ST['g'] = g_max * s
+        # data
+        self.s = bp.backend.zeros(self.size)
+        self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-        @bp.delayed
-        def output(ST, post, post_slice_syn):
-            post_cond = np.zeros(len(post_slice_syn), dtype=np.float_)
-            for i, [s, e] in enumerate(post_slice_syn):
-                post_cond[i] = np.sum(ST['g'][s:e])
-            post['input'] -= post_cond * (post['V'] - E)
+        super(GABAa1_mat, self).__init__(pre=pre, post=post, **kwargs)
 
-    elif mode == 'matrix':
+    @staticmethod
+    @bp.odeint
+    def int_s(s, t, tau_decay):
+        return - s / tau_decay
 
-        requires['conn_mat'] = bp.types.MatConn(
-            help='Connectivity matrix with shape of (num_pre, num_post)')
+    def update(self, _t):
+        self.s = self.int_s(self.s, _t, self.tau_decay)
+        for i in range(self.pre.size[0]):
+            if self.pre.spike[i] > 0:
+                self.s[i] += self.conn_mat[i]
+        self.g.push(self.g_max * self.s)
+        g=self.g.pull()
+        self.post.input -= bp.backend.sum(g, axis=0) * (self.post.V - self.E)
 
-        def update(ST, _t, pre, conn_mat):
-            s = int_s(ST['s'], _t)
-            for i in range(pre['spike'].shape[0]):
-                if pre['spike'][i] > 0.:
-                    s[i] += conn_mat[i]
-            ST['s'] = s
-            ST['g'] = g_max * s
 
-        @bp.delayed
-        def output(ST, post):
-            g = np.sum(ST['g'], axis=0)
-            post['input'] -= g * (post['V'] - E)
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
+class LIF(bp.NeuGroup):
+    target_backend = 'general'  #TODO: the relation between backend and relization.
 
-    return bp.SynType(name='GABAa_synapse',
-                      ST=ST,
-                      requires=requires,
-                      steps=(update, output),
-                      mode=mode)
+    def __init__(self, size, V_rest = 0., V_reset= -5., 
+                 V_th = 20., R = 1., tau = 10., 
+                 t_refractory = 5., **kwargs):
+        
+        # parameters
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.R = R
+        self.tau = tau
+        self.t_refractory = t_refractory
 
+        # variables
+        self.V = bp.backend.zeros(size)
+        self.input = bp.backend.zeros(size)
+        self.spike = bp.backend.zeros(size)
+        self.refractory = bp.backend.zeros(size)
+        self.t_last_spike = bp.backend.ones(size) * -1e7
+
+        super(LIF, self).__init__(size = size, **kwargs)
+
+    @staticmethod
+    @bp.odeint()
+    def integral(V, t, I_ext, V_rest, R, tau):  # integrate u(t)
+        return (- (V - V_rest) + R * I_ext) / tau
+    
+    def update(self, _t):
+        # update variables
+        #pdb.set_trace()
+        #TODO: may I consider which backend and judge if I need prange?
+        for i in prange(self.size[0]):
+            refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
+            if refractory:
+                spike = 0.
+            else:
+                V = self.integral(self.V[i], _t, self.input[i], self.V_rest, self.R, self.tau)
+                spike = (V >= self.V_th)
+                if spike:
+                    V = self.V_rest
+                    self.t_last_spike[i] = _t
+                self.V[i] = V
+            self.spike[i] = spike
+            self.refractory[i] = refractory
+            self.input[i] = 0.  # reset input here or it will be brought to next step
+
+
+if __name__ == "__main__":
+
+    duration = 100.
+    dt = 0.02
+    bp.backend.set('numpy', dt=dt)
+    size = 10
+    neu_pre = LIF(size, monitors = ['V', 'input', 'spike'])
+    neu_pre.V_rest = -65.
+    neu_pre.V_th = -50.
+    neu_pre.V = bp.backend.ones(size) * -65.
+    neu_pre.t_refractory = 0.
+    neu_post = LIF(size, monitors = ['V', 'input', 'spike'])
+    neu_post.V_rest = -65.
+    neu_post.V = bp.backend.ones(size) * -65.
+
+    syn_GABAa = GABAa1_mat(pre = neu_pre, post = neu_post, 
+                           conn = bp.connect.One2One(),
+                           delay = 10., monitors = ['s'])
+
+    net = bp.Network(neu_pre, syn_GABAa, neu_post)
+    net.run(duration, inputs = (neu_pre, 'input', 16.), report = True)
+
+    # paint gabaa
+    ts = net.ts
+    fig, gs = bp.visualize.get_figure(2, 2, 5, 6)
+
+    #print(gabaa.mon.s.shape)
+    fig.add_subplot(gs[0, 0])
+    plt.plot(ts, syn_GABAa.mon.s[:, 0], label='s')
+    plt.legend()
+
+    fig.add_subplot(gs[1, 0])
+    plt.plot(ts, neu_post.mon.V[:, 0], label='post.V')
+    plt.legend()
+
+    fig.add_subplot(gs[0, 1])
+    plt.plot(ts, neu_post.mon.input[:, 0], label='post.input')
+    plt.legend()
+
+    fig.add_subplot(gs[1, 1])
+    plt.plot(ts, neu_pre.mon.spike[:, 0], label='pre.spike')
+    plt.legend()
+
+    plt.show()
+
+'''
 
 def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., mode='vector'):
     """
@@ -225,3 +326,5 @@ def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., m
                       requires=requires,
                       steps=(update, output),
                       mode=mode)
+
+'''
