@@ -10,20 +10,19 @@ class Gap_junction(bp.TwoEndConn):
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
 
     def __init__(self, pre, post, conn, delay=0., **kwargs):
-        # connections (requires)
+        # connections
         self.conn = conn(pre.size, post.size)
         self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
         self.size = len(self.pre_ids)
         self.delay = delay
 
-        # data （ST)
+        # variables
         self.w = bp.backend.ones(self.size)
 
-        super(Gap_junction, self).__init__(
-                                        pre=pre, post=post, **kwargs)
+        super(Gap_junction, self).__init__(pre=pre, post=post, **kwargs)
 
 
-    # update and output
+    
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
@@ -37,7 +36,7 @@ class Gap_junction_lif(bp.TwoEndConn):
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
 
     def __init__(self, pre, post, conn, delay=0., k_spikelet=0.1, post_refractory=False,  **kwargs):
-        # connections (requires)
+        # connections
         self.conn = conn(pre.size, post.size)
         self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
         self.size = len(self.pre_ids)
@@ -45,12 +44,11 @@ class Gap_junction_lif(bp.TwoEndConn):
         self.k_spikelet = k_spikelet
         self.post_refractory = post_refractory
 
-        # data （ST)
+        # variables
         self.w = bp.backend.ones(self.size)
         self.spikelet = self.register_constant_delay('spikelet', size=self.size, delay_time=delay)
 
-        super(Gap_junction_lif, self).__init__(
-                                        pre=pre, post=post, **kwargs)
+        super(Gap_junction_lif, self).__init__(pre=pre, post=post, **kwargs)
 
 
     def update(self, _t):

@@ -2,12 +2,11 @@
 
 import brainpy as bp
 import numpy as np
+from numba import prange
 
+bp.backend.set('numba', dt = 0.01)
 
-def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
-               V_T=-59.9, delta_T=3.48, a=1., b=1,
-               R=1, tau=10., tau_w=30.,
-               t_refractory=0., noise=0., mode='scalar'):
+class AdExIF(bp.NeuGroup):
     """Adaptive Exponential Integrate-and-Fire neuron model.
     
     .. math::
@@ -45,8 +44,6 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
     t_refractory  0              ms       Refractory period length.
 
     noise         0.             \        the noise fluctuation.
-
-    mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== ========================================================================================================================
 
     Returns:
@@ -84,61 +81,58 @@ def get_AdExIF(V_rest=-65., V_reset=-68., V_th=-30.,
                mechanisms determine the neuronal response to fluctuating 
                inputs." Journal of Neuroscience 23.37 (2003): 11628-11640.
     """
+    target_backend = 'general'
 
-    ST = bp.types.NeuState('V', 'w', 'input', 'spike', 'refractory', t_last_spike=-1e7)
+    def __init__(self, size, V_rest=-65., V_reset=-68., 
+                 V_th=-30., V_T=-59.9, delta_T=3.48,
+                 a = 1., b=1., R=10., tau=10., tau_w = 30.,
+                 t_refractory=0., **kwargs):
+        
+        # parameters
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.V_T = V_T
+        self.delta_T = delta_T
+        self.a = a
+        self.b = b
+        self.R = R
+        self.tau = tau
+        self.tau_w = tau_w
+        self.t_refractory = t_refractory
 
-    @bp.integrate
-    def int_V(V, t, w, I_ext):  # integrate u(t)
-        return (- (V - V_rest) + delta_T * np.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau, noise / tau
+        # variables
+        self.V = bp.backend.zeros(size)
+        self.w = bp.backend.zeros(size)
+        self.input = bp.backend.zeros(size)
+        self.spike = bp.backend.zeros(size)
+        self.refractory = bp.backend.zeros(size)
+        self.t_last_spike = bp.backend.ones(size) * -1e7
 
-    @bp.integrate
-    def int_w(w, t, V):
-        return (a * (V - V_rest) - w) / tau_w, noise / tau_w
+        super(AdExIF, self).__init__(size = size, **kwargs)
 
-    if mode == 'scalar':
-        def update(ST, _t):
-            if _t - ST['t_last_spike'] <= t_refractory:
-                ST['refractory'] = 1.
-                ST['spike'] = 0.
-            else:
-                ST['refractory'] = 0.
-                w = int_w(ST['w'], _t, ST['V'])
-                V = int_V(ST['V'], _t, w, ST['input'])
-                if V >= V_th:
-                    V = V_reset
-                    w += b
-                    ST['spike'] = 1.
-                    ST['t_last_spike'] = _t
-                else:
-                    ST['spike'] = 0.
-                ST['V'] = V
-                ST['w'] = w
-            ST['input'] = 0.
+    @staticmethod
+    @bp.odeint(method='euler')
+    def integral(V, w, t, I_ext, V_rest, delta_T, V_T, R, tau, tau_w, a):  # integrate u(t)
+        dwdt = (a * (V - V_rest) - w) / tau_w
+        dVdt = (- (V - V_rest) + delta_T * np.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau
+        return dVdt, dwdt
 
-    elif mode == 'vector':
-        def update(ST, _t):
-            w = int_w(ST['w'], _t, ST['V'])
-            V = int_V(ST['V'], _t, w, ST['input'])
-            is_ref = _t - ST['t_last_spike'] <= t_refractory
-            V = np.where(is_ref, ST['V'], V)
-            w = np.where(is_ref, ST['w'], w)
-
-            is_spike = V > V_th
-            V[is_spike] = V_reset
-            w[is_spike] += b
-            is_ref[is_spike] = 1.
-            ST['t_last_spike'][is_spike] = _t
-
-            ST['V'] = V
-            ST['w'] = w
-            ST['spike'] = is_spike
-            ST['refractory'] = is_ref
-            ST['input'] = 0.
-
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.NeuType(name='AdExIF_neuron',
-                      ST=ST,
-                      steps=update,
-                      mode=mode)
+    def update(self, _t):
+        for i in prange(self.size[0]):
+            spike = 0.
+            refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
+            if not refractory:
+                V, w = self.integral(self.V[i], self.w[i], _t, self.input[i], 
+                                  self.V_rest, self.delta_T, 
+                                  self.V_T, self.R, self.tau, self.tau_w, self.a)
+                spike = (V >= self.V_th)
+                if spike:
+                    V = self.V_rest
+                    w += self.b
+                    self.t_last_spike[i] = _t
+                self.V[i] = V
+                self.w[i] = w
+            self.spike[i] = spike
+            self.refractory[i] = refractory
+            self.input[i] = 0.  # reset input here or it will be brought to next step

@@ -17,21 +17,19 @@ class STP(bp.TwoEndConn):
         self.U = U
         self.delay = delay
 
-        # connections (requires)
+        # connections
         self.conn = conn(pre.size, post.size)
         self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
         self.size = len(self.pre_ids)
 
-        # data （ST)
+        # variables
         self.s = bp.backend.zeros(self.size)
         self.x = bp.backend.ones(self.size)
         self.u = bp.backend.zeros(self.size)
         self.w = bp.backend.ones(self.size)
-        self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
+        self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
-
-        super(STP, self).__init__(
-                                        pre=pre, post=post, **kwargs)
+        super(STP, self).__init__(pre=pre, post=post, **kwargs)
 
     @staticmethod
     @bp.odeint(method='euler')
@@ -41,7 +39,7 @@ class STP(bp.TwoEndConn):
         dxdt = (1 - x) / tau_d
         return dsdt, dudt, dxdt
 
-    # update and output
+    
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
@@ -57,4 +55,5 @@ class STP(bp.TwoEndConn):
 
             # output
             post_id = self.post_ids[i]
-            self.post.input[post_id] += self.s[i]
+            self.out.push(i, self.s[i])
+            self.post.input[post_id] += self.out.pull(i)

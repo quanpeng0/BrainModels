@@ -2,12 +2,11 @@
 
 import brainpy as bp
 import numpy as np
+from numba import prange
 
+bp.backend.set('numba', dt = 0.01)
 
-def get_AdQuaIF(a=1, b=.1, a_0=.07,
-                V_c=-50, V_rest=-65., V_reset=-68., V_th=-30.,
-                R=1., tau=10., tau_w=10.,
-                t_refractory=0., noise=0., mode='scalar'):
+class AdQuaIF(bp.NeuGroup):
     """Adaptive Quadratic Integrate-and-Fire neuron model.
         
     .. math::
@@ -84,61 +83,58 @@ def get_AdQuaIF(a=1, b=.1, a_0=.07,
                neurons to networks and models of cognition. Cambridge 
                University Press, 2014.
     """
+    target_backend = 'general'
 
-    ST = bp.types.NeuState('V', 'w', 'input', 'spike', 'refractory', t_last_spike=-1e7)
+    def __init__(self, size, V_rest=-65., V_reset=-68., 
+                 V_th=-30., V_c=-50.0, a_0 = .07,
+                 a = 1., b=.1, R=1., tau=10., tau_w = 10.,
+                 t_refractory=0., **kwargs):
+        
+        # parameters
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.V_c = V_c
+        self.a_0 = a_0
+        self.a = a
+        self.b = b
+        self.R = R
+        self.tau = tau
+        self.tau_w = tau_w
+        self.t_refractory = t_refractory
 
-    @bp.integrate
-    def int_V(V, t, w, I_ext):
-        return (a_0 * (V - V_rest) * (V - V_c) - R * w + R * I_ext) / tau, noise / tau
+        # variables
+        self.V = bp.backend.zeros(size)
+        self.w = bp.backend.zeros(size)
+        self.input = bp.backend.zeros(size)
+        self.spike = bp.backend.zeros(size)
+        self.refractory = bp.backend.zeros(size)
+        self.t_last_spike = bp.backend.ones(size) * -1e7
 
-    @bp.integrate
-    def int_w(w, t, V):
-        return (a * (V - V_rest) - w) / tau_w, noise / tau_w
+        super(AdQuaIF, self).__init__(size = size, **kwargs)
 
-    if mode == 'scalar':
-        def update(ST, _t):
-            if _t - ST['t_last_spike'] <= t_refractory:
-                ST['refractory'] = 1.
-                ST['spike'] = 0.
-            else:
-                ST['refractory'] = 0.
-                w = int_w(ST['w'], _t, ST['V'])
-                V = int_V(ST['V'], _t, w, ST['input'])
-                if V >= V_th:
-                    V = V_reset
-                    w += b
-                    ST['spike'] = 1.
-                    ST['t_last_spike'] = _t
-                else:
-                    ST['spike'] = 0.
-                ST['V'] = V
-                ST['w'] = w
-            # reset input
-            ST['input'] = 0.
-    elif mode == 'vector':
-        def update(ST, _t):
-            w = int_w(ST['w'], _t, ST['V'])
-            V = int_V(ST['V'], _t, w, ST['input'])
-            is_ref = _t - ST['t_last_spike'] <= t_refractory
-            V = np.where(is_ref, ST['V'], V)
-            w = np.where(is_ref, ST['w'], w)
+    @staticmethod
+    @bp.odeint(method='euler')
+    def integral(V, w, t, I_ext, V_rest, V_c, R, tau, tau_w, a, a_0):  # integrate u(t)
+        dwdt = (a * (V - V_rest) - w) / tau_w
+        dVdt = (a_0 * (V - V_rest) * (V - V_c) - R * w + R * I_ext) / tau
+        return dVdt, dwdt
 
-            is_spike = V > V_th
-            V[is_spike] = V_reset
-            w[is_spike] += b
-            is_ref[is_spike] = 1.
-            ST['t_last_spike'][is_spike] = _t
-
-            ST['V'] = V
-            ST['w'] = w
-            ST['spike'] = is_spike
-            ST['refractory'] = is_ref
-            ST['input'] = 0.
-
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.NeuType(name='AdQuaIF_neuron',
-                      ST=ST,
-                      steps=update,
-                      mode=mode)
+    def update(self, _t):
+        for i in prange(self.size[0]):
+            spike = 0.
+            refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
+            if not refractory:
+                V, w = self.integral(self.V[i], self.w[i], _t, self.input[i], 
+                                  self.V_rest, self.V_c, self.R, 
+                                  self.tau, self.tau_w, self.a, self.a_0)
+                spike = (V >= self.V_th)
+                if spike:
+                    V = self.V_rest
+                    w += self.b
+                    self.t_last_spike[i] = _t
+                self.V[i] = V
+                self.w[i] = w
+            self.spike[i] = spike
+            self.refractory[i] = refractory
+            self.input[i] = 0.  # reset input here or it will be brought to next step

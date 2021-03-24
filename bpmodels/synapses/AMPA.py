@@ -26,8 +26,7 @@ class AMPA1_vec(bp.TwoEndConn):
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-        super(AMPA1_vec, self).__init__(
-                                        pre=pre, post=post, **kwargs)
+        super(AMPA1_vec, self).__init__(pre=pre, post=post, **kwargs)
 
     @staticmethod
     @bp.odeint(method='euler')
@@ -62,8 +61,7 @@ class AMPA1_mat(bp.TwoEndConn):
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-        super(AMPA1_mat, self).__init__(
-                                        pre=pre, post=post, **kwargs)
+        super(AMPA1_mat, self).__init__(pre=pre, post=post, **kwargs)
 
     @staticmethod
     @bp.odeint
@@ -120,9 +118,8 @@ class AMPA2_vec(bp.TwoEndConn):
 
             TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
 
-            self.s[i] = self.int_s(self.s[i], _t, TT, self.alpha, self.beta)
-            # s = np.clip(s, 0., 1.)
-            # s = bp.beckend.clip??
+            s = self.int_s(self.s[i], _t, TT, self.alpha, self.beta)
+            self.s[i] = np.clip(s, 0., 1.)
             self.g.push(i, self.g_max * self.s[i])
             post_id = self.post_ids[i]
             self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)

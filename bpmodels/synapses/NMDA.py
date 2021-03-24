@@ -22,19 +22,18 @@ class NMDA_vec(bp.TwoEndConn):
         self.a = a
         self.delay = delay
 
-        # connections (requires)
+        # connections
         self.conn = conn(pre.size, post.size)
         self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
         self.size = len(self.pre_ids)
 
-        # data （ST)
+        # variables
         self.s = bp.backend.zeros(self.size)
         self.x = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
 
-        super(NMDA_vec, self).__init__(
-                                        pre=pre, post=post, **kwargs)
+        super(NMDA_vec, self).__init__(pre=pre, post=post, **kwargs)
 
     @staticmethod
     @bp.odeint(method='euler')
@@ -43,7 +42,7 @@ class NMDA_vec(bp.TwoEndConn):
         dsdt = -s / tau_decay + a * x * (1 - s)
         return dsdt, dxdt
 
-    # update and output
+    
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]

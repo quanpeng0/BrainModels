@@ -14,21 +14,20 @@ class Voltage_jump(bp.TwoEndConn):
         self.delay = delay
         self.post_refractory = post_refractory
 
-        # connections (requires)
+        # connections
         self.conn = conn(pre.size, post.size)
         self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
         self.size = len(self.pre_ids)
 
-        # data （ST)
+        # variables
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-        super(Voltage_jump, self).__init__(
-                                        pre=pre, post=post, **kwargs)
+        super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)
 
     # @staticmethod
 
-    # update and output
+    
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
