@@ -84,7 +84,7 @@ class HH(bp.NeuGroup):
 
     """
 
-    target_backend = ['numpy', 'numba', 'numpy-parallel', 'numpy-gpu']
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
     @staticmethod
     def derivative(V, m, h, n, t, C, gNa, ENa, gK, EK, gL, EL, Iext):

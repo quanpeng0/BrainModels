@@ -18,7 +18,7 @@ def set_backend(backend):
         neurons = tensor_backend.neurons
         synapses = tensor_backend.synapses
 
-    elif backend in ['numba']:
+    elif backend in ['numba', 'numba-parallel', 'numba-cuda']:
         neurons = numba_backend.neurons
         synapses = numba_backend.synapses
 

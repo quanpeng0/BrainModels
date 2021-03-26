@@ -9,7 +9,7 @@ class FHN(bp.NeuGroup):
     """FitzHugh-Nagumo neuron model.
     """
 
-    target_backend = ['numpy', 'numba', 'numpy-parallel', 'numpy-gpu']
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numpy-cuda']
 
     @staticmethod
     def derivative(V, w, t, Iext, a, b, tau):

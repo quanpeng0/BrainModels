@@ -68,7 +68,7 @@ class LIF(bp.NeuGroup):
                   University Press, 2014.
        """
 
-    target_backend = ['numpy', 'numba', 'numpy-parallel', 'numpy-gpu']
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
     @staticmethod
     def derivative(V, t, Iext, V_rest, R, tau):
