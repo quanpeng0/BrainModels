@@ -1,7 +1,7 @@
 import brainpy as bp
 import numpy as np
 import matplotlib.pyplot as plt
-from bpmodels.learning_rules import get_BCM
+from bpmodels.numba_backend.learning_rules import get_BCM
 
 
 def rate_neuron():

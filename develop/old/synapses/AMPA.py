@@ -125,54 +125,44 @@ def get_AMPA2(g_max=0.42, E=0., alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, mo
 
     .. math::
 
-        I_{syn}&=\\bar{g}_{syn} s (V-E_{syn})
+        I(t)&=\\bar{g} s(t) (V-E_{syn})
 
-        \\frac{ds}{dt} &=\\alpha[T](1-s)-\\beta s
+        \\frac{d s}{d t}&=-\\frac{s}{\\tau_{decay}}+\\sum_{k} \\delta(t-t_{j}^{k})
+
 
     **Synapse Parameters**
-    
-    ============= ============== ======== ================================================
+
+    ============= ============== ======== ===================================================================================
     **Parameter** **Init Value** **Unit** **Explanation**
-    ------------- -------------- -------- ------------------------------------------------
-    g_max         .42            µmho(µS) Maximum conductance.
+    ------------- -------------- -------- -----------------------------------------------------------------------------------
+    tau_decay     2.             ms       The time constant of decay.
 
-    E             0.             mV       The reversal potential for the synaptic current.
+    g_max         .1             µmho(µS) Maximum conductance.
 
-    alpha         .98            \        Binding constant.
-
-    beta          .18            \        Unbinding constant.
-
-    T             .5             mM       Neurotransmitter concentration.
-
-    T_duration    .5             ms       Duration of the neurotransmitter concentration.
+    E             0.             mV       The reversal potential for the synaptic current. (only for conductance-based model)
 
     mode          'scalar'       \        Data structure of ST members.
-    ============= ============== ======== ================================================    
-    
-    Returns:
-        bp.Syntype: return description of the AMPA synapse model.
+    ============= ============== ======== ===================================================================================
 
     **Synapse State**
 
     ST refers to the synapse state, items in ST are listed below:
-    
-    ================ ================== =========================================================
-    **Member name**  **Initial values** **Explanation**
-    ---------------- ------------------ ---------------------------------------------------------
-    s                 0                 Gating variable.
-    
-    g                 0                 Synapse conductance.
 
-    t_last_pre_spike  -1e7              Last spike time stamp of the pre-synaptic neuron.
-    ================ ================== =========================================================
-    
-    Note that all ST members are saved as floating point type in BrainPy, 
+    =============== ================== =========================================================
+    **Member name** **Initial values** **Explanation**
+    --------------- ------------------ ---------------------------------------------------------
+    s                   0               Gating variable.
+
+    g                   0               Synapse conductance.
+    =============== ================== =========================================================
+
+    Note that all ST members are saved as floating point type in BrainPy,
     though some of them represent other data types (such as boolean).
 
     References:
-        .. [1] Vijayan S, Kopell N J. Thalamic model of awake alpha oscillations 
-                and implications for stimulus processing[J]. Proceedings of the 
-                National Academy of Sciences, 2012, 109(45): 18553-18558.
+        .. [1] Brunel N, Wang X J. Effects of neuromodulation in a cortical network
+                model of object working memory dominated by recurrent inhibition[J].
+                Journal of computational neuroscience, 2001, 11(1): 63-85.
     """
 
     @bp.integrate
