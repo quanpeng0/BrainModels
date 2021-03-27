@@ -1,3 +1,5 @@
 numpy>=1.15
+sympy>=1.5
+numba>=0.52
 matplotlib>=3.2
 brainpy-simulator>=1.0.0a0
