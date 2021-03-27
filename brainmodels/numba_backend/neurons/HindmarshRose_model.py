@@ -5,11 +5,11 @@ import brainpy as bp
 from numba import prange
 
 __all__ = [
-    'HR'
+    'HindmarshRose'
 ]
 
 
-class HR(bp.NeuGroup):
+class HindmarshRose(bp.NeuGroup):
     """Hindmarsh-Rose neuron model.
 
        .. math::
@@ -114,7 +114,7 @@ class HR(bp.NeuGroup):
 
         self.integral = bp.odeint(f=self.derivative)
 
-        super(HR, self).__init__(size=size, **kwargs)
+        super(HindmarshRose, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
         for i in prange(self.num):

@@ -1,4 +1,4 @@
-# Brain-Models
+# BrainModels
 
 [![LICENSE](https://anaconda.org/brainpy/brainpy/badges/license.svg)](https://github.com/PKU-NIP-Lab/BrainPy-Models)    [![Documentation](https://readthedocs.org/projects/brainpy/badge/?version=latest)](https://brainpy-models.readthedocs.io/en/latest/)     [![Conda](https://anaconda.org/brainpy/bpmodels/badges/version.svg)](https://anaconda.org/brainpy/bpmodels) 
 
@@ -6,37 +6,37 @@
 
 
 
-`Brain-Models` implements the most canonical neuron models and synapse models for brain modeling with [BrainPy](https://github.com/PKU-NIP-Lab/BrainPy).
+`BrainModels` implements the most canonical neuron models and synapse models for brain modeling with [BrainPy](https://github.com/PKU-NIP-Lab/BrainPy).
 
-Here, users can directly import our models into your network, and also can learn examples of how to use BrainPy from [Documentations](https://brainpy-models.readthedocs.io/en/latest/).
+Here, users can directly import our models into your network, and also can learn examples of how to use BrainPy from [Documentations](https://brainmodels.readthedocs.io/en/latest/).
 
 We provide the following models:
 
 
-| Neuron models                                                | Synapse models                                               | Learning rules                                               | Networks                                                     |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [Leaky integrate-and-fire model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_LIF.html) | [Alpha Synapse](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_alpha.html) | [STDP](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.learning_rules.get_STDP1.html) | [Continuous attractor network](https://brainpy-models.readthedocs.io/en/latest/examples/networks/CANN.html) |
-| [Hodgkin-Huxley model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_HH.html) | [AMPA](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_AMPA1.html) / [NMDA](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_NMDA.html) | [BCM rule](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.learning_rules.get_BCM.html) | [E/I balance network](https://brainpy-models.readthedocs.io/en/latest/examples/networks/EI_balanced_network.html) |
-| [Izhikevich model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_Izhikevich.html) | [GABA_A](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_GABAa1.html) / [GABA_B](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_GABAb1.html) | [Oja\'s rule](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.learning_rules.get_Oja.html) | [gamma oscillations](https://brainpy-models.readthedocs.io/en/latest/examples/networks/Gamma_oscillations.html) |
-| [Morris--Lecar model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_MorrisLecar.html) | [Exponential Decay Synapse](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_exponential.html) |                                                              |                                                              |
-| [Generalized integrate-and-fire](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_GeneralizedIF.html) | [Difference of Two Exponentials](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_two_exponentials.html) |                                                              |                                                              |
-| [Exponential integrate-and-fire](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_ExpIF.html) | [Short-term plasticity](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_STP.html) |                                                              |                                                              |
-| [Quadratic integrate-and-fire](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_QuaIF.html) | [Gap junction](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_gap_junction.html) |                                                              |                                                              |
-| [adaptive Exponential IF](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_AdExIF.html) | [Voltage jump](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_voltage_jump.html) |                                                              |                                                              |
-| [adaptive Quadratic IF](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_AdQuaIF.html) |                                                              |                                                              |                                                              |
-| [Hindmarsh--Rose model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_HindmarshRose.html) |                                                              |                                                              |                                                              |
-| [Wilson-Cowan model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_WilsonCowan.html) |                                                              |                                                              |                                                              |
+| Neuron models                                                | Synapse models                                               | Learning rules                                               |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [Leaky integrate-and-fire model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_LIF.html) | [Alpha Synapse](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_alpha.html) | [STDP](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.learning_rules.get_STDP1.html) |
+| [Hodgkin-Huxley model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_HH.html) | [AMPA](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_AMPA1.html) / [NMDA](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_NMDA.html) | [BCM rule](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.learning_rules.get_BCM.html) |
+| [Izhikevich model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_Izhikevich.html) | [GABA_A](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_GABAa1.html) / [GABA_B](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_GABAb1.html) | [Oja\'s rule](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.learning_rules.get_Oja.html) |
+| [Morris--Lecar model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_MorrisLecar.html) | [Exponential Decay Synapse](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_exponential.html) |                                                              |
+| [Generalized integrate-and-fire](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_GeneralizedIF.html) | [Difference of Two Exponentials](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_two_exponentials.html) |                                                              |
+| [Exponential integrate-and-fire](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_ExpIF.html) | [Short-term plasticity](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_STP.html) |                                                              |
+| [Quadratic integrate-and-fire](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_QuaIF.html) | [Gap junction](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_gap_junction.html) |                                                              |
+| [adaptive Exponential IF](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_AdExIF.html) | [Voltage jump](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.synapses.get_voltage_jump.html) |                                                              |
+| [adaptive Quadratic IF](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_AdQuaIF.html) |                                                              |                                                              |
+| [Hindmarsh--Rose model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_HindmarshRose.html) |                                                              |                                                              |
+| [Wilson-Cowan model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_WilsonCowan.html) |                                                              |                                                              |
 
 
 ## Installation
 
-Install `Brain-Models` using `pip`:
+Install `BrainModels` using `pip`:
 
 ```bash
 > pip install brainmodels
 ```
 
-Install ``Brain-Models`` using ``conda``:
+Install ``BrainModels`` using ``conda``:
 
 ```bash
 > conda install brainmodels -c brainpy 
@@ -50,7 +50,7 @@ Install from source code:
 > python setup.py install
 ```
 
-``Brain-Models`` is based on Python (>=3.7), and the following packages need to be installed to use `Brain-Models`:
+``BrainModels`` is based on Python (>=3.7), and the following packages need to be installed to use `BrainModels`:
 
 -   brainpy-simulator >= 1.0.0
 -   Matplotlib >= 3.2

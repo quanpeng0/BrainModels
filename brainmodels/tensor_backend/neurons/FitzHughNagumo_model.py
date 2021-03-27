@@ -4,11 +4,11 @@ import brainpy as bp
 
 
 __all__ = [
-    'FHN'
+    'FitzHughNagumo'
 ]
 
 
-class FHN(bp.NeuGroup):
+class FitzHughNagumo(bp.NeuGroup):
     """FitzHugh-Nagumo neuron model.
 
     """
@@ -33,7 +33,7 @@ class FHN(bp.NeuGroup):
         self.input = bp.backend.zeros(num)
 
         self.integral = bp.odeint(self.derivative)
-        super(FHN, self).__init__(size=size, **kwargs)
+        super(FitzHughNagumo, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
         V, self.w = self.integral(self.V, self.w, _t, self.input, self.a, self.b, self.tau)

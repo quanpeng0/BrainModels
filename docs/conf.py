@@ -18,8 +18,8 @@ import brainmodels
 
 # -- Project information -----------------------------------------------------
 
-project = 'BrainPy-Models'
-copyright = '2020, Chaoming Wang'
+project = 'BrainModels'
+copyright = '2021, Chaoming Wang'
 author = 'Chaoming Wang'
 
 # The full version, including alpha/beta/rc tags
