@@ -1,4 +1,4 @@
-# BrainPy-Models
+# Brain-Models
 
 [![LICENSE](https://anaconda.org/brainpy/brainpy/badges/license.svg)](https://github.com/PKU-NIP-Lab/BrainPy-Models)    [![Documentation](https://readthedocs.org/projects/brainpy/badge/?version=latest)](https://brainpy-models.readthedocs.io/en/latest/)     [![Conda](https://anaconda.org/brainpy/bpmodels/badges/version.svg)](https://anaconda.org/brainpy/bpmodels) 
 
@@ -6,7 +6,7 @@
 
 
 
-`BrainPy-Models` is a repository accompany with [BrainPy](https://github.com/PKU-NIP-Lab/BrainPy), which is a framework for spiking neural network simulation. With BrainPy, we implements the most canonical and effective neuron models and synapse models, and show them in `BrainPy-Models`.
+`Brain-Models` implements the most canonical neuron models and synapse models for brain modeling with [BrainPy](https://github.com/PKU-NIP-Lab/BrainPy).
 
 Here, users can directly import our models into your network, and also can learn examples of how to use BrainPy from [Documentations](https://brainpy-models.readthedocs.io/en/latest/).
 
@@ -26,25 +26,37 @@ We provide the following models:
 | [adaptive Quadratic IF](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_AdQuaIF.html) |                                                              |                                                              |                                                              |
 | [Hindmarsh--Rose model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_HindmarshRose.html) |                                                              |                                                              |                                                              |
 | [Wilson-Cowan model](https://brainpy-models.readthedocs.io/en/latest/apis/_autosummary/bpmodels.neurons.get_WilsonCowan.html) |                                                              |                                                              |                                                              |
+
+
 ## Installation
+
+Install `Brain-Models` using `pip`:
+
+```bash
+> pip install brainmodels
+```
+
+Install ``Brain-Models`` using ``conda``:
+
+```bash
+> conda install brainmodels -c brainpy 
+```
 
 Install from source code:
 
-    python setup.py install
+```bash
+> pip install git+https://github.com/PKU-NIP-Lab/BrainModels
+> # or
+> python setup.py install
+```
 
-Install ``BrainPy-Models`` using ``conda``:
+``Brain-Models`` is based on Python (>=3.7), and the following packages need to be installed to use `Brain-Models`:
 
-    conda install bpmodels -c brainpy 
+-   brainpy-simulator >= 1.0.0
+-   Matplotlib >= 3.2
+-   NumPy >= 1.13
 
-Install `BrainPy-Models` using `pip`:
 
-    pip install bpmodels
-
-The following packages need to be installed to use `BrainPy-Models`:
-
--   Python >= 3.7
--   Matplotlib >= 2.0
--   brainpy-simulator >= 0.3.0
 
 ## Quick Start
 
@@ -54,7 +66,7 @@ We start by importing the `brainpy` and `bpmodels` packages and set profile.
 
 ```python
 import brainpy as bp
-import bpmodels
+import brainmodels
 import numpy as np
 import matplotlib.pyplot as plt
 

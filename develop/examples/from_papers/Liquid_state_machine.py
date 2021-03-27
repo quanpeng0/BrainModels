@@ -12,7 +12,7 @@ on perturbations", Neural Comput, 14 (11): 2531–60
 
 import brainpy as bp
 import numpy as np
-import bpmodels
+import brainmodels
 import matplotlib.pyplot as plt
 
 bp.profile.set(jit=True, device='cpu',
@@ -50,8 +50,8 @@ V_rest = 0.
 V_reset = 13.5
 R = 1.        # m
 
-neuron = bpmodels.neurons.get_LIF(tau=tau_m, V_th=V_th, R=R,
-                                  V_reset=V_reset, V_rest=V_rest)
+neuron = brainmodels.neurons.get_LIF(tau=tau_m, V_th=V_th, R=R,
+                                     V_reset=V_reset, V_rest=V_rest)
 
 liquid_E = bp.NeuGroup(neuron, geometry=num_exc)
 liquid_I = bp.NeuGroup(neuron, geometry=num_inh)
@@ -154,7 +154,7 @@ def get_weights(A, shape):
 
 
 # synapse connections
-syn = bpmodels.synapses.get_STP()
+syn = brainmodels.synapses.get_STP()
 
 # E -> E
 syn_ee = bp.SynConn(syn,

@@ -3,11 +3,11 @@
 import matplotlib.pyplot as plt
 import brainpy as bp
 import numpy as np
-import bpmodels
+import brainmodels
 
 bp.profile.set(jit=True, merge_steps=True)
 
-Izhikevich = bpmodels.neurons.get_Izhikevich(type='None')
+Izhikevich = brainmodels.neurons.get_Izhikevich(type='None')
 neu = bp.NeuGroup(Izhikevich, 10, monitors=['V', 'u'])
 neu.pars['noise'] = 0.
 
@@ -44,7 +44,7 @@ plt.show()
 
 
 # tonic spiking
-Izhikevich = bpmodels.neurons.get_Izhikevich(type='tonic spiking')
+Izhikevich = brainmodels.neurons.get_Izhikevich(type='tonic spiking')
 neu = bp.NeuGroup(Izhikevich, 10, monitors=['V', 'u'])
 neu.pars['noise'] = 0.
 current2 = bp.inputs.ramp_current(10, 10, 150, 0, 150)

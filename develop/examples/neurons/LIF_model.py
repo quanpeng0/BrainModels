@@ -3,7 +3,7 @@ import brainpy as bp
 import numpy as np
 import matplotlib.pyplot as plt
 
-import bpmodels
+import brainmodels
 
 print("version：", bp.__version__)
 ## set global params
@@ -12,7 +12,7 @@ duration = 100.  # simulate duration
 bp.profile.set(jit=True, dt=dt, merge_steps=True)
 
 # define neuron type
-LIF_neuron = bpmodels.neurons.get_LIF(mode='vector')
+LIF_neuron = brainmodels.neurons.get_LIF(mode='vector')
 
 # build neuron group
 neu = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'refractory', "spike", "t_last_spike"])

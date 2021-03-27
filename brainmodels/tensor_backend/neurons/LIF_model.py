@@ -3,6 +3,10 @@
 
 import brainpy as bp
 
+__all__ = [
+    'LIF'
+]
+
 
 class LIF(bp.NeuGroup):
     """Leaky Integrate-and-Fire neuron model.

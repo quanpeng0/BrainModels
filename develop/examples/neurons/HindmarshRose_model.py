@@ -2,7 +2,7 @@
 
 import brainpy as bp
 import numpy as np
-import bpmodels
+import brainmodels
 import matplotlib.pyplot as plt
 
 # set global params
@@ -18,7 +18,7 @@ param= {'quiescence':         [1.0, 2.0],  #a
 print(f"parameters is set to firing mode <{mode}>")
 
 # define neuron type
-HindmarshRose_neuron = bpmodels.neurons.get_HindmarshRose(noise = 0.)
+HindmarshRose_neuron = brainmodels.neurons.get_HindmarshRose(noise = 0.)
 
 # build neuron group
 neu = bp.NeuGroup(HindmarshRose_neuron, geometry=(10,), monitors=['V', 'y', 'z'])

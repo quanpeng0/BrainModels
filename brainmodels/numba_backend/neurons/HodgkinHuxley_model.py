@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from numba import prange
 import brainpy as bp
+from numba import prange
+
+__all__ = [
+    'HH'
+]
 
 
 class HH(bp.NeuGroup):

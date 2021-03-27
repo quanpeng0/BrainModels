@@ -1,6 +1,6 @@
 import numpy as np
 import brainpy as bp
-import bpmodels
+import brainmodels
 import matplotlib.pyplot as plt
 
 print(bp.__version__)
@@ -48,28 +48,28 @@ duration=500
 I = bp.inputs.spike_current([0.1], bp.profile._dt, 1., duration=duration)
 
 # NMDA
-syn_model = bpmodels.synapses.get_NMDA(g_max=0.03)
+syn_model = brainmodels.synapses.get_NMDA(g_max=0.03)
 syn = bp.SynConn(syn_model, pre_group=neu, post_group=neu, conn=bp.connect.All2All())
 net = bp.Network(neu, syn)
 net.run(duration=duration, inputs=(syn, 'pre.spike', I, '='))
 plt.plot(net.ts, 5000 * neu.mon.input[:, 0], label='NMDA')
 
 # AMPA
-syn_model = bpmodels.synapses.get_AMPA1(g_max=0.001)
+syn_model = brainmodels.synapses.get_AMPA1(g_max=0.001)
 syn = bp.SynConn(syn_model, pre_group=neu, post_group=neu, conn=bp.connect.All2All())
 net = bp.Network(neu, syn)
 net.run(duration=duration, inputs=(syn, 'pre.spike', I, '='))
 plt.plot(net.ts, 5000 * neu.mon.input[:, 0], label='AMPA')
 
 # GABA_b
-syn_model = bpmodels.synapses.get_GABAb1(T_duration=0.15)
+syn_model = brainmodels.synapses.get_GABAb1(T_duration=0.15)
 syn = bp.SynConn(syn_model, pre_group=neu, post_group=neu, conn=bp.connect.All2All())
 net = bp.Network(neu, syn)
 net.run(duration=duration, inputs=(syn, 'pre.spike', I, '='))
 plt.plot(net.ts, 1e+6 * 5000 * neu.mon.input[:, 0], label='GABAb')
 
 # GABA_a
-syn_model = bpmodels.synapses.get_GABAa1(g_max=0.002)
+syn_model = brainmodels.synapses.get_GABAa1(g_max=0.002)
 syn = bp.SynConn(syn_model, pre_group=neu, post_group=neu, conn=bp.connect.All2All())
 net = bp.Network(neu, syn)
 net.run(duration=duration, inputs=(syn, 'pre.spike', I, '='))

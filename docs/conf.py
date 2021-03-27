@@ -14,7 +14,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('..'))
-import bpmodels
+import brainmodels
 
 # -- Project information -----------------------------------------------------
 
@@ -23,7 +23,7 @@ copyright = '2020, Chaoming Wang'
 author = 'Chaoming Wang'
 
 # The full version, including alpha/beta/rc tags
-release = bpmodels.__version__
+release = brainmodels.__version__
 
 # -- General configuration ---------------------------------------------------
 

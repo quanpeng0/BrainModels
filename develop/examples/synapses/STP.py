@@ -1,9 +1,9 @@
 import brainpy as bp
-import bpmodels
+import brainmodels
 import matplotlib.pyplot as plt
 
 
-LIF = bpmodels.neurons.get_LIF(V_rest=-65., V_reset=-65., V_th=-55)
+LIF = brainmodels.neurons.get_LIF(V_rest=-65., V_reset=-65., V_th=-55)
 
 neu = bp.NeuGroup(LIF, 1, monitors=['V'])
 neu.ST['V'] = -65.
@@ -12,7 +12,7 @@ duration=300
 I = bp.inputs.spike_current([10, 90, 150, 200, 220], bp.profile._dt, 1., duration=duration)
 
 # f
-syn_model = bpmodels.synapses.get_STP(U=0.1, tau_d=100, tau_f=2000.)
+syn_model = brainmodels.synapses.get_STP(U=0.1, tau_d=100, tau_f=2000.)
 syn = bp.SynConn(syn_model, pre_group=neu, post_group=neu, 
                 conn=bp.connect.All2All(), monitors=['u', 'x', 's'])
 net = bp.Network(neu, syn)
@@ -34,7 +34,7 @@ plt.show()
 
 
 # d
-syn_model = bpmodels.synapses.get_STP(U=0.55, tau_d=1500., tau_f=50.)
+syn_model = brainmodels.synapses.get_STP(U=0.55, tau_d=1500., tau_f=50.)
 syn = bp.SynConn(syn_model, pre_group=neu, post_group=neu, 
                 conn=bp.connect.All2All(), monitors=['u', 'x', 's'])
 net = bp.Network(neu, syn)

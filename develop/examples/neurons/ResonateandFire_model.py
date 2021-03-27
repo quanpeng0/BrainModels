@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
-import bpmodels
+import brainmodels
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,7 +11,7 @@ duration = 20.  # simulate duration
 bp.profile.set(jit=True, dt=dt, merge_steps=True, show_code=False)
 
 # define neuron type
-RF_neuron = bpmodels.neurons.get_ResonateandFire()
+RF_neuron = brainmodels.neurons.get_ResonateandFire()
 
 # build neuron group
 neu = bp.NeuGroup(RF_neuron, geometry=(10,), monitors=['x', 'V', 'spike'])

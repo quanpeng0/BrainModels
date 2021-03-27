@@ -3,6 +3,10 @@
 
 import brainpy as bp
 
+__all__ = [
+    'HH'
+]
+
 
 class HH(bp.NeuGroup):
     """Hodgkin–Huxley neuron model.

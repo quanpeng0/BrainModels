@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
 
+
 import brainpy as bp
+from numba import prange
+
+__all__ = [
+    'FHN'
+]
 
 
 class FHN(bp.NeuGroup):
     """FitzHugh-Nagumo neuron model.
-
     """
-    target_backend = 'general'
+
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numpy-cuda']
 
     @staticmethod
     def derivative(V, w, t, Iext, a, b, tau):
@@ -31,7 +37,9 @@ class FHN(bp.NeuGroup):
         super(FHN, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
-        V, self.w = self.integral(self.V, self.w, _t, self.input, self.a, self.b, self.tau)
-        self.spike = (V >= self.Vth) * (self.V < self.Vth)
-        self.V = V
-        self.input[:] = 0.
+        for i in prange(self.num):
+            V, w = self.integral(self.V[i], self.w[i], _t, self.input[i], self.a, self.b, self.tau)
+            self.spike[i] = (V >= self.Vth) * (self.V[i] < self.Vth)
+            self.V[i] = V
+            self.w[i] = w
+            self.input[i] = 0.

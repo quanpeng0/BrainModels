@@ -4,6 +4,10 @@
 import brainpy as bp
 from numba import prange
 
+__all__ = [
+    'LIF'
+]
+
 
 class LIF(bp.NeuGroup):
     """Leaky Integrate-and-Fire neuron model.

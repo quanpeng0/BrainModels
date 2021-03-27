@@ -2,14 +2,14 @@
 
 import matplotlib.pyplot as plt
 import brainpy as bp
-import bpmodels
-from bpmodels.numba_backend.neurons import get_LIF
+import brainmodels
+from brainmodels.numba_backend.neurons import get_LIF
 
 duration = 500.
 dt = 0.02
 bp.profile.set(jit=True, dt=dt, merge_steps=True)
 LIF_neuron = get_LIF()
-GABAa_syn = bpmodels.synapses.get_GABAa1(mode='matrix')
+GABAa_syn = brainmodels.synapses.get_GABAa1(mode='matrix')
 
 # build and simulate gabaa net
 pre = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])

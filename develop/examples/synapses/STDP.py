@@ -3,14 +3,14 @@
 import matplotlib.pyplot as plt
 import brainpy as bp
 import numpy as np
-import bpmodels
-from bpmodels.numba_backend.neurons import get_LIF
-#from bpmodels.learning_rules import get_STDP
+import brainmodels
+from brainmodels.numba_backend.neurons import get_LIF
+#from brainmodels.learning_rules import get_STDP
 
 duration = 550.
 dt = 0.02
 bp.profile.set(jit=True, dt = dt, merge_steps = True, show_code = False)
-STDP_syn = bpmodels.learning_rules.get_STDP(mode='scalar')
+STDP_syn = brainmodels.learning_rules.get_STDP(mode='scalar')
 
 # set params
 delta_t = [-20, -15, -10, -8, -6, -4, -3, 

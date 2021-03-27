@@ -2,7 +2,7 @@
 
 
 import brainpy as bp
-import bpmodels.numba_backend as bpmodels
+import brainmodels.numba_backend as bpmodels
 
 bp.backend.set('numba', dt=0.01)
 
