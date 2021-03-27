@@ -2,9 +2,8 @@
 
 import matplotlib.pyplot as plt
 import brainpy as bp
-import numpy as np
 import bpmodels
-from bpmodels.neurons import get_LIF
+from bpmodels.numba_backend.neurons import get_LIF
 
 duration = 500.
 dt = 0.02
