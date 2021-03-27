@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+from numba import prange
 
 __all__ = [
     'AMPA1',
@@ -56,7 +57,7 @@ class AMPA1(bp.TwoEndConn):
                 Journal of computational neuroscience, 2001, 11(1): 63-85.
     """
 
-    target_backend = 'general'
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
     @staticmethod
     def derivative(s, t, tau):
@@ -72,8 +73,8 @@ class AMPA1(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
         # data
         self.s = bp.backend.zeros(self.size)
@@ -83,10 +84,13 @@ class AMPA1(bp.TwoEndConn):
         super(AMPA1, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        self.s = self.int_s(self.s, _t, self.tau)
-        self.s += bp.backend.unsqueeze(self.pre.spike, 0) * self.conn_mat
-        self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+            self.s[i] = self.int_s(self.s[i], _t, self.tau)
+            self.s[i] += self.pre.spike[pre_id]
+            self.g.push(i, self.g_max * self.s[i])
+            post_id = self.post_ids[i]
+            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
 
 
 class AMPA2(bp.TwoEndConn):
@@ -94,7 +98,7 @@ class AMPA2(bp.TwoEndConn):
 
     """
 
-    target_backend = 'general'
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
     @staticmethod
     def derivative(s, t, TT, alpha, beta):
@@ -114,8 +118,8 @@ class AMPA2(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
         # variables
         self.s = bp.backend.zeros(self.size)
@@ -126,9 +130,13 @@ class AMPA2(bp.TwoEndConn):
         super(AMPA2, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        spike = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
-        TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
-        self.s = self.int_s(self.s, _t, TT, self.alpha, self.beta)
-        self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+            post_id = self.post_ids[i]
+
+            if self.pre.spike[pre_id]:
+                self.t_last_pre_spike[pre_id] = _t
+            TT = ((_t - self.t_last_pre_spike[pre_id]) < self.T_duration) * self.T
+            self.s[i] = self.int_s(self.s[i], _t, TT, self.alpha, self.beta)
+            self.g.push(i, self.g_max * self.s[i])
+            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)

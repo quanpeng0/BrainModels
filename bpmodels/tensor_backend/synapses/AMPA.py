@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-from numba import prange
 
 __all__ = [
     'AMPA1',
@@ -57,7 +56,7 @@ class AMPA1(bp.TwoEndConn):
                 Journal of computational neuroscience, 2001, 11(1): 63-85.
     """
 
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
+    target_backend = 'general'
 
     @staticmethod
     def derivative(s, t, tau):
@@ -73,32 +72,79 @@ class AMPA1(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
-        self.size = len(self.pre_ids)
+        self.conn_mat = conn.requires('conn_mat')
+        self.size = bp.backend.shape(self.conn_mat)
 
         # data
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-        self.int_s = bp.odeint(f=self.derivative, method='exponential_euler')
+        self.int_s = bp.odeint(f=self.derivative, method='euler')
         super(AMPA1, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        for i in prange(self.size):
-            pre_id = self.pre_ids[i]
-            self.s[i] = self.int_s(self.s[i], _t, self.tau)
-            self.s[i] += self.pre.spike[pre_id]
-            self.g.push(i, self.g_max * self.s[i])
-            post_id = self.post_ids[i]
-            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
+        self.s = self.int_s(self.s, _t, self.tau)
+        self.s += bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        self.g.push(self.g_max * self.s)
+        self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
 
 
 class AMPA2(bp.TwoEndConn):
     """AMPA conductance-based synapse (type 2).
+    
+    .. math::
 
+        I_{syn}&=\\bar{g}_{syn} s (V-E_{syn})
+
+        \\frac{ds}{dt} &=\\alpha[T](1-s)-\\beta s
+
+    **Synapse Parameters**
+    
+    ============= ============== ======== ================================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- ------------------------------------------------
+    g_max         .42            µmho(µS) Maximum conductance.
+
+    E             0.             mV       The reversal potential for the synaptic current.
+
+    alpha         .98            \        Binding constant.
+
+    beta          .18            \        Unbinding constant.
+
+    T             .5             mM       Neurotransmitter concentration.
+
+    T_duration    .5             ms       Duration of the neurotransmitter concentration.
+
+    mode          'scalar'       \        Data structure of ST members.
+    ============= ============== ======== ================================================    
+    
+    Returns:
+        bp.Syntype: return description of the AMPA synapse model.
+
+    **Synapse State**
+
+    ST refers to the synapse state, items in ST are listed below:
+    
+    ================ ================== =========================================================
+    **Member name**  **Initial values** **Explanation**
+    ---------------- ------------------ ---------------------------------------------------------
+    s                 0                 Gating variable.
+    
+    g                 0                 Synapse conductance.
+
+    t_last_pre_spike  -1e7              Last spike time stamp of the pre-synaptic neuron.
+    ================ ================== =========================================================
+    
+    Note that all ST members are saved as floating point type in BrainPy, 
+    though some of them represent other data types (such as boolean).
+
+    References:
+        .. [1] Vijayan S, Kopell N J. Thalamic model of awake alpha oscillations 
+                and implications for stimulus processing[J]. Proceedings of the 
+                National Academy of Sciences, 2012, 109(45): 18553-18558.
     """
 
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
+    target_backend = 'general'
 
     @staticmethod
     def derivative(s, t, TT, alpha, beta):
@@ -118,25 +164,21 @@ class AMPA2(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
-        self.size = len(self.pre_ids)
+        self.conn_mat = conn.requires('conn_mat')
+        self.size = bp.backend.shape(self.conn_mat)
 
         # variables
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
         self.t_last_pre_spike = -1e7 * bp.backend.ones(self.size)
 
-        self.int_s = bp.odeint(f=self.derivative, method='exponential_euler')
+        self.int_s = bp.odeint(f=self.derivative, method='euler')
         super(AMPA2, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        for i in prange(self.size):
-            pre_id = self.pre_ids[i]
-            post_id = self.post_ids[i]
-
-            if self.pre.spike[pre_id]:
-                self.t_last_pre_spike[pre_id] = _t
-            TT = ((_t - self.t_last_pre_spike[pre_id]) < self.T_duration) * self.T
-            self.s[i] = self.int_s(self.s[i], _t, TT, self.alpha, self.beta)
-            self.g.push(i, self.g_max * self.s[i])
-            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
+        spike = bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
+        TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
+        self.s = self.int_s(self.s, _t, TT, self.alpha, self.beta)
+        self.g.push(self.g_max * self.s)
+        self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)

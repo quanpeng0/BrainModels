@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
 import numpy as np
-from numba import prange
 
 bp.integrators.set_default_odeint('rk4')
-bp.backend.set(backend='numpy', dt=0.01)
+
 
 class BCM(bp.TwoEndConn):
     """
@@ -54,7 +53,7 @@ class BCM(bp.TwoEndConn):
                University Press, 2014.
     """
 
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
+    target_backend = 'general'
 
     def __init__(self, pre, post, conn, lr=0.005, w_max=2., w_min=0., **kwargs):
         # parameters
@@ -79,7 +78,6 @@ class BCM(bp.TwoEndConn):
     def int_w(w, t, lr, r_pre, r_post, r_th):
         dwdt = lr * r_post * (r_post - r_th) * r_pre
         return dwdt
-
     
     def update(self, _t):
         # update threshold
@@ -88,14 +86,14 @@ class BCM(bp.TwoEndConn):
 
         # resize to matrix
         w = self.w * self.conn_mat
-        dim = np.shape(w)
-        r_th = np.vstack((r_th,)*dim[0])
-        r_post = np.vstack((self.post.r,)*dim[0])
-        r_pre = np.vstack((self.pre.r,)*dim[1]).T
+        dim = self.size
+        r_th = bp.backend.vstack((r_th,)*dim[0])
+        r_post = bp.backend.vstack((self.post.r,)*dim[0])
+        r_pre = bp.backend.vstack((self.pre.r,)*dim[1]).T
 
         # update w
         w = self.int_w(w, _t, self.lr, r_pre, r_post, r_th)
         self.w = np.clip(w, self.w_min, self.w_max)
 
         # output
-        self.post.r = np.dot(w.T, self.pre.r)
+        self.post.r = bp.backend.sum(w.T * self.pre.r, axis=1)
