@@ -1,16 +1,13 @@
 BrainModels documentation
 =========================
 
-``BrainModels`` is based on `BrainPy <https://brainpy.readthedocs.io/>`_
-neuronal dynamics simulation framework. Here you can find neurons, synapses
-models and topological networks implemented with BrainPy.
-
-
-.. note::
-
-   We welcome your implementation about `neurons`, `synapses`, `learning rules`,
-   `networks` and `paper examples`. https://github.com/PKU-NIP-Lab/BrainModels
-
+``BrainModels`` provides standard and canonical brain models (including
+various neurons, synapses, networks, and intuitive paper examples) which
+are implemented with `BrainPy <https://brainpy.readthedocs.io/>`_ simulator.
+Moreover, we welcome your brain model implementations, and publish them
+through our `GitHub <https://github.com/PKU-NIP-Lab/BrainModels>`_ homepage.
+In such a way, once your new model is implemented, it can be easily shared
+with other BrainPy users.
 
 
 .. toctree::
