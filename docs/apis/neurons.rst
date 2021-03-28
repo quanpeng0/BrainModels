@@ -1,8 +1,10 @@
 brainmodels.neurons
 ===================
 
-.. currentmodule:: brainmodels.tensor_backend.neurons
-.. automodule:: brainmodels.tensor_backend.neurons
+
+.. automodule:: brainmodels.neurons
+
+.. currentmodule:: brainmodels.neurons
 
 
 .. autosummary::
@@ -12,3 +14,16 @@ brainmodels.neurons
     HindmarshRose
     HH
     LIF
+
+.. autoclass:: FitzHughNagumo
+   :members:
+
+.. autoclass:: HindmarshRose
+   :members:
+
+.. autoclass:: HH
+   :members:
+
+.. autoclass:: LIF
+   :members:
+

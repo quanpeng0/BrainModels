@@ -1,3 +1,12 @@
+Neuron Models
+=============
+
+.. toctree::
+   :maxdepth: 1
+
+   from_papers/GeneralizedIF_model
+   from_papers/HindmarshRose_model
+
 Oscillation and Synchronization
 ===============================
 
@@ -48,12 +57,12 @@ Decision Making
 .. toctree::
    :maxdepth: 1
 
-   from_papers/wong_wang_2006_decision
    from_papers/Wang_2002_decision_making_spiking
-   
+   from_papers/wong_wang_2006_decision
 
-Others
-======
+
+Unclassified Models
+===================
 
 .. toctree::
    :maxdepth: 1

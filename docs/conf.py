@@ -12,9 +12,12 @@
 #
 import os
 import sys
+# sys.path.append('../')
+sys.path.append(os.path.abspath('../..'))
+sys.path.append(os.path.abspath('..'))
 
-sys.path.insert(0, os.path.abspath('..'))
 import brainmodels
+
 
 # -- Project information -----------------------------------------------------
 
@@ -41,22 +44,24 @@ extensions = [
 ]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-html_static_path = ['_static']
 
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # source_suffix = '.rst'
 autosummary_generate = True
 
 # -- Options for HTML output -------------------------------------------------
 
+master_doc = 'index'
+
+# List of patterns, relative to source directory, that match files and
+# directories to ignore when looking for source files.
+# This pattern also affects html_static_path and html_extra_path.
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
 
-master_doc = 'index'
 

@@ -16,24 +16,24 @@ models and topological networks implemented with BrainPy.
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials
-   
-   tutorials/neurons
-   tutorials/synapses
+
    tutorials/dynamics_analysis
+
 
 .. toctree::
    :maxdepth: 2
    :caption: Examples
    
-   examples/neurons
-   examples/from_papers
+   from_papers
+
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: API documentation
 
-    apis/neurons
-    apis/synapses
+   apis/neurons
+   apis/synapses
+
 
 Indices and tables
 ==================
