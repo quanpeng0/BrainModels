@@ -2,14 +2,14 @@
 import matplotlib.pyplot as plt
 import brainpy as bp
 import numpy as np
-import bpmodels
+import brainmodels
 
 
 duration = 100.
 dt = 0.02
 bp.profile.set(jit=True, dt=dt, merge_steps=True, show_code=False)
-LIF_neuron = bpmodels.neurons.get_LIF()
-exponential_syn = bpmodels.synapses.get_exponential()
+LIF_neuron = brainmodels.neurons.get_LIF()
+exponential_syn = brainmodels.synapses.get_exponential()
 
 # Set pre & post NeuGroup
 pre = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])

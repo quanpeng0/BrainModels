@@ -1,10 +1,10 @@
 # misc
 include LICENSE
 include requirements.txt
+include README.md
 
 # exclude
 prune docs
 prune examples
 prune develop
-prune README.md
 

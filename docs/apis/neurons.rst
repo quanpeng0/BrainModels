@@ -1,22 +1,29 @@
-bpmodels.neurons
-=================
+brainmodels.neurons
+===================
 
-.. currentmodule:: bpmodels.neurons
-.. automodule:: bpmodels.neurons
+
+.. automodule:: brainmodels.neurons
+
+.. currentmodule:: brainmodels.neurons
 
 
 .. autosummary::
     :toctree: _autosummary
 
-    get_LIF
-    get_HH
-    get_Izhikevich
-    get_ExpIF
-    get_AdExIF
-    get_QuaIF
-    get_AdQuaIF
-    get_MorrisLecar
-    get_GeneralizedIF
-    get_HindmarshRose
-    get_WilsonCowan
-    get_ResonateandFire
+    FitzHughNagumo
+    HindmarshRose
+    HH
+    LIF
+
+.. autoclass:: FitzHughNagumo
+   :members:
+
+.. autoclass:: HindmarshRose
+   :members:
+
+.. autoclass:: HH
+   :members:
+
+.. autoclass:: LIF
+   :members:
+

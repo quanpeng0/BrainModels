@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
 import numpy as np
-import bpmodels
+import brainmodels
 import matplotlib.pyplot as plt
 
 # set params
@@ -232,9 +232,9 @@ g_max_I2E_GABAa = 1.3  * 1e-3 * net_scale
 g_max_I2I_GABAa = 1.0  * 1e-3 * net_scale
 
 LIF_neu = get_LIF()
-AMPA_syn = bpmodels.synapses.get_AMPA1(mode='matrix')
+AMPA_syn = brainmodels.synapses.get_AMPA1(mode='matrix')
 NMDA_syn = get_NMDA(mode='matrix')
-GABAa_syn = bpmodels.synapses.get_GABAa1(mode='matrix')
+GABAa_syn = brainmodels.synapses.get_GABAa1(mode='matrix')
 # try different mode here
 
 # def neurons

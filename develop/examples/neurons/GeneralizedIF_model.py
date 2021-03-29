@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import brainpy as bp
-from bpmodels.numba_backend.neurons import get_GeneralizedIF
+from brainmodels.numba_backend.neurons import get_GeneralizedIF
 
 print("version：", bp.__version__)
 ## set global params

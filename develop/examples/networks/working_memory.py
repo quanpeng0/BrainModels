@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
 import numpy as np
-import bpmodels
+import brainmodels
 import matplotlib.pyplot as plt
 import math
 from scipy.special import erf
@@ -293,8 +293,8 @@ def create_input(cue_angle, cue_width, cue_amp,
 def run_simulation(input = None):
     # get neu & syn type
     LIF = get_LIF()
-    AMPA = bpmodels.synapses.get_AMPA1(mode = 'matrix')  
-    GABAa = bpmodels.synapses.get_GABAa1(mode = 'matrix')
+    AMPA = brainmodels.synapses.get_AMPA1(mode ='matrix')
+    GABAa = brainmodels.synapses.get_GABAa1(mode ='matrix')
     NMDA = get_NMDA(mode = 'matrix')
 
     # build neuron groups

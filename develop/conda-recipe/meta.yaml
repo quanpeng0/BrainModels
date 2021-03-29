@@ -1,5 +1,5 @@
 package:
-    name: bpmodels
+    name: brainmodels
     version: "0.2.1"
 
 source:
@@ -29,7 +29,7 @@ requirements:
 
 test:
   imports:
-    - bpmodels
+    - brainmodels
 
 about:
     home: https://github.com/PKU-NIP-Lab/BrainPy-Models

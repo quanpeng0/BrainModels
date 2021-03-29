@@ -2,7 +2,7 @@
 import brainpy as bp
 import numpy as np
 import matplotlib.pyplot as plt
-import bpmodels
+import brainmodels
 
 # define a fake firing rate neuron for test
 def get_fr_neu():
@@ -24,7 +24,7 @@ bp.profile.set(jit=False, dt=0.02, merge_steps=True, show_code=False)
 
 # build network
 fr_neu = get_fr_neu()
-oja_synapse = bpmodels.learning_rules.get_Oja(mode='matrix')
+oja_synapse = brainmodels.learning_rules.get_Oja(mode='matrix')
 pre_neu = bp.NeuGroup(fr_neu,
                       geometry=(pre_neu_num, ),
                       monitors=['r'])

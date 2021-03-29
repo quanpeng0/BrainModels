@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import bpmodels
+import brainmodels
 import matplotlib.pyplot as plt
 import brainpy as bp
 import numpy as np
