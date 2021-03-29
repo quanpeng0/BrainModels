@@ -2,8 +2,6 @@
 
 import brainpy as bp
 
-bp.backend.set('numpy', dt=0.02)
-
 class LIF(bp.NeuGroup):
     """
     Leaky Integrate-and-Fire neuron model.

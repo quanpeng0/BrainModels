@@ -7,3 +7,5 @@ from .HodgkinHuxley_model import *
 from .LIF_model import *
 from .ExpIF_model import *
 from .ResonateandFire_model import *
+from .GeneralizedIF_model import *
+from .WilsonCowan_model import *
