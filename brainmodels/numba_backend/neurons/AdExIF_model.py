@@ -3,6 +3,9 @@
 import brainpy as bp
 from numba import prange
 
+__all__ = [
+    'AdExIF'
+]
 
 class AdExIF(bp.NeuGroup):
     """Adaptive Exponential Integrate-and-Fire neuron model.

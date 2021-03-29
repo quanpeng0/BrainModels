@@ -3,6 +3,10 @@
 import brainpy as bp
 from numba import prange
 
+__all__ = [
+    'QuaIF'
+]
+
 class QuaIF(bp.NeuGroup):
     """Quadratic Integrate-and-Fire neuron model.
         

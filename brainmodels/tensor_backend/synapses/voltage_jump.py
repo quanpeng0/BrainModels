@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
-from numba import prange
 
-
+__all__ = [
+    'Voltage_jump'
+]
 class Voltage_jump(bp.TwoEndConn):
     """Voltage jump synapses without post-synaptic neuron refractory.
 
@@ -30,7 +31,7 @@ class Voltage_jump(bp.TwoEndConn):
     
     """
         
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
+    target_backend = 'general'
 
     def __init__(self, pre, post, conn, delay=0., post_refractory=False,  **kwargs):
         # parameters
@@ -39,26 +40,22 @@ class Voltage_jump(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
-        self.size = len(self.pre_ids)
+        self.conn_mat = conn.requires('conn_mat')
+        self.size = bp.backend.shape(self.conn_mat)
 
         # variables
         self.s = bp.backend.zeros(self.size)
-        self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
+        self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
         super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)
-
     
     def update(self, _t):
-        for i in prange(self.size):
-            pre_id = self.pre_ids[i]
-            self.s[i] = self.pre.spike[pre_id]
-
-            # output
-            post_id = self.post_ids[i]
-            if self.post_refractory:
-                self.g.push(i, self.s[i] * (1. - self.post.refractory[post_id]))
-            else:
-                self.g.push(i, self.s[i])
-            
-            self.post.V[post_id] += self.g.pull(i)
+        self.s = bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+             
+        if self.post_refractory:
+            refra_map = (1. - bp.backend.reshape(self.post.refractory, (1, -1))) * self.conn_mat
+            self.out.push(self.s * refra_map)
+        else:
+            self.out.push(self.s)
+        
+        self.post.V += bp.backend.sum(self.out.pull(), axis=0)

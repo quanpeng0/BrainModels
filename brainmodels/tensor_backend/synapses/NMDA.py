@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
-from numba import prange
 
+__all__ = [
+    'NMDA'
+]
 class NMDA(bp.TwoEndConn):
     """NMDA conductance-based synapse.
 
@@ -76,7 +78,7 @@ class NMDA(bp.TwoEndConn):
     
     """
     
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
+    target_backend = 'general'
 
     def __init__(self, pre, post, conn, delay=0., g_max=0.15, E=0., cc_Mg=1.2,
                     alpha=0.062, beta=3.57, tau=100, a=0.5, tau_rise = 2., **kwargs):
@@ -93,14 +95,13 @@ class NMDA(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
-        self.size = len(self.pre_ids)
+        self.conn_mat = conn.requires('conn_mat')
+        self.size = bp.backend.shape(self.conn_mat)
 
         # variables
         self.s = bp.backend.zeros(self.size)
         self.x = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
-
 
         super(NMDA, self).__init__(pre=pre, post=post, **kwargs)
 
@@ -111,19 +112,11 @@ class NMDA(bp.TwoEndConn):
         dsdt = -s / tau_decay + a * x * (1 - s)
         return dsdt, dxdt
 
-    
     def update(self, _t):
-        for i in prange(self.size):
-            pre_id = self.pre_ids[i]
-
-            self.x[i] += self.pre.spike[pre_id]
-            self.s[i], self.x[i] = self.integral(self.s[i], self.x[i], _t, self.tau_rise, self.tau, self.a)
-
-            # output
-            self.g.push(i, self.g_max * self.s[i])
-
-            post_id = self.post_ids[i]
-
-            g_inf = 1 + self.cc_Mg / self.beta * bp.backend.exp(-self.alpha * self.post.V[post_id])
-
-            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E) / g_inf
+        self.x += bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat        
+        self.s, self.x = self.integral(self.s, self.x, _t, self.tau_rise, self.tau, self.a)
+        
+        self.g.push(self.g_max * self.s)
+        g_inf = 1 + self.cc_Mg / self.beta * bp.backend.exp(-self.alpha * self.post.V)
+        g_inf = 1 / g_inf
+        self.post.input -= bp.backend.sum(self.g.pull(), axis=0) * (self.post.V - self.E) * g_inf

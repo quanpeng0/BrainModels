@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
-from numba import prange
 
 __all__ = [
     'Gap_junction',
@@ -41,28 +40,27 @@ class Gap_junction(bp.TwoEndConn):
 
     """
 
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
+    target_backend = 'general'
 
     def __init__(self, pre, post, conn, delay=0., **kwargs):
         self.delay = delay
+        
         # connections
         self.conn = conn(pre.size, post.size)
-        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
-        self.size = len(self.pre_ids)
+        self.conn_mat = conn.requires('conn_mat')
+        self.size = bp.backend.shape(self.conn_mat)
 
         # variables
         self.w = bp.backend.ones(self.size)
 
         super(Gap_junction, self).__init__(pre=pre, post=post, **kwargs)
 
-
-    
     def update(self, _t):
-        for i in prange(self.size):
-            pre_id = self.pre_ids[i]
-            post_id = self.post_ids[i]
+        v_post = bp.backend.vstack((self.post.V,) * self.size[0])
+        v_pre = bp.backend.vstack((self.pre.V,) * self.size[1]).T
 
-            self.post.input[post_id] += self.w[i] * (self.pre.V[pre_id] - self.post.V[post_id])
+        out = self.w * (v_pre - v_post) * self.conn_mat
+        self.post.input += bp.backend.sum(out, axis=0)
 
 
 
@@ -100,7 +98,7 @@ class Gap_junction_lif(bp.TwoEndConn):
 
     """
     
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
+    target_backend = 'general'
 
     def __init__(self, pre, post, conn, delay=0., k_spikelet=0.1, post_refractory=False,  **kwargs):
         self.delay = delay
@@ -109,8 +107,8 @@ class Gap_junction_lif(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
-        self.size = len(self.pre_ids)
+        self.conn_mat = conn.requires('conn_mat')
+        self.size = bp.backend.shape(self.conn_mat)
 
         # variables
         self.w = bp.backend.ones(self.size)
@@ -120,15 +118,15 @@ class Gap_junction_lif(bp.TwoEndConn):
 
 
     def update(self, _t):
-        for i in prange(self.size):
-            pre_id = self.pre_ids[i]
-            post_id = self.post_ids[i]
+        v_post = bp.backend.vstack((self.post.V,) * self.size[0])
+        v_pre = bp.backend.vstack((self.pre.V,) * self.size[1]).T
 
-            self.post.input[post_id] += self.w[i] * (self.pre.V[pre_id] - self.post.V[post_id])
+        out = self.w * (v_pre - v_post) * self.conn_mat
+        self.post.input += bp.backend.sum(out, axis=0)
 
-            if self.post_refractory:
-                self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id] * (1. - self.post.refractory[post_id]))
-            else:
-                self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id])
-            
-            self.post.V[post_id] += self.spikelet.pull(i)
+        if self.post_refractory:
+            self.spikelet.push(self.w * self.k_spikelet * bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat * (1. - self.post.refractory))
+        else:
+            self.spikelet.push(self.w * self.k_spikelet * bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat)
+        
+        self.post.V += bp.backend.sum(self.spikelet.pull(), axis=0)

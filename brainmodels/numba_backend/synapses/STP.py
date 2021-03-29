@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
+from numba import prange
 
+__all__ = [
+    'STP'
+]
 class STP(bp.TwoEndConn):
     """Short-term plasticity proposed by Tsodyks and Markram (Tsodyks 98) [1]_.
 
@@ -69,7 +73,7 @@ class STP(bp.TwoEndConn):
                 with dynamic synapses." Neural computation 10.4 (1998): 821-835.
     """
 
-    target_backend = 'general'
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
     def __init__(self, pre, post, conn, delay=0., U=0.15, tau_f=1500., tau_d=200., tau=8.,  **kwargs):
         # parameters
@@ -81,8 +85,8 @@ class STP(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
         # variables
         self.s = bp.backend.zeros(self.size)
@@ -101,16 +105,21 @@ class STP(bp.TwoEndConn):
         dxdt = (1 - x) / tau_d
         return dsdt, dudt, dxdt
 
+    
     def update(self, _t):
-        self.s, u, x = self.integral(self.s, self.u, self.x, _t, self.tau, self.tau_d, self.tau_f)
-        
-        pre_spike_map = bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
-        u += self.U * (1-self.u) * pre_spike_map
-        self.s += self.w * u * self.x * pre_spike_map
-        x -= u * self.x * pre_spike_map
-        
-        self.u = u
-        self.x = x
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
 
-        self.out.push(self.s)
-        self.post.input += bp.backend.sum(self.out.pull(), axis=0)
+            self.s[i], u, x = self.integral(self.s[i], self.u[i], self.x[i], _t, self.tau, self.tau_d, self.tau_f)
+            
+            if self.pre.spike[pre_id] > 0:
+                u += self.U * (1 - self.u[i])
+                self.s[i] += self.w[i] * u * self.x[i]
+                x -= u * self.x[i]
+            self.u[i] = u
+            self.x[i] = x
+
+            # output
+            post_id = self.post_ids[i]
+            self.out.push(i, self.s[i])
+            self.post.input[post_id] += self.out.pull(i)

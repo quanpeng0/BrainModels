@@ -14,6 +14,9 @@ brainmodels.neurons
     HindmarshRose
     HH
     LIF
+    AdExIF
+    AdQuaIF
+    QuaIF
 
 .. autoclass:: FitzHughNagumo
    :members:
@@ -25,5 +28,14 @@ brainmodels.neurons
    :members:
 
 .. autoclass:: LIF
+   :members:
+
+.. autoclass:: AdExLIF
+   :members:
+
+.. autoclass:: AdQuaLIF
+   :members:
+
+.. autoclass:: QuaLIF
    :members:
 

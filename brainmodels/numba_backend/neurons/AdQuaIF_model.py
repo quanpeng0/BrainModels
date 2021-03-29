@@ -3,6 +3,10 @@
 import brainpy as bp
 from numba import prange
 
+__all__ = [
+    'AdQuaIF'
+]
+
 class AdQuaIF(bp.NeuGroup):
     """Adaptive Quadratic Integrate-and-Fire neuron model.
         

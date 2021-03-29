@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
+from numba import prange
+
+__all__ = [
+    'Two_exponentials'
+]
 
 class Two_exponentials(bp.TwoEndConn):
     '''
@@ -71,7 +76,7 @@ class Two_exponentials(bp.TwoEndConn):
                 Cambridge: Cambridge UP, 2011. 172-95. Print.
     '''
 
-    target_backend = 'general'
+    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
     def __init__(self, pre, post, conn, delay=0., tau1=1.0, tau2=3.0, **kwargs):
         # parameters
@@ -81,8 +86,8 @@ class Two_exponentials(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
         # variables
         self.s = bp.backend.zeros(self.size)
@@ -100,8 +105,14 @@ class Two_exponentials(bp.TwoEndConn):
         return dsdt, dxdt
     
     def update(self, _t):
-        self.s, self.x = self.integral(self.s, self.x, _t, self.tau1, self.tau2)
-        self.x += bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
-        self.out.push(self.w * self.s)
-        self.post.input += bp.backend.sum(self.out.pull(), axis=0)
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
 
+            self.s[i], self.x[i] = self.integral(self.s[i], self.x[i], _t, self.tau1, self.tau2)
+            self.x[i] += self.pre.spike[pre_id]
+
+            self.out.push(i, self.w[i] * self.s[i])
+            
+            # output
+            post_id = self.post_ids[i]
+            self.post.input[post_id] += self.out.pull(i)
