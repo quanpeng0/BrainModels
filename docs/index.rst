@@ -14,6 +14,8 @@ with other BrainPy users.
    :maxdepth: 2
    :caption: Tutorials
 
+   tutorials/neurons
+   tutorials/synapses
    tutorials/dynamics_analysis
 
 
