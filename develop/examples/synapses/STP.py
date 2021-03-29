@@ -2,6 +2,8 @@ import brainpy as bp
 import brainmodels
 import matplotlib.pyplot as plt
 
+bp.backend.set(backend='numpy', dt=0.01)
+
 hh1 = brainmodels.neurons.HH(1, monitors=['V'])
 hh2 = brainmodels.neurons.HH(1, monitors=['V'])
 
@@ -9,7 +11,7 @@ hh2 = brainmodels.neurons.HH(1, monitors=['V'])
 syn= brainmodels.synapses.STP(U=0.1, tau_d=100, tau_f=2000., pre=hh1, post=hh2, conn=bp.connect.All2All(),
                     delay=0., monitors=['s', 'u', 'x'] )
 net = bp.Network(hh1, hh2, syn)
-net.run(duration=300., inputs=(hh1, 'input', 10.))
+net.run(duration=100., inputs=(hh1, 'input', 10.), report=True)
 
 fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
 
@@ -27,10 +29,10 @@ plt.show()
 
 
 # d
-syn= brainmodels.STP(U=0.55, tau_d=1500, tau_f=50., pre=hh1, post=hh2, conn=bp.connect.All2All(),
+syn= brainmodels.synapses.STP(U=0.55, tau_d=1500, tau_f=50., pre=hh1, post=hh2, conn=bp.connect.All2All(),
                     delay=0., monitors=['s', 'u', 'x'] )
 net = bp.Network(hh1, hh2, syn)
-net.run(duration=300., inputs=(hh1, 'input', 10.))
+net.run(duration=100., inputs=(hh1, 'input', 10.), report=True)
 
 fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
 

@@ -1,47 +1,30 @@
 # -*- coding: utf-8 -*-
 import matplotlib.pyplot as plt
 import brainpy as bp
-from brainmodels.numba_backend.neurons import get_LIF
+import numpy as np
 import brainmodels
 
-if __name__ == '__main__':
-    duration = 100.
-    dt = 0.02
-    bp.profile.set(jit=True, dt=dt, merge_steps=True, show_code=False)
-    LIF_neuron = get_LIF()
-    two_exponentials_syn = brainmodels.synapses.get_two_exponentials()
+dt = 0.02
+bp.backend.set(backend='numpy', dt=dt)
 
-    # Set pre & post NeuGroup
-    pre = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-    pre.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
-    pre.ST['V'] = -65.
-    post = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-    post.runner.set_schedule(['input', 'update', 'monitor', 'reset'])
-    pre.ST['V'] = -65.
+# Set pre & post NeuGroup
+pre = brainmodels.neurons.LIF(10, monitors=['V', 'input', 'spike'])
+pre.V = -65. * np.ones(pre.V.shape)
+post = brainmodels.neurons.LIF(10, monitors=['V', 'input', 'spike'])
+post.V = -65. * np.ones(pre.V.shape)
 
-    # Set synapse connection & network
-    two_exponentials = bp.SynConn(model=two_exponentials_syn, pre_group=pre, post_group=post,
-                             conn=bp.connect.All2All(), monitors=['g'], delay=10.)
-    two_exponentials.runner.set_schedule(['input', 'update', 'output', 'monitor'])
-    net = bp.Network(pre, two_exponentials, post)
+# Set synapse connection & network
+two_exponentials = brainmodels.synapses.Two_exponentials(pre=pre, post=post,
+                                    conn=bp.connect.All2All(), monitors=['s'], delay=10.)
+net = bp.Network(pre, two_exponentials, post)
 
-    current = bp.inputs.spike_current([5., 10., 15., 20.], bp.profile._dt, 1., duration=duration)
-    net.run(duration=duration, inputs=[two_exponentials, 'pre.spike', current, "="], report=True)
+(current, duration) = bp.inputs.constant_current([(0, 25), (30, 5), (0, 170)])
+net.run(duration=duration, inputs=(pre, 'input', current), report=True)
 
-    # Figure
-    ts = net.ts
-    fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
-
-    fig.add_subplot(gs[0, 0])
-    plt.plot(ts, two_exponentials.mon.g[:, 0], label='two_exponentials.g')
-    plt.ylabel('Conductance (µmhos)')
-    plt.xlabel('Time (ms)')
-    plt.legend()
-
-    fig.add_subplot(gs[1, 0])
-    plt.plot(ts, post.mon.input[:, 0], label='post.input')
-    plt.ylabel('Current (nA)')
-    plt.xlabel('Time (ms)')
-    plt.legend()
-
-    plt.show()
+# Figure
+ts = net.ts
+plt.plot(ts, two_exponentials.mon.s[:, 0, 0], label='s')
+plt.ylabel('Conductance (µmhos)')
+plt.xlabel('Time (ms)')
+plt.legend()
+plt.show()
