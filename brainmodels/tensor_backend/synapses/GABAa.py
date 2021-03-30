@@ -161,8 +161,139 @@ class GABAa1_mat(bp.TwoEndConn):
         self.post.input -= bp.backend.sum(g, axis=0) * (self.post.V - self.E)
 
 
-'''
+class GABAa2_vec(bp.TwoEndConn):
+    target_backend = 'general'
 
+    def __init__(self, pre, post, conn, delay = 0.,
+                 g_max=0.04, E=-80., alpha=0.53, 
+                 beta=0.18, T=1., T_duration=1.,
+                 **kwargs):
+        self.g_max = g_max
+        self.E = E
+        self.alpha = alpha
+        self.beta = beta
+        self.T = T
+        self.T_duration = T_duration
+
+        self.conn = conn(pre.size, post.size)
+        self.pre_ids, self.post_ids = self.conn.requires(
+            'pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
+
+        self.s = bp.backend.zeros(self.size)
+        self.g = self.register_constant_delay('g', size = self.size, delay_time = delay)
+        self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
+        super(GABAa2_vec, self).__init__(pre = pre, post = post, **kwargs)
+
+    @staticmethod
+    @bp.odeint
+    def integral(s, t, TT, alpha, beta):
+        dsdt = alpha * TT * (1 - s) - beta * s
+        return dsdt
+
+    def update(self, _t):
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+            post_id = self.post_ids[i]
+            if self.pre.spike[pre_id]:
+                self.t_last_pre_spike[i] = _t
+            T = ((_t - self.t_last_pre_spike[i]) < self.T_duration) * self.T
+            self.s[i] = self.integral(self.s[i], _t, T, self.alpha, self.beta)
+            self.g.push(i, self.s[i] * self.g_max)
+            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
+                
+
+class GABAa2_mat(bp.TwoEndConn):
+    target_backend = 'general'
+
+    def __init__(self, pre, post, conn, delay = 0.,
+                 g_max=0.04, E=-80., alpha=0.53, 
+                 beta=0.18, T=1., T_duration=1.,
+                 **kwargs):
+        self.g_max = g_max
+        self.E = E
+        self.alpha = alpha
+        self.beta = beta
+        self.T = T
+        self.T_duration = T_duration
+
+        self.conn = conn(pre.size, post.size)
+        self.conn_mat = self.conn.requires('conn_mat')
+        self.size = bp.backend.shape(self.conn_mat)
+
+        self.s = bp.backend.zeros(self.size)
+        self.g = self.register_constant_delay('g', size = self.size, delay_time = delay)
+        self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
+        super(GABAa2_mat, self).__init__(pre = pre, post = post, **kwargs)
+
+    @staticmethod
+    @bp.odeint
+    def integral(s, t, TT, alpha, beta):
+        dsdt = alpha * TT * (1 - s) - beta * s
+        return dsdt
+
+    def update(self, _t):
+        spike = bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
+        TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
+        self.s = self.integral(self.s, _t, TT, self.alpha, self.beta)
+        self.g.push(self.g_max * self.s)
+        self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
+
+import brainpy as bp
+import brainmodels
+import matplotlib.pyplot as plt
+
+duration = 100.
+dt = 0.02
+bp.backend.set('numpy', dt=dt)
+size = 10
+neu_pre = brainmodels.neurons.LIF(size, monitors = ['V', 'input', 'spike'])
+neu_pre.V_rest = -65.
+neu_pre.V_th = -50.
+neu_pre.V_reset = -70.
+neu_pre.V = bp.backend.ones(size) * -65.
+neu_pre.t_refractory = 0.
+neu_post = brainmodels.neurons.LIF(size, monitors = ['V', 'input', 'spike'])
+neu_post.V_rest = -65.
+neu_post.V_th = -50.
+neu_post.V_reset = -70.
+neu_post.V = bp.backend.ones(size) * -65.
+neu_post.t_refractory = 0.
+
+syn_GABAa = GABAa2_vec(pre = neu_pre, post = neu_post, 
+                       conn = bp.connect.All2All(),
+                       delay = 10., monitors = ['s'])
+
+net = bp.Network(neu_pre, syn_GABAa, neu_post)
+net.run(duration, inputs = (neu_pre, 'input', 21.), report = True)
+
+# paint gabaa
+ts = net.ts
+fig, gs = bp.visualize.get_figure(2, 2, 5, 6)
+
+#print(gabaa.mon.s.shape)
+fig.add_subplot(gs[0, 0])
+plt.plot(ts, syn_GABAa.mon.s[:, 0], label='s')
+plt.legend()
+
+fig.add_subplot(gs[1, 0])
+plt.plot(ts, neu_post.mon.V[:, 0], label='post.V')
+plt.legend()
+
+fig.add_subplot(gs[0, 1])
+plt.plot(ts, neu_pre.mon.V[:, 0], label='pre.V')
+plt.legend()
+
+fig.add_subplot(gs[1, 1])
+plt.plot(ts, neu_pre.mon.spike[:, 0], label='pre.spike')
+plt.legend()
+
+plt.show()
+
+
+
+'''
 def get_GABAa2(g_max=0.04, E=-80., alpha=0.53, beta=0.18, T=1., T_duration=1., mode='vector'):
     """
     GABAa conductance-based synapse model (markov form).
