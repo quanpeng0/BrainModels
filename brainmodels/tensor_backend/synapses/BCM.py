@@ -2,8 +2,9 @@
 import brainpy as bp
 import numpy as np
 
-bp.integrators.set_default_odeint('rk4')
-
+__all__ = [
+    'BCM'
+]
 
 class BCM(bp.TwoEndConn):
     """
@@ -74,7 +75,7 @@ class BCM(bp.TwoEndConn):
         super(BCM, self).__init__(pre=pre, post=post, **kwargs)
 
     @staticmethod
-    @bp.odeint
+    @bp.odeint(method='rk4')
     def int_w(w, t, lr, r_pre, r_post, r_th):
         dwdt = lr * r_post * (r_post - r_th) * r_pre
         return dwdt

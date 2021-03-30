@@ -6,6 +6,7 @@ Neuron Models
 
    from_papers/GeneralizedIF_model
    from_papers/HindmarshRose_model
+   from_papers/AdExIF_model
 
 Oscillation and Synchronization
 ===============================

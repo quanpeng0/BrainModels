@@ -1,136 +1,169 @@
 import matplotlib.pyplot as plt
 import brainpy as bp
-from brainmodels.numba_backend.neurons import get_GeneralizedIF
+import brainmodels
 
-print("version：", bp.__version__)
-## set global params
-dt = 0.02  # update variables per <dt> ms
-duration = 200.  # simulate duration
-bp.profile.set(jit=True, dt=dt, merge_steps=True)
+# set parameters
+num2mode = ["tonic_spiking",       "class_1",                           "spike_frequency_adaptation",
+            "phasic_spiking",      "accomodation",                      "threshold_variability",
+            "rebound_spike",       "class_2",                           "integrator",
+            "input_bistability",   "hyperpolarization_induced_spiking", "hyperpolarization_induced_bursting",
+            "tonic_bursting",      "phasic_bursting",                   "rebound_burst",
+            "mixed_mode",          "afterpotentials",                   "basal_bistability",
+            "preferred_frequency", "spike_latency"]
 
-# define neuron type
-GIF_neuron = get_GeneralizedIF(noise=1.)
-
-# build neuron group
-neu = bp.NeuGroup(GIF_neuron, geometry=(10,), monitors=['V', 'V_th', 'input'])
+mode2param = {
+    "tonic_spiking": {
+        "input": [(1.5, 200.)]
+    },
+    "class_1": {
+        "input": [(1. + 1e-6, 500.)]
+    },
+    "spike_frequency_adaptation": {
+        "a": 0.005, "input": [(2., 200.)]
+    },
+    "phasic_spiking": {
+        "a": 0.005, "input": [(1.5, 500.)]
+    },
+    "accomodation": {
+        "a": 0.005,
+        "input": [(1.5, 100.), (0, 500.), (0.5, 100.),
+                  (1., 100.), (1.5, 100.), (0., 100.)]
+    },
+    "threshold_variability": {
+        "a": 0.005,
+        "input": [(1.5, 20.), (0., 180.), (-1.5, 20.),
+                  (0., 20.), (1.5, 20.), (0., 140.)]
+    },
+    "rebound_spike": {
+        "a": 0.005,
+        "input": [(0, 50.), (-3.5, 750.), (0., 200.)]
+    },
+    "class_2": {
+        "a": 0.005,
+        "input": [(2 * (1. + 1e-6), 200.)],
+        "V_th": -30.
+    },
+    "integrator": {
+        "a": 0.005,
+        "input": [(1.5, 20.), (0., 10.), (1.5, 20.), (0., 250.),
+                  (1.5, 20.), (0., 30.), (1.5, 20.), (0., 30.)]
+    },
+    "input_bistability": {
+        "a": 0.005,
+        "input": [(1.5, 100.), (1.7, 400.),
+                  (1.5, 100.), (1.7, 400.)]
+    },
+    "hyperpolarization_induced_spiking": {
+        "V_th_reset": -60.,
+        "V_th_inf": -120.,
+        "input": [(-1., 400.)],
+        "V_th": -50.
+    },
+    "hyperpolarization_induced_bursting": {
+        "V_th_reset": -60.,
+        "V_th_inf": -120.,
+        "A1": 10.,
+        "A2": -0.6,
+        "input": [(-1., 400.)],
+        "V_th": -50.
+    },
+    "tonic_bursting": {
+        "a": 0.005,
+        "A1": 10.,
+        "A2": -0.6,
+        "input": [(2., 500.)]
+    },
+    "phasic_bursting": {
+        "a": 0.005,
+        "A1": 10.,
+        "A2": -0.6,
+        "input": [(1.5, 500.)]
+    },
+    "rebound_burst": {
+        "a": 0.005,
+        "A1": 10.,
+        "A2": -0.6,
+        "input": [(0, 100.), (-3.5, 500.), (0., 400.)]
+    },
+    "mixed_mode": {
+        "a": 0.005,
+        "A1": 5.,
+        "A2": -0.3,
+        "input": [(2., 500.)]
+    },
+    "afterpotentials": {
+        "a": 0.005,
+        "A1": 5.,
+        "A2": -0.3,
+        "input": [(2., 15.), (0, 185.)]
+    },
+    "basal_bistability": {
+        "A1": 8.,
+        "A2": -0.1,
+        "input": [(5., 10.), (0., 90.), (5., 10.), (0., 90.)]
+    },
+    "preferred_frequency": {
+        "a": 0.005,
+        "A1": -3.,
+        "A2": 0.5,
+        "input": [(5., 10.), (0., 10.), (4., 10.), (0., 370.),
+                  (5., 10.), (0., 90.), (4., 10.), (0., 290.)]
+    },
+    "spike_latency": {
+        "a": -0.08,
+        "input": [(8., 2.), (0, 48.)]
+    }
+}
     
-# simulate
-mode = "hyperpolarization_induced_bursting"
-print(f"Choose parameters fit for <{mode}> mode")
-if mode == 'tonic_spiking':
-    neu.run(duration=duration, inputs=["ST.input", 1.5], report=True)
-elif mode == "class_1":
-    neu.run(duration=500., inputs=["ST.input", 1. + 1e-6], report=True)
-elif mode == "spike_frequency_adaptation":
-    neu.pars['a'] = 0.005
-    neu.run(duration = duration, inputs = ["ST.input", 2.], report=True)
-elif mode == "phasic_spiking":
-    neu.pars['a'] = 0.005
-    neu.run(duration = 500., inputs = ["ST.input", 1.5], report=True)
-elif mode == "accomodation":
-    neu.pars['a'] = 0.005
-    I_ext, dur = bp.inputs.constant_current([(1.5, 100.), (0, 500.), (0.5, 100.), 
-                                             (1., 100.), (1.5, 100.), (0., 100.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-elif mode == "threshold_variability":
-    neu.pars['a'] = 0.005
-    I_ext, dur = bp.inputs.constant_current(
-                     [(1.5, 20.), (0., 180.), (-1.5, 20.), 
-                      (0., 20.), (1.5, 20.), (0., 140.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-elif mode == "rebound spike":
-    neu.pars['a'] = 0.005
-    I_ext, dur = bp.inputs.constant_current(
-                     [(0, 50.), (-3.5, 750.), (0., 200.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-elif mode == "class_2":
-    neu.pars['a'] = 0.005
-    neu.ST['V_th'] = -30.
-    neu.run(duration = duration, inputs = ["ST.input", 2 * (1. + 1e-6)], report=True)
-elif mode == "integrator":
-    neu.pars['a'] = 0.005
-    I_ext, dur = bp.inputs.constant_current(
-                    [(1.5, 20.), (0., 10.), (1.5, 20.), (0., 250.),
-                     (1.5, 20.), (0., 30.), (1.5, 20.), (0., 30.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-elif mode == "input_bistability":
-    neu.pars['a'] = 0.005
-    I_ext, dur = bp.inputs.constant_current(
-                     [(1.5, 100.), (1.7, 400.), 
-                      (1.5, 100.), (1.7, 400.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-elif mode == "hyperpolarization_induced_spiking":
-    neu.ST['V_th'] = -50.
-    neu.pars['V_th_reset'] = -60.
-    neu.pars['V_th_inf'] = -120.
-    neu.run(duration = 400., inputs = ["ST.input", -1.], report=True)
-elif mode == "hyperpolarization_induced_bursting":
-    neu.ST['V_th'] = -50.
-    neu.pars['V_th_reset'] = -60.
-    neu.pars['V_th_inf'] = -120.
-    neu.pars['A1'] = 10 
-    neu.pars['A2'] = -0.6
-    neu.run(duration = 400., inputs = ["ST.input", -1.], report=True)
-elif mode == "tonic_bursting":
-    neu.pars['a'] = 0.005
-    neu.pars['A1'] = 10
-    neu.pars['A2'] = -0.6
-    neu.run(duration = 500., inputs = ["ST.input", 2.], report=True)
-elif mode == "phasic_bursting":
-    neu.pars['a'] = 0.005
-    neu.pars['A1'] = 10
-    neu.pars['A2'] = -0.6
-    neu.run(duration = 500., inputs = ["ST.input", 1.5], report=True)
-elif mode == "rebound_burst":
-    neu.pars['a'] = 0.005
-    neu.pars['A1'] = 10
-    neu.pars['A2'] = -0.6
-    I_ext, dur = bp.inputs.constant_current(
-                     [(0, 100.), (-3.5, 500.), (0., 400.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-elif mode == "mixed_mode":
-    neu.pars['a'] = 0.005
-    neu.pars['A1'] = 5
-    neu.pars['A2'] = -0.3
-    neu.run(duration = 500., inputs = ["ST.input", 2.], report=True)
-elif mode == "afterpotentials":
-    neu.pars['a'] = 0.005
-    neu.pars['A1'] = 5
-    neu.pars['A2'] = -0.3
-    I_ext, dur = bp.inputs.constant_current(
-                     [(2., 15.), (0, 185.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-elif mode == "basal_bistability":
-    neu.pars['A1'] = 8
-    neu.pars['A2'] = -0.1
-    I_ext, dur = bp.inputs.constant_current(
-                     [(5., 10.), (0., 90.), (5., 10.), (0., 90.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-elif mode == "preferred_frequency":
-    neu.pars['a'] = 0.005
-    neu.pars['A1'] = -3
-    neu.pars['A2'] = 0.5
-    I_ext, dur = bp.inputs.constant_current(
-                     [(5., 10.), (0., 10.), (4., 10.), (0., 370.), 
-                      (5., 10.), (0., 90.), (4., 10.), (0., 290.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-elif mode == "spike_latency":
-    neu.pars['a'] = -0.08
-    I_ext, dur = bp.inputs.constant_current(
-                    [(8., 2.), (0, 48.)])
-    neu.run(duration = dur, inputs = ["ST.input", I_ext], report=True)
-else:
-    raise ValueError(f"Error: Mode {mode} is not supported!")
+def run_GIF_with_mode(mode = 'tonic_spiking', size = 10.,
+                      row_p = 0, col_p = 0, fig = None, gs = None):
+    
+    print(f"Running GIF neuron neu with mode '{mode}'")
+    neu = brainmodels.neurons.GeneralizedIF(size, monitors = ['V', 'V_th', 'input'])
+    param = mode2param[mode].items()
+    member_type = 0
+    for (k, v) in param:
+        if k == 'input':
+            I_ext, dur = bp.inputs.constant_current(v)
+            member_type += 1
+        else:
+            if member_type==0:
+                exec("neu.%s = %f"%(k, v))
+            else:
+                exec("neu.%s = bp.backend.ones(size) * %f"%(k, v))
+    neu.run(dur, inputs = ('input', I_ext), report = False)
 
-# paint
-ts = neu.mon.ts
-fig, gs = bp.visualize.get_figure(1, 1, 4, 8)
-fig.add_subplot(gs[0, 0])
-plt.plot(ts, neu.mon.V[:, 0], label='V')
-plt.plot(ts, neu.mon.V_th[:, 0], label='V_th')
-plt.xlabel('Time (ms)')
-plt.ylabel('Membrane potential')
-plt.xlim(-0.1, ts[-1] + 0.1)
-plt.legend()
+    ts = neu.mon.ts
+    ax1 = fig.add_subplot(gs[row_p, col_p])
+    ax1.title.set_text(f'{mode}')
 
-plt.show()
+    ax1.plot(ts, neu.mon.V[:, 0], label='V')
+    ax1.plot(ts, neu.mon.V_th[:, 0], label='V_th')
+    ax1.set_xlabel('Time (ms)')
+    ax1.set_ylabel('Membrane potential')
+    ax1.set_xlim(-0.1, ts[-1] + 0.1)
+    plt.legend()
+
+    ax2 = ax1.twinx()
+    ax2.plot(ts, I_ext, color = 'turquoise', label='input')
+    ax2.set_xlabel('Time (ms)')
+    ax2.set_ylabel('External input')
+    ax2.set_xlim(-0.1, ts[-1] + 0.1)
+    ax2.set_ylim(-5., 20.)
+    plt.legend(loc = 'lower left')
+
+size = 10
+pattern_num = 20
+row_b = 2
+col_b = 2
+size_b = row_b * col_b
+for i in range(pattern_num):
+    if i % size_b == 0:
+        fig, gs = bp.visualize.get_figure(row_b, col_b, 4, 8)
+    mode = num2mode[i]
+    run_GIF_with_mode(mode = mode, size = size,
+                      row_p = i % size_b // col_b,
+                      col_p = i % size_b % col_b,
+                      fig = fig, gs = gs)
+    if (i+1) % size_b == 0:
+        plt.show()

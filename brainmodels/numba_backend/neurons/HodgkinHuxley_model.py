@@ -133,7 +133,7 @@ class HH(bp.NeuGroup):
         self.input = bp.backend.zeros(num)
 
         # numerical solver
-        self.integral = bp.odeint(self.derivative)
+        self.integral = bp.odeint(f=self.derivative, method='rk4', dt=0.01)
         super(HH, self).__init__(size=size, **kwargs)
 
     def update(self, _t):

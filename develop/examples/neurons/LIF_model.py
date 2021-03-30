@@ -11,9 +11,3 @@ net.run(duration = 200., inputs=(neu, 'input', 21.), report=True)
 bp.visualize.line_plot(neu.mon.ts, neu.mon.V, 
                        xlabel = "t", ylabel = "V", 
                        show=True)
-bp.visualize.line_plot(neu.mon.ts, neu.mon.refractory, 
-                       xlabel = "t", ylabel = "ref", 
-                       show=True)
-bp.visualize.line_plot(neu.mon.ts, neu.mon.spike, 
-                       xlabel = "t", ylabel = "ref", 
-                       show=True)

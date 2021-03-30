@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-from numba import prange
-
-bp.backend.set('numba', dt = 0.01)
 
 class ExpIF(bp.NeuGroup):
     """Exponential Integrate-and-Fire neuron model.

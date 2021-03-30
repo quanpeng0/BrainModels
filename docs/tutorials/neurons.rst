@@ -10,4 +10,3 @@ Neurons
    neurons/HH_model
    neurons/Izhikevich_model
    neurons/ExpIF_model
-   neurons/AdIF_model

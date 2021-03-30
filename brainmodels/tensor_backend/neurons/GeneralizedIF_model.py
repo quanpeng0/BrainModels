@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import numpy as np
 
-bp.backend.set('numpy', dt=0.02)
 
 class GeneralizedIF(bp.NeuGroup):
     """
@@ -153,7 +153,7 @@ class GeneralizedIF(bp.NeuGroup):
     def update(self, _t):
         I1, I2, V_th, V = self.integral(
             self.I1, self.I2, self.V_th, self.V, _t, 
-            self.k2, self.k2, self.a, self.V_rest,
+            self.k1, self.k2, self.a, self.V_rest,
             self.b, self.V_th_inf, 
             self.R, self.input, self.tau)
         sp = (self.V_th < V)
@@ -169,151 +169,3 @@ class GeneralizedIF(bp.NeuGroup):
         self.V = V
         self.input[:] = 0.
 
-if __name__ == "__main__":
-
-    size = 10
-    group = GeneralizedIF(size, monitors = ['input', 'V', 'V_th'])
-    duration = 200.
-    # simulate
-    mode = "basal_bistability"
-    print(f"Choose parameters fit for <{mode}> mode")
-    if mode == 'tonic_spiking':
-        I_ext, dur = bp.inputs.constant_current([(1.5, duration)])
-        group.run(duration=dur, inputs=["input", I_ext], report=True)
-    elif mode == "class_1":
-        I_ext, dur = bp.inputs.constant_current([(1.+1e-6, 500.)])
-        group.run(duration=dur, inputs=["input", I_ext], report=True)
-    elif mode == "spike_frequency_adaptation":
-        group.a = 0.005
-        I_ext, dur = bp.inputs.constant_current([(2., duration)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "phasic_spiking":
-        group.a = 0.005
-        I_ext, dur = bp.inputs.constant_current([(1.5, 500.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "accomodation":
-        group.a = 0.005
-        I_ext, dur = bp.inputs.constant_current([(1.5, 100.), (0, 500.), (0.5, 100.), 
-                                                (1., 100.), (1.5, 100.), (0., 100.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "threshold_variability":
-        group.a = 0.005
-        I_ext, dur = bp.inputs.constant_current(
-                        [(1.5, 20.), (0., 180.), (-1.5, 20.), 
-                        (0., 20.), (1.5, 20.), (0., 140.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "rebound_spike":
-        group.a = 0.005
-        I_ext, dur = bp.inputs.constant_current(
-                        [(0, 50.), (-3.5, 750.), (0., 200.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "class_2":
-        group.a = 0.005
-        group.V_th = bp.backend.ones(size) * -30.
-        I_ext, dur = bp.inputs.constant_current([(2 * (1. + 1e-6), duration)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "integrator":
-        group.a = 0.005
-        I_ext, dur = bp.inputs.constant_current(
-                        [(1.5, 20.), (0., 10.), (1.5, 20.), (0., 250.),
-                        (1.5, 20.), (0., 30.), (1.5, 20.), (0., 30.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "input_bistability":
-        group.a = 0.005
-        I_ext, dur = bp.inputs.constant_current(
-                        [(1.5, 100.), (1.7, 400.), 
-                        (1.5, 100.), (1.7, 400.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "hyperpolarization_induced_spiking":
-        group.V_th = bp.backend.ones(size) * -50.
-        group.V_th_reset = -60.
-        group.V_th_inf = -120.
-        I_ext, dur = bp.inputs.constant_current([(-1., 400.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "hyperpolarization_induced_bursting":
-        group.V_th = bp.backend.ones(size) * -50.
-        group.V_th_reset = -60.
-        group.V_th_inf = -120.
-        group.A1 = 10 
-        group.A2 = -0.6
-        I_ext, dur = bp.inputs.constant_current([(-1., 400.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "tonic_bursting":
-        group.a = 0.005
-        group.A1 = 10
-        group.A2 = -0.6
-        I_ext, dur = bp.inputs.constant_current([(2., 500.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "phasic_bursting":
-        group.a = 0.005
-        group.A1 = 10
-        group.A2 = -0.6
-        I_ext, dur = bp.inputs.constant_current([(1.5, 500.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "rebound_burst":
-        group.a = 0.005
-        group.A1 = 10
-        group.A2 = -0.6
-        I_ext, dur = bp.inputs.constant_current(
-                        [(0, 100.), (-3.5, 500.), (0., 400.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "mixed_mode":
-        group.a = 0.005
-        group.A1 = 5
-        group.A2 = -0.3
-        I_ext, dur = bp.inputs.constant_current([(2., 500.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "afterpotentials":
-        group.a = 0.005
-        group.A1 = 5
-        group.A2 = -0.3
-        I_ext, dur = bp.inputs.constant_current(
-                        [(2., 15.), (0, 185.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "basal_bistability":
-        group.A1 = 8
-        group.A2 = -0.1
-        I_ext, dur = bp.inputs.constant_current(
-                        [(5., 10.), (0., 90.), (5., 10.), (0., 90.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "preferred_frequency":
-        group.a = 0.005
-        group.A1 = -3
-        group.A2 = 0.5
-        I_ext, dur = bp.inputs.constant_current(
-                        [(5., 10.), (0., 10.), (4., 10.), (0., 370.), 
-                        (5., 10.), (0., 90.), (4., 10.), (0., 290.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    elif mode == "spike_latency":
-        group.a = -0.08
-        I_ext, dur = bp.inputs.constant_current(
-                        [(8., 2.), (0, 48.)])
-        group.run(duration = dur, inputs = ["input", I_ext], report=True)
-    else:
-        raise ValueError(f"Error: Mode {mode} is not supported!")
-    
-    
-    fig, gs = bp.visualize.get_figure(1, 1, 4, 8)
-    ts = group.mon.ts
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax1.title.set_text(f'{mode}')
-
-    ax1.plot(ts, group.mon.V[:, 0], label='V')
-    ax1.plot(ts, group.mon.V_th[:, 0], label='V_th')
-    ax1.set_xlabel('Time (ms)')
-    ax1.set_ylabel('Membrane potential')
-    ax1.set_xlim(-0.1, ts[-1] + 0.1)
-    plt.legend()
-
-    ax2 = ax1.twinx()
-    ax2.plot(ts, I_ext, color = 'turquoise', label='input')
-    ax2.set_xlabel('Time (ms)')
-    ax2.set_ylabel('External input')
-    ax2.set_xlim(-0.1, ts[-1] + 0.1)
-    ax2.set_ylim(-5., 20.)
-    plt.legend(loc = 'lower left')
-    plt.show()
-    '''
-    bp.visualize.line_plot(group.mon.ts, group.mon.input)
-    bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
-    '''
