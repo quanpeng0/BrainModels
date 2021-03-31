@@ -16,7 +16,7 @@ neu_pre.V_th = -50.
 neu_pre.V = bp.backend.ones(size) * -65.
 neu_post = brainmodels.neurons.LIF(size, monitors = ['V', 'input', 'spike'], show_code = True)
 
-syn_GABAb = brainmodels.synapses.GABAb1_vec(pre = neu_pre, post = neu_post, 
+syn_GABAb = brainmodels.synapses.GABAb1(pre = neu_pre, post = neu_post, 
                        conn = bp.connect.One2One(),
                        delay = 10., monitors = ['s'], show_code = True)
 
