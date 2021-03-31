@@ -9,5 +9,5 @@ from .two_exponentials import *
 from .alpha import *
 from .gap_junction import *
 from .STP import *
-from .BCM import *
+from .BCM_rule import *
 from .voltage_jump import *
