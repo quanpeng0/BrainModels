@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+from numba import prange
+import pdb
 
+bp.backend.set('numpy', dt=0.002)
 
-def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., noise=0., mode='scalar'):
+class ResonateandFire(bp.NeuGroup):
     """Resonate-and-fire neuron model.
 
     .. math::
@@ -86,56 +89,54 @@ def get_ResonateandFire(b=-1., omega=10., V_th=1., V_reset=1., x_reset=0., noise
 
     """
 
-    ST = bp.types.NeuState(
-        {'V': 0., 'x': 0., 'input': 0., 'spike': 0., 't_last_spike': -1e7}
-    )
+    target_backend = 'general'
 
-    @bp.integrate
-    def int_x(x, t, V):  # input--internal
-        return b * x - omega * V
+    def __init__(self, size, b=-1., omega=10., 
+                 V_th=1., V_reset=1., x_reset=0.,
+                 **kwargs):
+        #parameters
+        self.b = b
+        self.omega = omega
+        self.V_th = V_th
+        self.V_reset = V_reset
+        self.x_reset = x_reset
 
-    @bp.integrate
-    def int_V(V, t, x):  # V
-        return omega * x + b * V
+        #variables
+        self.V = bp.backend.zeros(size)
+        self.x = bp.backend.zeros(size)
+        self.input = bp.backend.zeros(size)
+        self.spike = bp.backend.zeros(size)
+        self.t_last_spike = bp.backend.ones(size) * -1e7
 
-    if mode == 'scalar':
+        super(ResonateandFire, self).__init__(size = size, **kwargs)
 
-        def update(ST, _t):
-            # update variables
-            ST['spike'] = 0.
-            x = ST['x']
-            x += ST['input']
-            V = ST['V']
-            x = int_x(x, _t, V)
-            V = int_V(V, _t, x)
-            if V > V_th:
-                V = V_reset
-                x = x_reset
-                ST['spike'] = 1.
-            ST['x'] = x
-            ST['V'] = V
-            ST['input'] = 0.  # reset input here or it will be brought to next step
+    @staticmethod
+    @bp.odeint()
+    def integral(V, x, t, b, omega):
+        dVdt = omega * x + b * V
+        dxdt = b * x - omega * V
+        return dVdt, dxdt
 
-    elif mode == 'vector':
+    def update(self, _t):
+        for i in prange(self.size[0]):
+            x = self.x[i] + self.input[i]
+            V, x = self.integral(self.V[i], x, _t, self.b, self.omega)
+            spike = (V >= self.V_th)
+            if spike:
+                print('spike here!')
+                V = self.V_reset
+                x = self.x_reset
+                self.t_last_spike[i] = _t
+            self.V[i] = V
+            self.x[i] = x
+            self.spike[i] = spike
+        self.input[:] = 0.
 
-        def update(ST, _t):
-            x = ST['x'] + ST['input']
-            x = int_x(x, _t, ST['V'])
-            V = int_V(ST['V'], _t, x)
 
-            is_spike = V > V_th
-            V[is_spike] = V_reset
-            x[is_spike] = x_reset
-
-            ST['spike'] = is_spike
-            ST['x'] = x
-            ST['V'] = V
-            ST['input'] = 0.  # reset input here or it will be brought to next step
-
-    else:
-        raise ValueError("BrainPy does not support mode '%s'." % (mode))
-
-    return bp.NeuType(name='RF_neuron',
-                      ST=ST,
-                      steps=update,
-                      mode=mode)
+if __name__ == "__main__":
+    group = ResonateandFire(1, monitors=['x', 'V'], show_code=False)
+    current = bp.inputs.spike_current(points = [0.0], lengths = 0.002,
+                                      sizes = -2., duration = 20.)
+    group.run(duration = 20., inputs=('input', current), report=True)  #is this proper input value?
+    bp.visualize.line_plot(group.mon.x, group.mon.V, show=True)
+    bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)

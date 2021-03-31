@@ -50,8 +50,6 @@ class ResonateandFire(bp.NeuGroup):
     V_reset       1.             \        Reset value for voltage-like variable after spike.
 
     x_reset       0.             \        Reset value for current-like variable after spike.
-
-    mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== ========================================================
 
     **Neuron Variables**    

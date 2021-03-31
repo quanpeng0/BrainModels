@@ -1,43 +1,38 @@
 # -*- coding: utf-8 -*-
-
-import matplotlib.pyplot as plt
 import brainpy as bp
+import matplotlib.pyplot as plt
 import brainmodels
-from brainmodels.numba_backend.neurons import get_LIF
 
-duration = 500.
+duration = 100.
 dt = 0.02
-bp.profile.set(jit=True, dt=dt, merge_steps=True, show_code=False)
-LIF_neuron = get_LIF()
-GABAa_syn = brainmodels.synapses.get_GABAb1(mode='scalar')
+bp.backend.set('numpy', dt=dt)
+size = 10
+neu_pre = brainmodels.neurons.LIF(size, monitors = ['V', 'input', 'spike'])
+neu_pre.V_rest = -65.
+neu_pre.V_reset = -70.
+neu_pre.V_th = -50.
+neu_pre.V = bp.backend.ones(size) * -65.
+neu_post = brainmodels.neurons.LIF(size, monitors = ['V', 'input', 'spike'])
 
-# build and simulate gabaa net
-pre = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-pre.pars['V_rest'] = -65.
-pre.ST['V'] = -65.
-post = bp.NeuGroup(LIF_neuron, geometry=(10,), monitors=['V', 'input', 'spike'])
-post.pars['V_rest'] = -65.
-post.ST['V'] = -65.
+syn_GABAb = brainmodels.synapses.GABAb2_mat(pre = neu_pre, post = neu_post, 
+                       conn = bp.connect.One2One(),
+                       delay = 10., monitors = ['s'], show_code = True)
 
-gabab = bp.SynConn(model=GABAa_syn, pre_group=pre, post_group=post,
-                   conn=bp.connect.All2All(), monitors=['g'], delay=10.)
-
-net = bp.Network(pre, gabab, post)
-
-current = bp.inputs.spike_current([5, 10, 15, 20],
-                                  bp.profile._dt, 1., duration=duration)
-net.run(duration=duration, inputs=[gabab, 'pre.spike', current, "="], report=True)
+current, dur = bp.inputs.constant_current([(21., 20.), (0., duration - 20.)])
+net = bp.Network(neu_pre, syn_GABAb, neu_post)
+net.run(dur, inputs = [(neu_pre, 'input', current)], report = True)
 
 # paint gabaa
 ts = net.ts
 fig, gs = bp.visualize.get_figure(2, 1, 5, 6)
 
+#print(gabaa.mon.s.shape)
 fig.add_subplot(gs[0, 0])
-plt.plot(ts, gabab.mon.g[:, 0], label='g')
+plt.plot(ts, syn_GABAb.mon.s[:, 0], label='s')
 plt.legend()
 
 fig.add_subplot(gs[1, 0])
-plt.plot(ts, post.mon.V[:, 0], label='post.V')
+plt.plot(ts, neu_post.mon.V[:, 0], label='post.V')
 plt.legend()
 
 plt.show()
