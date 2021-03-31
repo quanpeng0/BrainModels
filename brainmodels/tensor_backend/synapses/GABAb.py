@@ -3,6 +3,13 @@
 import brainpy as bp
 from numba import prange
 
+__all__ = [
+    'GABAb1_vec',
+    'GABAb1_mat',
+    'GABAb2_vec',
+    'GABAb2_mat',
+]
+
 class GABAb1_vec(bp.TwoEndConn):
     """GABAb conductance-based synapse model(type 1).
 
@@ -111,6 +118,7 @@ class GABAb1_vec(bp.TwoEndConn):
         return dRdt, dGdt
 
     def update(self, _t):
+        #pdb.set_trace()
         for i in prange(self.size): #i is the No. of syn
             pre_id = self.pre_ids[i]  #pre_id is the No. of pre neu
             if self.pre.spike[pre_id]:
@@ -533,7 +541,7 @@ class GABAb2_mat(bp.TwoEndConn):
         self.g.push(self.g_max * self.s)
         self.post.input -= bp.backend.sum(self.g.pull(), axis=0) * (self.post.V - self.E)
         
-        
+'''
 class LIF(bp.NeuGroup):
     target_backend = 'general'
 
@@ -576,48 +584,40 @@ class LIF(bp.NeuGroup):
         self.refractory = ~not_ref
         self.input[:] = 0.
 
-'''
 import brainpy as bp
 import matplotlib.pyplot as plt
 
 duration = 100.
 dt = 0.02
+print(bp.__version__)
 bp.backend.set('numpy', dt=dt)
 size = 10
-neu_pre = LIF(size, monitors = ['V', 'input', 'spike'])
+neu_pre = LIF(size, monitors = ['V', 'input', 'spike'], show_code = True)
 neu_pre.V_rest = -65.
 neu_pre.V_reset = -70.
 neu_pre.V_th = -50.
 neu_pre.V = bp.backend.ones(size) * -65.
-neu_post = LIF(size, monitors = ['V', 'input', 'spike'])
+neu_post = LIF(size, monitors = ['V', 'input', 'spike'], show_code = True)
 
-syn_GABAa = GABAb2_vec(pre = neu_pre, post = neu_post, 
+syn_GABAb = GABAb1_vec(pre = neu_pre, post = neu_post, 
                        conn = bp.connect.One2One(),
                        delay = 10., monitors = ['s'], show_code = True)
 
-current, dur = bp.inputs.constant_current([(16., 20.), (0., duration - 20.)])
-net = bp.Network(neu_pre, syn_GABAa, neu_post)
+current, dur = bp.inputs.constant_current([(21., 20.), (0., duration - 20.)])
+net = bp.Network(neu_pre, syn_GABAb, neu_post)
 net.run(dur, inputs = [(neu_pre, 'input', current)], report = True)
 
 # paint gabaa
 ts = net.ts
-fig, gs = bp.visualize.get_figure(2, 2, 5, 6)
+fig, gs = bp.visualize.get_figure(2, 1, 5, 6)
 
 #print(gabaa.mon.s.shape)
 fig.add_subplot(gs[0, 0])
-plt.plot(ts, syn_GABAa.mon.s[:, 0], label='s')
+plt.plot(ts, syn_GABAb.mon.s[:, 0], label='s')
 plt.legend()
 
 fig.add_subplot(gs[1, 0])
 plt.plot(ts, neu_post.mon.V[:, 0], label='post.V')
-plt.legend()
-
-fig.add_subplot(gs[0, 1])
-plt.plot(ts, neu_pre.mon.V[:, 0], label='pre.V')
-plt.legend()
-
-fig.add_subplot(gs[1, 1])
-plt.plot(ts, neu_pre.mon.spike[:, 0], label='pre.spike')
 plt.legend()
 
 plt.show()'''

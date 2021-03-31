@@ -2,6 +2,13 @@
 import brainpy as bp
 from numba import prange
 
+__all__ = [
+    'GABAa1_vec',
+    'GABAa1_mat',
+    'GABAa2_vec',
+    'GABAa2_mat',
+]
+
 class GABAa1_vec(bp.TwoEndConn):    
     """
     GABAa conductance-based synapse model.
