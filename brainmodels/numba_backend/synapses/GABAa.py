@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
+from numba import prange
 
 __all__ = [
     'GABAa1',
     'GABAa2',
 ]
 
-
-class GABAa1(bp.TwoEndConn):
+class GABAa1(bp.TwoEndConn):    
     """
     GABAa conductance-based synapse model.
 
@@ -47,7 +47,7 @@ class GABAa1(bp.TwoEndConn):
                neurons to networks and models of cognition. Cambridge 
                University Press, 2014.
     """
-    target_backend = 'general'
+    target_backend = ['numba', 'numba-parallel', 'numba-cuda']
 
     def __init__(self, pre, post, conn, delay=0., 
                  g_max=0.4, E=-80., tau_decay=6., 
@@ -60,8 +60,8 @@ class GABAa1(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
         # data
         self.s = bp.backend.zeros(self.size)
@@ -70,24 +70,23 @@ class GABAa1(bp.TwoEndConn):
         super(GABAa1, self).__init__(pre=pre, post=post, **kwargs)
 
     @staticmethod
-    @bp.odeint
-    def int_s(s, t, tau_decay):
+    @bp.odeint(method='euler')
+    def integral(s, t, tau_decay):
         return - s / tau_decay
 
     def update(self, _t):
-        self.s = self.int_s(self.s, _t, self.tau_decay)
-        for i in range(self.pre.size[0]):
-            if self.pre.spike[i] > 0:
-                self.s[i] += self.conn_mat[i]
-        self.g.push(self.g_max * self.s)
-        g=self.g.pull()
-        self.post.input -= bp.backend.sum(g, axis=0) * (self.post.V - self.E)
-
-
-                
-
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+            self.s[i] = self.integral(self.s[i], _t, self.tau_decay)
+            self.s[i] += self.pre.spike[pre_id]
+            #pdb.set_trace()
+            self.g.push(i,self.g_max * self.s[i])
+            post_id = self.post_ids[i]
+            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
+            
+            
 class GABAa2(bp.TwoEndConn):
-    target_backend = 'general'
+    target_backend = ['numba', 'numba-parallel', 'numba-cuda']
 
     def __init__(self, pre, post, conn, delay = 0.,
                  g_max=0.04, E=-80., alpha=0.53, 
@@ -101,8 +100,9 @@ class GABAa2(bp.TwoEndConn):
         self.T_duration = T_duration
 
         self.conn = conn(pre.size, post.size)
-        self.conn_mat = self.conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.pre_ids, self.post_ids = self.conn.requires(
+            'pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size = self.size, delay_time = delay)
@@ -116,10 +116,12 @@ class GABAa2(bp.TwoEndConn):
         return dsdt
 
     def update(self, _t):
-        spike = bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
-        self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
-        TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
-        self.s = self.integral(self.s, _t, TT, self.alpha, self.beta)
-        self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
-
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+            post_id = self.post_ids[i]
+            if self.pre.spike[pre_id]:
+                self.t_last_pre_spike[i] = _t
+            T = ((_t - self.t_last_pre_spike[i]) < self.T_duration) * self.T
+            self.s[i] = self.integral(self.s[i], _t, T, self.alpha, self.beta)
+            self.g.push(i, self.s[i] * self.g_max)
+            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)

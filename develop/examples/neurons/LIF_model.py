@@ -3,7 +3,7 @@ import brainpy as bp
 import brainmodels
 
 dt = 0.02
-bp.backend.set('numba', dt=dt)
+bp.backend.set('numpy', dt=dt)
 neu = brainmodels.neurons.LIF(16, monitors=['V', 'refractory', 'spike'], show_code = True)
 
 net = bp.Network(neu)

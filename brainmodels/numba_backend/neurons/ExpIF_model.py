@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+from numba import prange
 
 class ExpIF(bp.NeuGroup):
     """Exponential Integrate-and-Fire neuron model.
@@ -60,7 +61,7 @@ class ExpIF(bp.NeuGroup):
                mechanisms determine the neuronal response to fluctuating 
                inputs." Journal of Neuroscience 23.37 (2003): 11628-11640.
     """
-    target_backend = 'general'  
+    target_backend = 'general'
 
     def __init__(self, size, V_rest=-65., V_reset=-68., 
                  V_th=-30., V_T=-59.9, delta_T=3.48, 
@@ -95,17 +96,20 @@ class ExpIF(bp.NeuGroup):
                 + R * I_ext) \
                / tau
 
-    def update(self, _t):
-        # update variables
-        not_ref = (_t - self.t_last_spike > self.t_refractory)
-        self.V[not_ref] = self.integral(
-            self.V[not_ref], _t, self.input[not_ref],
-            self.V_rest, self.delta_T, self.V_T, 
-            self.R, self.tau)
-        sp = (self.V > self.V_th)
-        self.V[sp] = self.V_reset
-        self.t_last_spike[sp] = _t
-        self.spike = sp
-        self.refractory = ~not_ref
+    def update(self, _t):            
+        for i in prange(self.num):
+            spike = 0.
+            refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
+            if not refractory:
+                V = self.integral(
+                    self.V[i], _t, self.input[i], self.V_rest, 
+                    self.delta_T, self.V_T, self.R, self.tau
+                )
+                spike = (V >= self.V_th)
+                if spike:
+                    V = self.V_reset
+                    self.t_last_spike[i] = _t
+                self.V[i] = V
+            self.spike[i] = spike
+            self.refractory[i] = refractory
         self.input[:] = 0.
-    

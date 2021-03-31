@@ -20,7 +20,7 @@ neu_post.V_reset = -70.
 neu_post.V = bp.backend.ones(size) * -65.
 neu_post.t_refractory = 0.
 
-syn_GABAa = brainmodels.synapses.GABAa2_vec(pre = neu_pre, post = neu_post, 
+syn_GABAa = brainmodels.synapses.GABAa2(pre = neu_pre, post = neu_post, 
                        conn = bp.connect.All2All(),
                        delay = 10., monitors = ['s'])
 

@@ -96,21 +96,20 @@ class LIF(bp.NeuGroup):
         self.spike = bp.backend.zeros(num, dtype=bool)
         self.V = bp.backend.ones(num) * V_reset
 
-        self.int_V = bp.odeint(self.derivative)
+        self.integral = bp.odeint(self.derivative)
         super(LIF, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
-        for i in prange(self.num):
-            if _t - self.t_last_spike[i] <= self.t_refractory:
-                self.refractory[i] = True
-            else:
-                self.refractory[0] = False
-                V = self.int_V(self.V[i], _t, self.input[i], self.V_rest, self.R, self.tau)
-                if V >= self.V_th:
-                    self.V[i] = self.V_reset
-                    self.spike[i] = True
+    def update(self, _t):            
+        for i in prange(self.size[0]):
+            spike = 0.
+            refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
+            if not refractory:
+                V = self.integral(self.V[i], _t, self.input[i], self.V_rest, self.R, self.tau)
+                spike = (V >= self.V_th)
+                if spike:
+                    V = self.V_reset
                     self.t_last_spike[i] = _t
-                else:
-                    self.spike[i] = False
-                    self.V[i] = V
+                self.V[i] = V
+            self.spike[i] = spike
+            self.refractory[i] = refractory
             self.input[i] = 0.
