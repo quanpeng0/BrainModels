@@ -2,7 +2,6 @@
 
 import brainpy as bp
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class GeneralizedIF(bp.NeuGroup):

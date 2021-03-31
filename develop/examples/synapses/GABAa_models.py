@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 import brainpy as bp
 import brainmodels
 import matplotlib.pyplot as plt
@@ -20,12 +20,12 @@ neu_post.V_reset = -70.
 neu_post.V = bp.backend.ones(size) * -65.
 neu_post.t_refractory = 0.
 
-syn_GABAa = brainmodels.synapses.GABAa1_mat(pre = neu_pre, post = neu_post, 
+syn_GABAa = brainmodels.synapses.GABAa2_vec(pre = neu_pre, post = neu_post, 
                        conn = bp.connect.All2All(),
                        delay = 10., monitors = ['s'])
 
 net = bp.Network(neu_pre, syn_GABAa, neu_post)
-net.run(duration, inputs = (neu_pre, 'input', 21.), report = True)
+net.run(duration, inputs = (neu_pre, 'input', 16.), report = True)
 
 # paint gabaa
 ts = net.ts
