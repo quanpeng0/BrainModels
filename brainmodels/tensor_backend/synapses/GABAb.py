@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import sys
+
+sys.path.append('/home/annatar/BrainPy/')
+sys.path.append('/home/annatar/BrainModels/')
+
 import brainpy as bp
-from numba import prange
+
 
 __all__ = [
     'GABAb1',
@@ -114,13 +119,13 @@ class GABAb1(bp.TwoEndConn):
         return dGdt, dRdt
        
     def update(self, _t):
-        spike = bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        spike = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
         TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
         self.G, self.R = self.integral(
             self.G, self.R, _t,
             self.k1, self.k2, 
-            self.k2, self.k4, TT)
+            self.k3, self.k4, TT)
         self.s = self.G**4 / (self.G**4 + self.kd)
         self.g.push(self.g_max * self.s)
         self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)  
@@ -310,8 +315,86 @@ class LIF(bp.NeuGroup):
         self.spike = sp
         self.refractory = ~not_ref
         self.input[:] = 0.
+
+class LIF2(bp.NeuGroup):
+    """Leaky Integrate-and-Fire neuron model.
+       .. math::
+           \\tau \\frac{d V}{d t}=-(V-V_{rest}) + RI(t)
+       **Neuron Parameters**
+       ============= ============== ======== =========================================
+       **Parameter** **Init Value** **Unit** **Explanation**
+       ------------- -------------- -------- -----------------------------------------
+       V_rest        0.             mV       Resting potential.
+       V_reset       -5.            mV       Reset potential after spike.
+       V_th          20.            mV       Threshold potential of spike.
+       R             1.             \        Membrane resistance.
+       tau           10.            \        Membrane time constant. Compute by R * C.
+       t_refractory  5.             ms       Refractory period length.(ms)
+       noise         0.             \        noise.
+       mode          'scalar'       \        Data structure of ST members.
+       ============= ============== ======== =========================================
+       Returns:
+           bp.Neutype: return description of LIF model.
+       **Neuron State**
+       ST refers to neuron state, members of ST are listed below:
+       =============== ================= =========================================================
+       **Member name** **Initial Value** **Explanation**
+       --------------- ----------------- ---------------------------------------------------------
+       V               0.                Membrane potential.
+       input           0.                External and synaptic input current.
+       spike           0.                Flag to mark whether the neuron is spiking.
+                                         Can be seen as bool.
+       refractory      0.                Flag to mark whether the neuron is in refractory period.
+                                         Can be seen as bool.
+       t_last_spike    -1e7              Last spike time stamp.
+       =============== ================= =========================================================
+       Note that all ST members are saved as floating point type in BrainPy,
+       though some of them represent other data types (such as boolean).
+       References:
+           .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single
+                  neurons to networks and models of cognition. Cambridge
+                  University Press, 2014.
+       """
+
+    target_backend = 'general'
+
+    @staticmethod
+    def derivative(V, t, Iext, V_rest, R, tau):
+        return (-V + V_rest + R * Iext) / tau
+
+    def __init__(self, size, t_refractory=1., V_rest=0.,
+                 V_reset=-5., V_th=20., R=1., tau=10., **kwargs):
+        # parameters
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.R = R
+        self.tau = tau
+        self.t_refractory = t_refractory
+
+        # variables
+        num = bp.size2len(size)
+        self.t_last_spike = bp.backend.ones(num) * -1e7
+        self.input = bp.backend.zeros(num)
+        self.V = bp.backend.ones(num) * V_reset
+        self.refractory = bp.backend.zeros(num, dtype=bool)
+        self.spike = bp.backend.zeros(num, dtype=bool)
+
+        self.int_V = bp.odeint(self.derivative)
+        super(LIF2, self).__init__(size=size, **kwargs)
+
+    def update(self, _t):
+        refractory = (_t - self.t_last_spike) <= self.t_refractory
+        V = self.int_V(self.V, _t, self.input, self.V_rest, self.R, self.tau)
+        V = bp.backend.where(refractory, self.V, V)
+        spike = V >= self.V_th
+        self.t_last_spike = bp.backend.where(spike, _t, self.t_last_spike)
+        self.V = bp.backend.where(spike, self.V_reset, V)
+        self.refractory = refractory
+        self.input[:] = 0.
+        self.spike = spike
+
 '''
-import brainpy as bp
 import matplotlib.pyplot as plt
 
 duration = 100.
@@ -319,32 +402,31 @@ dt = 0.02
 print(bp.__version__)
 bp.backend.set('numpy', dt=dt)
 size = 10
-neu_pre = LIF(size, monitors = ['V', 'input', 'spike'], show_code = True)
+neu_pre = LIF2(size, monitors = ['V', 'input', 'spike'], )
 neu_pre.V_rest = -65.
 neu_pre.V_reset = -70.
 neu_pre.V_th = -50.
 neu_pre.V = bp.backend.ones(size) * -65.
-neu_post = LIF(size, monitors = ['V', 'input', 'spike'], show_code = True)
+neu_post = LIF(size, monitors = ['V', 'input', 'spike'], )
 
 syn_GABAb = GABAb1(pre = neu_pre, post = neu_post, 
                        conn = bp.connect.One2One(),
-                       delay = 10., monitors = ['s'], show_code = True)
+                       delay = 10., monitors = ['s'], )
 
-current, dur = bp.inputs.constant_current([(21., 20.), (0., duration - 20.)])
+
 net = bp.Network(neu_pre, syn_GABAb, neu_post)
-net.run(dur, inputs = [(neu_pre, 'input', current)], report = True)
+net.run(200, inputs = [(neu_pre, 'input', 25)], report = True)
+
+print(neu_pre.mon.spike.max())
+print(syn_GABAb.mon.s.max())
+
+
+bp.visualize.line_plot(net.ts, neu_pre.mon.V, show=True)
 
 # paint gabaa
 ts = net.ts
-fig, gs = bp.visualize.get_figure(2, 1, 5, 6)
-
 #print(gabaa.mon.s.shape)
-fig.add_subplot(gs[0, 0])
-plt.plot(ts, syn_GABAb.mon.s[:, 0], label='s')
+plt.plot(ts, syn_GABAb.mon.s[:, 0, 0], label='s')
 plt.legend()
-
-fig.add_subplot(gs[1, 0])
-plt.plot(ts, neu_post.mon.V[:, 0], label='post.V')
-plt.legend()
-
-plt.show()'''
+plt.show()
+'''
