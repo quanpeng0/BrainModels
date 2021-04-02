@@ -2,9 +2,6 @@
 
 import sys
 
-sys.path.append('/home/annatar/BrainPy/')
-sys.path.append('/home/annatar/BrainModels/')
-
 
 import brainpy as bp
 #bp.backend.set('numba')
