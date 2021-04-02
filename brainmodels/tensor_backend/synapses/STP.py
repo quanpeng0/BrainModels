@@ -109,7 +109,7 @@ class STP(bp.TwoEndConn):
     def update(self, _t):
         self.s, u, x = self.integral(self.s, self.u, self.x, _t, self.tau, self.tau_d, self.tau_f)
         
-        pre_spike_map = bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat
+        pre_spike_map = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
         u += self.U * (1-self.u) * pre_spike_map
         self.s += self.w * u * self.x * pre_spike_map
         x -= u * self.x * pre_spike_map

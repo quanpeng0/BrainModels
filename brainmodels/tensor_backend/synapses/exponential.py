@@ -82,6 +82,6 @@ class Exponential(bp.TwoEndConn):
 
     def update(self, _t):
         self.s = self.integral(self.s, _t, self.tau)
-        self.s += bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat
+        self.s += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.out.push(self.w * self.s)
         self.post.input += bp.backend.sum(self.out.pull(), axis=0)
