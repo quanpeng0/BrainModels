@@ -69,7 +69,7 @@ readout = bp.NeuGroup(neuron, geometry=N_readout)
 # liquid synapse
 # --------------
 
-lbd = 1.2*5    # controls both the average number of connections and the average distance between connected neurons
+lbd = 1.2*5
 lbd_input = 3.3*5  # ???
 
 # parameters

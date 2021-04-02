@@ -54,29 +54,31 @@ r1 = np.mean(pre.mon.r[:, :10], 1)
 r2 = np.mean(pre.mon.r[:, 10:], 1)
 post_r = np.mean(post.mon.r[:, :], 1)
 
-fig, gs = bp.visualize.get_figure(3, 1, 2, 6)
-fig.add_subplot(gs[2, 0], xlim=(0, duration), ylim=(0, w_max))
-plt.plot(net.ts, w1, 'b', label='group1')
-plt.plot(net.ts, w2, 'r', label='group2')
+fig, gs = bp.visualize.get_figure(2, 1, 2, 6)
+fig.add_subplot(gs[1, 0], xlim=(0, duration), ylim=(0, w_max))
+plt.plot(net.ts, w1, 'b', label='w1')
+plt.plot(net.ts, w2, 'r', label='w2')
 plt.title("weights")
 plt.ylabel("weights")
 plt.xlabel("t")
 plt.legend()
 
 fig.add_subplot(gs[0, 0], xlim=(0, duration))
-plt.plot(net.ts, r1, 'b', label='group1')
-plt.plot(net.ts, r2, 'r', label='group2')
+plt.plot(net.ts, r1, 'b', label='r1')
+plt.plot(net.ts, r2, 'r', label='r2')
 plt.title("inputs")
 plt.ylabel("firing rate")
 plt.xlabel("t")
 plt.legend()
 
+'''
 fig.add_subplot(gs[1, 0], xlim=(0, duration))
 plt.plot(net.ts, post_r, 'g', label='post_r')
 plt.title("response")
 plt.ylabel("firing rate")
 plt.xlabel("t")
 plt.legend()
+'''
 
 plt.show()
 

@@ -23,6 +23,21 @@ bp.backend.set(backend='numba', dt=0.05)
 class Decision(bp.NeuGroup):
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(s1, s2, t, I, coh, JAext, J_rec, J_inh, I_0, b, d, a, tau_s, gamma): 
+        I1 = JAext * I * (1. + coh) 
+        I2 = JAext * I * (1. - coh) 
+
+        I_syn1 = J_rec * s1 - J_inh * s2 + I_0 + I1
+        r1 = (a * I_syn1 - b) / (1. - bp.backend.exp(-d * (a * I_syn1 - b)))
+        ds1dt = - s1 / tau_s + (1. - s1) * gamma * r1
+        
+        I_syn2 = J_rec * s2 - J_inh * s1 + I_0 + I2
+        r2 = (a * I_syn2 - b) / (1. - bp.backend.exp(-d * (a * I_syn2 - b)))
+        ds2dt = - s2 / tau_s + (1. - s2) * gamma * r2        
+
+        return ds1dt, ds2dt
+
     def __init__(self, size, coh, tau_s=.06, gamma=0.641,
                 J_rec = .3725, J_inh = .1137, 
                 I_0=.3297, JAext = .00117,
@@ -45,24 +60,9 @@ class Decision(bp.NeuGroup):
         self.s2 = bp.backend.ones(size) * .06
         self.input = bp.backend.zeros(size)
 
+        self.integral = bp.odeint(f=self.derivative, method='rk4')
+
         super(Decision, self).__init__(size=size, **kwargs)
-
-
-    @staticmethod
-    @bp.odeint(method='rk4')
-    def integral(s1, s2, t, I, coh, JAext, J_rec, J_inh, I_0, b, d, a, tau_s, gamma): 
-        I1 = JAext * I * (1. + coh) 
-        I2 = JAext * I * (1. - coh) 
-
-        I_syn1 = J_rec * s1 - J_inh * s2 + I_0 + I1
-        r1 = (a * I_syn1 - b) / (1. - bp.backend.exp(-d * (a * I_syn1 - b)))
-        ds1dt = - s1 / tau_s + (1. - s1) * gamma * r1
-        
-        I_syn2 = J_rec * s2 - J_inh * s1 + I_0 + I2
-        r2 = (a * I_syn2 - b) / (1. - bp.backend.exp(-d * (a * I_syn2 - b)))
-        ds2dt = - s2 / tau_s + (1. - s2) * gamma * r2        
-
-        return ds1dt, ds2dt
 
 
     def update(self, _t):
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     pars['coh'] = .512
     # pars['coh'] = 1.
 
-    phase = bp.analysis.PhasePlane(Decision.integral,
+    phase = bp.analysis.PhasePlane(Decision.derivative,
                                    target_vars=OrderedDict(s2=[0., 1.], s1=[0., 1.]),
                                    fixed_vars=None,
                                    pars_update=pars,

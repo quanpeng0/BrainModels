@@ -58,6 +58,10 @@ class Exponential(bp.TwoEndConn):
 
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
+    @staticmethod
+    def derivative(s, t, tau):
+        return -s / tau
+
     def __init__(self, pre, post, conn, delay=0., tau=8.0, **kwargs):
         # parameters
         self.tau = tau
@@ -73,12 +77,9 @@ class Exponential(bp.TwoEndConn):
         self.w = bp.backend.ones(self.size) * .1
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
-        super(Exponential, self).__init__(pre=pre, post=post, **kwargs)
+        self.integral = bp.odeint(f=self.derivative, method='euler')
 
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(s, t, tau):
-        return -s / tau
+        super(Exponential, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
         for i in prange(self.size):

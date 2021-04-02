@@ -50,10 +50,10 @@ class Voltage_jump(bp.TwoEndConn):
         super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)
     
     def update(self, _t):
-        self.s = bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        self.s = bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat
              
         if self.post_refractory:
-            refra_map = (1. - bp.backend.reshape(self.post.refractory, (1, -1))) * self.conn_mat
+            refra_map = (1. - bp.backend.unsqueeze(self.post.refractory, 0)) * self.conn_mat
             self.out.push(self.s * refra_map)
         else:
             self.out.push(self.s)

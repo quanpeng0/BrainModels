@@ -84,7 +84,7 @@ class AMPA1(bp.TwoEndConn):
 
     def update(self, _t):
         self.s = self.int_s(self.s, _t, self.tau)
-        self.s += bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        self.s += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.g.push(self.g_max * self.s)
         self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
 

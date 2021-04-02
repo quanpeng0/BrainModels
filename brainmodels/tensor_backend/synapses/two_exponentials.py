@@ -76,6 +76,12 @@ class Two_exponentials(bp.TwoEndConn):
 
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(s, x, t, tau1, tau2):
+        dxdt = (-(tau1 + tau2) * x - s) / (tau1 * tau2)
+        dsdt = x
+        return dsdt, dxdt
+
     def __init__(self, pre, post, conn, delay=0., tau1=1.0, tau2=3.0, **kwargs):
         # parameters
         self.tau1 = tau1
@@ -93,18 +99,13 @@ class Two_exponentials(bp.TwoEndConn):
         self.w = bp.backend.ones(self.size) * .2
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
+        self.integral = bp.odeint(f=self.derivative, method='euler')
+
         super(Two_exponentials, self).__init__(pre=pre, post=post, **kwargs)
 
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(s, x, t, tau1, tau2):
-        dxdt = (-(tau1 + tau2) * x - s) / (tau1 * tau2)
-        dsdt = x
-        return dsdt, dxdt
-    
     def update(self, _t):
         self.s, self.x = self.integral(self.s, self.x, _t, self.tau1, self.tau2)
-        self.x += bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        self.x += bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat
         self.out.push(self.w * self.s)
         self.post.input += bp.backend.sum(self.out.pull(), axis=0)
 

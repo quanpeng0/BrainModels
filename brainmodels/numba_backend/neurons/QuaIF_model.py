@@ -83,6 +83,11 @@ class QuaIF(bp.NeuGroup):
 
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(V, t, I_ext, V_rest, V_c, R, tau, a_0):  # integrate u(t)
+        dVdt = (a_0 * (V - V_rest) * (V - V_c) + R * I_ext) / tau
+        return dVdt
+
     def __init__(self, size, V_rest=-65., V_reset=-68., 
                  V_th=-30., V_c=-50.0, a_0 = .07,
                  R=1., tau=10., t_refractory=0., **kwargs):
@@ -105,13 +110,10 @@ class QuaIF(bp.NeuGroup):
         self.refractory = bp.backend.zeros(num, dtype=bool)
         self.t_last_spike = bp.backend.ones(num) * -1e7
 
+        self.integral = bp.odeint(f=self.derivative, method='euler')
+
         super(QuaIF, self).__init__(size = size, **kwargs)
 
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(V, t, I_ext, V_rest, V_c, R, tau, a_0):  # integrate u(t)
-        dVdt = (a_0 * (V - V_rest) * (V - V_c) + R * I_ext) / tau
-        return dVdt
 
     def update(self, _t):
         for i in prange(self.size[0]):

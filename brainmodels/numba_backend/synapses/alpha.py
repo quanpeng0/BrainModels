@@ -72,6 +72,12 @@ class Alpha(bp.TwoEndConn):
     
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
+    @staticmethod
+    def derivative(s, x, t, tau):
+        dxdt = (-2 * tau * x - s) / (tau ** 2)
+        dsdt = x
+        return dsdt, dxdt
+
     def __init__(self, pre, post, conn, delay=0., tau=2.0, **kwargs):
         # parameters
         self.tau = tau
@@ -89,15 +95,9 @@ class Alpha(bp.TwoEndConn):
         self.w = bp.backend.ones(self.size) * .2
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
+        self.integral = bp.odeint(f=self.derivative, method='euler')
+
         super(Alpha, self).__init__(pre=pre, post=post, **kwargs)
-
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(s, x, t, tau):
-        dxdt = (-2 * tau * x - s) / (tau ** 2)
-        dsdt = x
-        return dsdt, dxdt
-
     
     def update(self, _t):
         for i in prange(self.size):

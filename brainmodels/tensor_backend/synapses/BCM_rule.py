@@ -56,6 +56,11 @@ class BCM(bp.TwoEndConn):
 
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(w, t, lr, r_pre, r_post, r_th):
+        dwdt = lr * r_post * (r_post - r_th) * r_pre
+        return dwdt
+
     def __init__(self, pre, post, conn, lr=0.005, w_max=2., w_min=0., **kwargs):
         # parameters
         self.lr = lr
@@ -72,13 +77,10 @@ class BCM(bp.TwoEndConn):
         self.w = bp.backend.ones(self.size)
         self.sum_post_r = bp.backend.zeros(post.size[0])
 
+        self.int_w = bp.odeint(f=self.derivative, method='rk4')
+
         super(BCM, self).__init__(pre=pre, post=post, **kwargs)
 
-    @staticmethod
-    @bp.odeint(method='rk4')
-    def int_w(w, t, lr, r_pre, r_post, r_th):
-        dwdt = lr * r_post * (r_post - r_th) * r_pre
-        return dwdt
     
     def update(self, _t):
         # update threshold
