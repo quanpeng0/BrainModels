@@ -96,15 +96,12 @@ class ExpIF(bp.NeuGroup):
         super(ExpIF, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
-        # update variables
-        not_ref = (_t - self.t_last_spike > self.t_refractory)
-        self.V[not_ref] = self.integral(
-            self.V[not_ref], _t, self.input[not_ref],
-            self.V_rest, self.delta_T, self.V_T,
-            self.R, self.tau)
-        sp = (self.V > self.V_th)
-        self.V[sp] = self.V_reset
-        self.t_last_spike[sp] = _t
-        self.spike = sp
-        self.refractory = ~not_ref
+        refractory = (_t - self.t_last_spike) <= self.t_refractory
+        V = self.integral(self.V, _t, self.input, self.V_rest, self.R, self.tau)
+        V = bp.backend.where(refractory, self.V, V)
+        spike = self.V_th <= V
+        self.t_last_spike = bp.backend.where(spike, _t, self.t_last_spike)
+        self.V = bp.backend.where(spike, self.V_reset, V)
+        self.refractory = refractory
         self.input[:] = 0.
+        self.spike = spike
