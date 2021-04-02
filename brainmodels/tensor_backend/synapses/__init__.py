@@ -11,3 +11,4 @@ from .gap_junction import *
 from .STP import *
 from .BCM_rule import *
 from .voltage_jump import *
+from .STDP import *
