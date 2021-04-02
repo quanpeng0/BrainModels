@@ -81,6 +81,12 @@ class NMDA(bp.TwoEndConn):
     
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
+    @staticmethod
+    def derivative(s, x, t, tau_rise, tau_decay, a):
+        dxdt = -x / tau_rise
+        dsdt = -s / tau_decay + a * x * (1 - s)
+        return dsdt, dxdt
+
     def __init__(self, pre, post, conn, delay=0., g_max=0.15, E=0., cc_Mg=1.2,
                     alpha=0.062, beta=3.57, tau=100, a=0.5, tau_rise = 2., **kwargs):
         # parameters
@@ -104,15 +110,10 @@ class NMDA(bp.TwoEndConn):
         self.x = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
+        self.integral = bp.odeint(f=self.derivative, method='euler')
 
         super(NMDA, self).__init__(pre=pre, post=post, **kwargs)
 
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(s, x, t, tau_rise, tau_decay, a):
-        dxdt = -x / tau_rise
-        dsdt = -s / tau_decay + a * x * (1 - s)
-        return dsdt, dxdt
 
     
     def update(self, _t):

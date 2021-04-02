@@ -57,6 +57,10 @@ class Exponential(bp.TwoEndConn):
 
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(s, t, tau):
+        return -s / tau
+
     def __init__(self, pre, post, conn, delay=0., tau=8.0, **kwargs):
         # parameters
         self.tau = tau
@@ -72,15 +76,12 @@ class Exponential(bp.TwoEndConn):
         self.w = bp.backend.ones(self.size) * .1
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
-        super(Exponential, self).__init__(pre=pre, post=post, **kwargs)
+        self.integral = bp.odeint(f=self.derivative, method='euler')
 
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(s, t, tau):
-        return -s / tau
+        super(Exponential, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
         self.s = self.integral(self.s, _t, self.tau)
-        self.s += bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        self.s += bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat
         self.out.push(self.w * self.s)
         self.post.input += bp.backend.sum(self.out.pull(), axis=0)

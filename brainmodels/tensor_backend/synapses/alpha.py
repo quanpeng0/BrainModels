@@ -99,6 +99,6 @@ class Alpha(bp.TwoEndConn):
 
     def update(self, _t):
         self.s, self.x = self.integral(self.s, self.x, _t, self.tau)
-        self.x += bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        self.x += bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat
         self.out.push(self.w * self.s)
         self.post.input += bp.backend.sum(self.out.pull(), axis=0)

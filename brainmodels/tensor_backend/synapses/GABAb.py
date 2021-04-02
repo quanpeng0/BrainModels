@@ -114,7 +114,7 @@ class GABAb1(bp.TwoEndConn):
         return dGdt, dRdt
        
     def update(self, _t):
-        spike = bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        spike = bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat
         self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
         TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
         self.G, self.R = self.integral(
@@ -257,7 +257,7 @@ class GABAb2(bp.TwoEndConn):
         return dRdt, dDdt, dGdt
 
     def update(self, _t):
-        spike = bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat
+        spike = bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat
         self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
         T = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
         self.R, self.D, self.G = self.integral(

@@ -86,6 +86,12 @@ class AdQuaIF(bp.NeuGroup):
     """
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(V, w, t, I_ext, V_rest, V_c, R, tau, tau_w, a, a_0):
+        dwdt = (a * (V - V_rest) - w) / tau_w
+        dVdt = (a_0 * (V - V_rest) * (V - V_c) - R * w + R * I_ext) / tau
+        return dVdt, dwdt
+
     def __init__(self, size, V_rest=-65., V_reset=-68., 
                  V_th=-30., V_c=-50.0, a_0 = .07,
                  a = 1., b=.1, R=1., tau=10., tau_w = 10.,
@@ -113,14 +119,10 @@ class AdQuaIF(bp.NeuGroup):
         self.refractory = bp.backend.zeros(num, dtype=bool)
         self.t_last_spike = bp.backend.ones(num) * -1e7
 
+        self.integral = bp.odeint(f=self.derivative, method='euler')
+
         super(AdQuaIF, self).__init__(size = size, **kwargs)
 
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(V, w, t, I_ext, V_rest, V_c, R, tau, tau_w, a, a_0):
-        dwdt = (a * (V - V_rest) - w) / tau_w
-        dVdt = (a_0 * (V - V_rest) * (V - V_c) - R * w + R * I_ext) / tau
-        return dVdt, dwdt
 
     def update(self, _t):
         not_ref = (_t - self.t_last_spike > self.t_refractory)

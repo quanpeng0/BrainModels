@@ -75,6 +75,13 @@ class STP(bp.TwoEndConn):
 
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
+    @staticmethod
+    def derivative(s, u, x, t, tau, tau_d, tau_f):
+        dsdt = -s / tau
+        dudt = - u / tau_f
+        dxdt = (1 - x) / tau_d
+        return dsdt, dudt, dxdt
+
     def __init__(self, pre, post, conn, delay=0., U=0.15, tau_f=1500., tau_d=200., tau=8.,  **kwargs):
         # parameters
         self.tau_d = tau_d
@@ -95,15 +102,9 @@ class STP(bp.TwoEndConn):
         self.w = bp.backend.ones(self.size)
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
-        super(STP, self).__init__(pre=pre, post=post, **kwargs)
+        self.integral = bp.odeint(f=self.derivative, method='euler')
 
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(s, u, x, t, tau, tau_d, tau_f):
-        dsdt = -s / tau
-        dudt = - u / tau_f
-        dxdt = (1 - x) / tau_d
-        return dsdt, dudt, dxdt
+        super(STP, self).__init__(pre=pre, post=post, **kwargs)
 
     
     def update(self, _t):

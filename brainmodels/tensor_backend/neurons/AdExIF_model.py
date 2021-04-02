@@ -84,6 +84,12 @@ class AdExIF(bp.NeuGroup):
     """
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(V, w, t, I_ext, V_rest, delta_T, V_T, R, tau, tau_w, a):
+        dwdt = (a * (V - V_rest) - w) / tau_w
+        dVdt = (- (V - V_rest) + delta_T * bp.backend.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau
+        return dVdt, dwdt
+
     def __init__(self, size, V_rest=-65., V_reset=-68., 
                  V_th=-30., V_T=-59.9, delta_T=3.48,
                  a = 1., b=1., R=10., tau=10., tau_w = 30.,
@@ -111,14 +117,10 @@ class AdExIF(bp.NeuGroup):
         self.refractory = bp.backend.zeros(num, dtype=bool)
         self.t_last_spike = bp.backend.ones(num) * -1e7
 
+        self.integral = bp.odeint(f=self.derivative, method='euler')
+
         super(AdExIF, self).__init__(size = size, **kwargs)
 
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(V, w, t, I_ext, V_rest, delta_T, V_T, R, tau, tau_w, a):
-        dwdt = (a * (V - V_rest) - w) / tau_w
-        dVdt = (- (V - V_rest) + delta_T * bp.backend.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau
-        return dVdt, dwdt
 
     def update(self, _t):
         not_ref = (_t - self.t_last_spike > self.t_refractory)
