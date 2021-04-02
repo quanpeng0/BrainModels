@@ -59,7 +59,8 @@ class LIF(bp.NeuGroup):
 
     @staticmethod
     def derivative(V, t, Iext, V_rest, R, tau):
-        return (-V + V_rest + R * Iext) / tau
+        dvdt = (-V + V_rest + R * Iext) / tau
+        return dvdt
 
     def __init__(self, size, t_refractory=1., V_rest=0.,
                  V_reset=-5., V_th=20., R=1., tau=10., **kwargs):

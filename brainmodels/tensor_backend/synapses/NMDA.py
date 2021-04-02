@@ -113,7 +113,7 @@ class NMDA(bp.TwoEndConn):
         return dsdt, dxdt
 
     def update(self, _t):
-        self.x += bp.backend.reshape(self.pre.spike, (-1, 1)) * self.conn_mat        
+        self.x += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.s, self.x = self.integral(self.s, self.x, _t, self.tau_rise, self.tau, self.a)
         
         self.g.push(self.g_max * self.s)

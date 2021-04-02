@@ -33,23 +33,23 @@ delay_period = 500. / time_scale
 total_period = pre_period + stim_period + delay_period
 
 # set LIF neu params
-V_rest_E = -70.      # mV
-V_reset_E = -55.     # mV
-V_th_E = -50.        # mV
-g_E = 25. * 1e-3     # uS
-R_E = 1 / g_E        # MOhm
-C_E = 0.5            # nF
-tau_E = 20.          # ms
+V_rest_E = -70.  # mV
+V_reset_E = -55.  # mV
+V_th_E = -50.  # mV
+g_E = 25. * 1e-3  # uS
+R_E = 1 / g_E  # MOhm
+C_E = 0.5  # nF
+tau_E = 20.  # ms
 t_refractory_E = 2.  # ms
 print(f"R_E * C_E = {R_E * C_E} should be equal to tau_E = {tau_E}")
 
-V_rest_I = -70.      # mV
-V_reset_I = -55.     # mV
-V_th_I = -50.        # mV
-g_I = 20. * 1e-3     # uS
-R_I = 1 / g_I        # Mohm
-C_I = 0.2            # nF
-tau_I = 10.          # ms
+V_rest_I = -70.  # mV
+V_reset_I = -55.  # mV
+V_th_I = -50.  # mV
+g_I = 20. * 1e-3  # uS
+R_I = 1 / g_I  # Mohm
+C_I = 0.2  # nF
+tau_I = 10.  # ms
 t_refractory_I = 1.  # ms
 print(f"R_I * C_I = {R_I * C_I} should be equal to tau_I = {tau_I}")
 
@@ -57,10 +57,15 @@ print(f"R_I * C_I = {R_I * C_I} should be equal to tau_I = {tau_I}")
 class LIF(bp.NeuGroup):
     target_backend = 'general'
 
-    def __init__(self, size, V_rest=0., V_reset=-5., 
-                 V_th=20., R=1., tau=10., t_refractory=5., 
+    @staticmethod
+    def derivative(V, t, I_ext, V_rest, R, tau):
+        dvdt = (- (V - V_rest) + R * I_ext) / tau
+        return dvdt
+
+    def __init__(self, size, V_rest=0., V_reset=-5.,
+                 V_th=20., R=1., tau=10., t_refractory=5.,
                  **kwargs):
-        
+
         # parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
@@ -76,20 +81,16 @@ class LIF(bp.NeuGroup):
         self.refractory = bp.backend.zeros(size)
         self.t_last_spike = bp.backend.ones(size) * -1e7
 
-        super(LIF, self).__init__(size = size, **kwargs)
+        self.integral = bp.odeint(self.derivative)
+        super(LIF, self).__init__(size=size, **kwargs)
 
-    @staticmethod
-    @bp.odeint()
-    def integral(V, t, I_ext, V_rest, R, tau): 
-        return (- (V - V_rest) + R * I_ext) / tau
-    
     def update(self, _t):
         # update variables
         for i in prange(self.size[0]):
             spike = 0.
             refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
             if not refractory:
-                V = self.integral(self.V[i], _t, self.input[i], 
+                V = self.integral(self.V[i], _t, self.input[i],
                                   self.V_rest, self.R, self.tau)
                 spike = (V >= self.V_th)
                 if spike:
@@ -98,31 +99,38 @@ class LIF(bp.NeuGroup):
                 self.V[i] = V
             self.spike[i] = spike
             self.refractory[i] = refractory
-            self.input[i] = 0.  
+            self.input[i] = 0.
             # reset input here or it will be brought to next step
 
-# set syn params
-E_AMPA = 0.            # mV
-tau_decay_AMPA = 2     # ms
 
-E_NMDA = 0.            # mV
-alpha_NMDA = 0.062     # \
-beta_NMDA = 3.57       # \
-cc_Mg_NMDA = 1.        # mM
-a_NMDA = 0.5           # kHz/ms^-1
-tau_rise_NMDA = 2.     # ms
+# set syn params
+E_AMPA = 0.  # mV
+tau_decay_AMPA = 2  # ms
+
+E_NMDA = 0.  # mV
+alpha_NMDA = 0.062  # \
+beta_NMDA = 3.57  # \
+cc_Mg_NMDA = 1.  # mM
+a_NMDA = 0.5  # kHz/ms^-1
+tau_rise_NMDA = 2.  # ms
 tau_decay_NMDA = 100.  # ms
 
-E_GABAa = -70.         # mV
-tau_decay_GABAa = 5.   # ms
+E_GABAa = -70.  # mV
+tau_decay_GABAa = 5.  # ms
 
-delay_syn = 0.5        # ms
+delay_syn = 0.5  # ms
 
-class GABAa1_vec(bp.TwoEndConn):    
+
+class GABAa1_vec(bp.TwoEndConn):
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
-    def __init__(self, pre, post, conn, delay=0., 
-                 g_max=0.4, E=-80., tau_decay=6., 
+    @staticmethod
+    def derivative(s, t, tau_decay):
+        dsdt = - s / tau_decay
+        return dsdt
+
+    def __init__(self, pre, post, conn, delay=0.,
+                 g_max=0.4, E=-80., tau_decay=6.,
                  **kwargs):
         # parameters
         self.g_max = g_max
@@ -139,12 +147,8 @@ class GABAa1_vec(bp.TwoEndConn):
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
+        self.integral = bp.odeint(self.derivative)
         super(GABAa1_vec, self).__init__(pre=pre, post=post, **kwargs)
-
-    @staticmethod
-    @bp.odeint()
-    def integral(s, t, tau_decay):
-        return - s / tau_decay
 
     def update(self, _t):
         for i in prange(self.size):
@@ -152,15 +156,20 @@ class GABAa1_vec(bp.TwoEndConn):
             post_id = self.post_ids[i]
             self.s[i] = self.integral(self.s[i], _t, self.tau_decay)
             self.s[i] += self.pre.spike[pre_id]
-            #pdb.set_trace()
-            #print("GABAa:", self.g.delay_data.shape, self.s[i].shape)
+            # pdb.set_trace()
+            # print("GABAa:", self.g.delay_data.shape, self.s[i].shape)
             g = self.g_max[pre_id][post_id] * self.s[i]
-            self.g.push(i, g)  #???
+            self.g.push(i, g)  # ???
             self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
 
 
 class AMPA1_vec(bp.TwoEndConn):
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
+
+    @staticmethod
+    def derivative(s, t, tau):
+        dsdt = - s / tau
+        return dsdt
 
     def __init__(self, pre, post, conn, delay=0., g_max=0.10, E=0., tau=2.0, **kwargs):
         # parameters
@@ -178,12 +187,8 @@ class AMPA1_vec(bp.TwoEndConn):
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
+        self.integral = bp.odeint(self.derivative, method='euler')
         super(AMPA1_vec, self).__init__(pre=pre, post=post, **kwargs)
-
-    @staticmethod
-    @bp.odeint(method='euler')
-    def int_s(s, t, tau):
-        return - s / tau
 
     def update(self, _t):
         for i in prange(self.size):
@@ -194,13 +199,20 @@ class AMPA1_vec(bp.TwoEndConn):
             post_id = self.post_ids[i]
             self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
 
+
 class NMDA_vec(bp.TwoEndConn):
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numa-cuda']
 
-    def __init__(self, pre, post, conn, delay=0., 
+    @staticmethod
+    def derivative(s, x, t, tau_rise, tau_decay, a):
+        dxdt = -x / tau_rise
+        dsdt = -s / tau_decay + a * x * (1 - s)
+        return dsdt, dxdt
+
+    def __init__(self, pre, post, conn, delay=0.,
                  g_max=0., E=E_NMDA, alpha=alpha_NMDA, beta=beta_NMDA,
                  cc_Mg=cc_Mg_NMDA, a=a_NMDA,
-                 tau_decay=tau_decay_NMDA, tau_rise=tau_rise_NMDA, 
+                 tau_decay=tau_decay_NMDA, tau_rise=tau_rise_NMDA,
                  **kwargs):
         # parameters
         self.g_max = g_max
@@ -223,14 +235,8 @@ class NMDA_vec(bp.TwoEndConn):
         self.x = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
+        self.integral = bp.odeint(self.derivative, method='euler')
         super(NMDA_vec, self).__init__(pre=pre, post=post, **kwargs)
-
-    @staticmethod
-    @bp.odeint(method='euler')
-    def integral(s, x, t, tau_rise, tau_decay, a):
-        dxdt = -x / tau_rise
-        dsdt = -s / tau_decay + a * x * (1 - s)
-        return dsdt, dxdt
 
     # update and output
     def update(self, _t):
@@ -239,15 +245,16 @@ class NMDA_vec(bp.TwoEndConn):
             self.x[i] += self.pre.spike[pre_id]
             self.s[i], self.x[i] = self.integral(self.s[i], self.x[i], _t, self.tau_rise, self.tau, self.a)
             # output
-            #pdb.set_trace()
+            # pdb.set_trace()
             post_id = self.post_ids[i]
-            #print(_t, pre_id, post_id, self.g_max.shape, self.s.shape, i)
-            #if i==16384: 
+            # print(_t, pre_id, post_id, self.g_max.shape, self.s.shape, i)
+            # if i==16384:
             #    pdb.set_trace()
             g = self.g_max[pre_id][post_id] * self.s[i]
             self.g.push(i, g)
             g_inf = 1 + self.cc_Mg / self.beta * bp.backend.exp(-self.alpha * self.post.V[post_id])
             self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E) / g_inf
+
 
 # set syn weights (only used in recurrent E connections)
 w_pos = 1.7
@@ -260,7 +267,7 @@ weight = np.ones((N_E, N_E), dtype=np.float)
 for i in range(N_A):
     weight[i, 0: N_A] = w_pos
     weight[i, N_A: N_A + N_B] = w_neg
-for i in range(N_A, N_A+N_B):
+for i in range(N_A, N_A + N_B):
     weight[i, N_A: N_A + N_B] = w_pos
     weight[i, 0: N_A] = w_neg
 for i in range(N_A + N_B, N_E):
@@ -271,17 +278,16 @@ print(f"Check contraints: Weight sum {weight.sum(axis=0)[0]} \
         should be equal to N_E = {N_E}")
 
 # set background params
-poisson_freq = 2400.            # Hz
-g_max_ext2E_AMPA = 2.1 * 1e-3   # uS
+poisson_freq = 2400.  # Hz
+g_max_ext2E_AMPA = 2.1 * 1e-3  # uS
 g_max_ext2I_AMPA = 1.62 * 1e-3  # uS
 
-g_max_E2E_AMPA = 0.05  * 1e-3 * net_scale
+g_max_E2E_AMPA = 0.05 * 1e-3 * net_scale
 g_max_E2E_NMDA = 0.165 * 1e-3 * net_scale
-g_max_E2I_AMPA = 0.04  * 1e-3 * net_scale
-g_max_E2I_NMDA = 0.13  * 1e-3 * net_scale
-g_max_I2E_GABAa = 1.3  * 1e-3 * net_scale
-g_max_I2I_GABAa = 1.0  * 1e-3 * net_scale
-
+g_max_E2I_AMPA = 0.04 * 1e-3 * net_scale
+g_max_E2I_NMDA = 0.13 * 1e-3 * net_scale
+g_max_I2E_GABAa = 1.3 * 1e-3 * net_scale
+g_max_I2I_GABAa = 1.0 * 1e-3 * net_scale
 
 # def E neurons/pyramid neurons
 neu_E = LIF(N_E, monitors=['spike', 'input', 'V'])
@@ -308,7 +314,7 @@ neu_I.V = bp.backend.ones(N_I) * V_rest_I
 syn_E2E_AMPA = AMPA1_vac(pre=neu_E, post=neu_E,
                          conn=bp.connect.All2All(),
                          delay=delay_syn)
-syn_E2E_AMPA.g_max = g_max_E2E_AMPA * weight  #TODO: the problem of hetrogenous
+syn_E2E_AMPA.g_max = g_max_E2E_AMPA * weight
 syn_E2E_AMPA.E = E_AMPA
 syn_E2E_AMPA.tau_decay = tau_decay_AMPA
 
@@ -324,14 +330,14 @@ syn_E2E_NMDA.a = a_NMDA
 syn_E2E_NMDA.tau_decay = tau_decay_NMDA
 syn_E2E_NMDA.tau_rise = tau_rise_NMDA
 
-syn_E2I_AMPA = AMPA1_vec(pre = neu_E, post = neu_I,
+syn_E2I_AMPA = AMPA1_vec(pre=neu_E, post=neu_I,
                          conn=bp.connect.All2All(),
                          delay=delay_syn)
 syn_E2I_AMPA.g_max = g_max_E2I_AMPA
 syn_E2I_AMPA.E = E_AMPA
 syn_E2I_AMPA.tau_decay = tau_decay_AMPA
 
-syn_E2I_NMDA = NMDA_vec(pre = neu_E, post = neu_I,
+syn_E2I_NMDA = NMDA_vec(pre=neu_E, post=neu_I,
                         conn=bp.connect.All2All(),
                         delay=delay_syn)
 syn_E2I_NMDA.g_max = g_max_E2I_NMDA
@@ -343,44 +349,46 @@ syn_E2I_NMDA.a = a_NMDA
 syn_E2I_NMDA.tau_decay = tau_decay_NMDA
 syn_E2I_NMDA.tau_rise = tau_rise_NMDA
 
-syn_I2E_GABAa = GABAa1_vec(pre = neu_I, post = neu_E,
+syn_I2E_GABAa = GABAa1_vec(pre=neu_I, post=neu_E,
                            conn=bp.connect.All2All(),
                            delay=delay_syn)
 syn_I2E_GABAa.g_max = g_max_I2E_GABAa
 syn_I2E_GABAa.E = E_GABAa
 syn_I2E_GABAa.tau_decay = tau_decay_GABAa
 
-syn_I2I_GABAa = GABAa1_vec(pre = neu_I, post = neu_I,
+syn_I2I_GABAa = GABAa1_vec(pre=neu_I, post=neu_I,
                            conn=bp.connect.All2All(),
                            delay=delay_syn)
 syn_I2I_GABAa.g_max = g_max_I2I_GABAa
 syn_I2I_GABAa.E = E_GABAa
 syn_I2I_GABAa.tau_decay = tau_decay_GABAa
 
+
 ## def poisson input
 class Poisson(bp.NeuGroup):
-    target_backend = ['numpy', 'numba']
+    target_backend = 'general'
 
-    def __init__(self, size, freq = 0., dt = 0., **kwargs):
+    def __init__(self, size, freq=0., dt=0., **kwargs):
         self.freq = freq
         self.dt = dt
         self.spike = bp.backend.zeros(size)
-        super(Poisson, self).__init__(size = size, **kwargs)
-        
+        super(Poisson, self).__init__(size=size, **kwargs)
+
     def update(self, _t):
         for i in prange(self.size[0]):
             self.spike[i] = np.random.random() < (self.freq * self.dt / 1000)
 
-neu_bg_E = Poisson(N_E, freqs = poisson_freq, dt = dt)
-neu_bg_I = Poisson(N_I, freqs = poisson_freq, dt = dt)
 
-syn_back2E_AMPA = AMPA1_vec(pre = neu_bg_E, post = neu_E,
+neu_bg_E = Poisson(N_E, freqs=poisson_freq, dt=dt)
+neu_bg_I = Poisson(N_I, freqs=poisson_freq, dt=dt)
+
+syn_back2E_AMPA = AMPA1_vec(pre=neu_bg_E, post=neu_E,
                             conn=bp.connect.One2One())
 syn_back2E_AMPA.g_max = g_max_ext2E_AMPA
 syn_back2E_AMPA.E = E_AMPA
 syn_back2E_AMPA.tau_decay = tau_decay_AMPA
 
-syn_back2I_AMPA = AMPA1_vec(pre = neu_bg_I, post = neu_I, 
+syn_back2I_AMPA = AMPA1_vec(pre=neu_bg_I, post=neu_I,
                             conn=bp.connect.One2One())
 syn_back2I_AMPA.g_max = g_max_ext2I_AMPA
 syn_back2I_AMPA.E = E_AMPA
@@ -391,20 +399,21 @@ syn_back2I_AMPA.tau_decay = tau_decay_AMPA
 # Note: inputs only given to A and B group
 mu_0 = 40.
 coherence = 25.6
-rou_A = mu_0/100.
-rou_B = mu_0/100.
+rou_A = mu_0 / 100.
+rou_B = mu_0 / 100.
 mu_A = mu_0 + rou_A * coherence
 mu_B = mu_0 - rou_B * coherence
 print(f"coherence = {coherence}, mu_A = {mu_A}, mu_B = {mu_B}")
 
+
 class Poisson_time(bp.NeuGroup):
     target_backend = ['numpy', 'numba']
 
-    def __init__(self, size, t_start=0., t_end=0., 
+    def __init__(self, size, t_start=0., t_end=0.,
                  t_interval=0., mean_freq=0., var_freq=20.,
-                 dt, 
+                 dt,
                  **kwargs):
-        #params
+        # params
         self.t_start = t_start
         self.t_end = t_end
         self.t_interval = t_interval
@@ -414,56 +423,56 @@ class Poisson_time(bp.NeuGroup):
         self.freq = 0.
         self.t_last_change = -1e7
 
-        #vars
+        # vars
         self.spike = bp.backend.zeros(size)
-        #self.freq = bp.backend.zeros(size)
-        #self.t_last_change = bp.backend.ones(size) * -1e7
-        super(Poisson_time, self).__init__(size = size, **kwargs)
-        
+        # self.freq = bp.backend.zeros(size)
+        # self.t_last_change = bp.backend.ones(size) * -1e7
+        super(Poisson_time, self).__init__(size=size, **kwargs)
+
     def update(self, _t):
         if _t > self.t_start and _t < self.t_end:
             if (_t - self.t_last_change) >= self.t_interval:
                 freq = np.random.normal(self.mean_freq, self.var_freq)
                 self.freq = max(freq, 0)
                 self.t_last_change = _t
-                self.spike = np.random.random(self.spike.shape) 
-                             < (self.freq * self.dt / 1000)
-            else:
-                self.spike = np.random.random(self.spike.shape) 
-                             < (self.freq * self.dt / 1000)
+                self.spike = np.random.random(self.spike.shape)
+                < (self.freq * self.dt / 1000)
         else:
-            if _t >= self.t_end and _t <= self.t_end + self.dt:
-                self.freq = 0.
-            self.spike = bp.backend.zeros(self.spike.shape)
+            self.spike = np.random.random(self.spike.shape)
+            < (self.freq * self.dt / 1000)
 
+else:
+if _t >= self.t_end and _t <= self.t_end + self.dt:
+    self.freq = 0.
+self.spike = bp.backend.zeros(self.spike.shape)
 
 neu_input2A = Poisson_time(N_A, t_start=pre_period,
-                              t_end=pre_period + stim_period,
-                              t_interval=50.,
-                              mean_freq=mu_A,
-                              var_freq=10., 
-                              dt = dt, monitors=['freq'])
+                           t_end=pre_period + stim_period,
+                           t_interval=50.,
+                           mean_freq=mu_A,
+                           var_freq=10.,
+                           dt=dt, monitors=['freq'])
 neu_input2B = Poisson_time(N_B, t_start=pre_period,
-                              t_end=pre_period + stim_period,
-                              t_interval=50.,
-                              mean_freq=mu_B,
-                              var_freq=10., 
-                              dt = dt, monitors=['freq'])
+                           t_end=pre_period + stim_period,
+                           t_interval=50.,
+                           mean_freq=mu_B,
+                           var_freq=10.,
+                           dt=dt, monitors=['freq'])
 
-syn_input2A_AMPA = AMPA1_vec(pre = neu_input2A, post = neu_E[0:N_A],
+syn_input2A_AMPA = AMPA1_vec(pre=neu_input2A, post=neu_E[0:N_A],
                              conn=bp.connect.One2One())
 syn_input2A_AMPA.g_max = g_max_ext2E_AMPA
 syn_input2A_AMPA.E = E_AMPA
 syn_input2A_AMPA.tau_decay = tau_decay_AMPA
 
-syn_input2B_AMPA = AMPA1_vec(pre = neu_input2B, post = neu_E[N_A:N_A+N_B],
+syn_input2B_AMPA = AMPA1_vec(pre=neu_input2B, post=neu_E[N_A:N_A + N_B],
                              conn=bp.connect.One2One())
 syn_input2B_AMPA.g_max = g_max_ext2E_AMPA
 syn_input2B_AMPA.E = E_AMPA
 syn_input2B_AMPA.tau_decay = tau_decay_AMPA
 
 # build & simulate network
-net = bp.Network(neu_bg_E, neu_bg_I, 
+net = bp.Network(neu_bg_E, neu_bg_I,
                  syn_back2E_AMPA, syn_back2I_AMPA,
                  neu_input2A, neu_input2B,
                  syn_input2A_AMPA, syn_input2B_AMPA,
@@ -476,24 +485,26 @@ net = bp.Network(neu_bg_E, neu_bg_I,
 
 net.run(duration=total_period, report=True, report_percent=0.01)
 
+
 # visualize
 def compute_population_fr(data, time_window, time_step):
-    spike_cnt_group = data.sum(axis = 1)
+    spike_cnt_group = data.sum(axis=1)
     pop_num = data.shape[1]
     time_cnt = int(time_step // bp.profile.get_dt())
-    first_step_sum = spike_cnt_group[0:time_cnt].sum(axis = 0)
+    first_step_sum = spike_cnt_group[0:time_cnt].sum(axis=0)
     pop_fr_group = []
     for t in range(data.shape[0]):
         if t < time_cnt:
-            pop_fr_group.append((first_step_sum / time_step)/pop_num)
+            pop_fr_group.append((first_step_sum / time_step) / pop_num)
         else:
-            pop_fr_group.append(spike_cnt_group[t - time_cnt:t].sum(axis = 0))
+            pop_fr_group.append(spike_cnt_group[t - time_cnt:t].sum(axis=0))
     return pop_fr_group
+
 
 fig, gs = bp.visualize.get_figure(4, 1, 4, 8)
 
 fig.add_subplot(gs[0, 0])
-bp.visualize.raster_plot(net.ts, neu_E.mon.spike, 
+bp.visualize.raster_plot(net.ts, neu_E.mon.spike,
                          markersize=1, ylim=[0, N_A])
 plt.xlabel("time")
 plt.ylabel("spike of group A")
@@ -504,19 +515,19 @@ plt.xlabel("time")
 plt.ylabel("spike of group B")
 
 fig.add_subplot(gs[2, 0])
-pop_fr_A = compute_population_fr(neu_E.mon.spike[:, 0:N_A], 
-                                 time_window = 50., time_step = 5.)
-pop_fr_B = compute_population_fr(neu_E.mon.spike[:, N_A: N_A+N_B], 
-                                 time_window = 50., time_step = 5.)
-plt.bar(net.ts, pop_fr_A, label = "group A")
-plt.bar(net.ts, pop_fr_B, label = "group B")
+pop_fr_A = compute_population_fr(neu_E.mon.spike[:, 0:N_A],
+                                 time_window=50., time_step=5.)
+pop_fr_B = compute_population_fr(neu_E.mon.spike[:, N_A: N_A + N_B],
+                                 time_window=50., time_step=5.)
+plt.bar(net.ts, pop_fr_A, label="group A")
+plt.bar(net.ts, pop_fr_B, label="group B")
 plt.xlabel("time")
 plt.ylabel("population activity")
 plt.legend()
 
 fig.add_subplot(gs[3, 0])
-plt.plot(net.ts, neu_input2A.mon.freq[:, 0], label = "group A")
-plt.plot(net.ts, neu_input2B.mon.freq[:, 0], label = "group B")
+plt.plot(net.ts, neu_input2A.mon.freq[:, 0], label="group A")
+plt.plot(net.ts, neu_input2B.mon.freq[:, 0], label="group B")
 plt.xlabel("time")
 plt.ylabel("input firing rate")
 plt.legend()
