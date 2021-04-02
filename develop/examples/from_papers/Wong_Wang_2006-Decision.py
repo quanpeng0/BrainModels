@@ -60,7 +60,7 @@ class Decision(bp.NeuGroup):
         self.s2 = bp.backend.ones(size) * .06
         self.input = bp.backend.zeros(size)
 
-        self.integral = bp.odeint(f=self.derivative, method='rk4')
+        self.integral = bp.odeint(f=self.derivative, method='rk4', dt=0.01)
 
         super(Decision, self).__init__(size=size, **kwargs)
 
@@ -89,7 +89,9 @@ if __name__ == "__main__":
     pars['coh'] = .512
     # pars['coh'] = 1.
 
-    phase = bp.analysis.PhasePlane(Decision.derivative,
+    decision = Decision(1, coh=pars['coh'])
+
+    phase = bp.analysis.PhasePlane(decision.integral,
                                    target_vars=OrderedDict(s2=[0., 1.], s1=[0., 1.]),
                                    fixed_vars=None,
                                    pars_update=pars,

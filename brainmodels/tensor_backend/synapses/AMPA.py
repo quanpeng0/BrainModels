@@ -79,7 +79,7 @@ class AMPA1(bp.TwoEndConn):
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-        self.int_s = bp.odeint(f=self.derivative, method='euler')
+        self.int_s = bp.odeint(f=self.derivative, method='exponential_euler')
         super(AMPA1, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
@@ -172,7 +172,7 @@ class AMPA2(bp.TwoEndConn):
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
         self.t_last_pre_spike = -1e7 * bp.backend.ones(self.size)
 
-        self.int_s = bp.odeint(f=self.derivative, method='euler')
+        self.int_s = bp.odeint(f=self.derivative, method='exponential_euler')
         super(AMPA2, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):

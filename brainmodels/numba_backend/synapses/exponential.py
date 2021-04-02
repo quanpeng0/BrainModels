@@ -60,7 +60,8 @@ class Exponential(bp.TwoEndConn):
 
     @staticmethod
     def derivative(s, t, tau):
-        return -s / tau
+        ds = -s / tau
+        return ds
 
     def __init__(self, pre, post, conn, delay=0., tau=8.0, **kwargs):
         # parameters
@@ -77,7 +78,7 @@ class Exponential(bp.TwoEndConn):
         self.w = bp.backend.ones(self.size) * .1
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
-        self.integral = bp.odeint(f=self.derivative, method='euler')
+        self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
 
         super(Exponential, self).__init__(pre=pre, post=post, **kwargs)
 
