@@ -125,8 +125,8 @@ class Gap_junction_lif(bp.TwoEndConn):
         self.post.input += bp.backend.sum(out, axis=0)
 
         if self.post_refractory:
-            self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat * (1. - self.post.refractory))
+            self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat * (1. - self.post.refractory))
         else:
-            self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.post.spike, 1) * self.conn_mat)
+            self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat)
         
         self.post.V += bp.backend.sum(self.spikelet.pull(), axis=0)

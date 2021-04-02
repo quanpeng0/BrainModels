@@ -8,18 +8,20 @@ bp.backend.set(backend='numpy', dt=.02)
 class neu(bp.NeuGroup):
     target_backend = 'general'
 
+    @staticmethod
+    def integral(r, t, I, tau):
+        return -r / tau + I
+
     def __init__(self, size, tau=10., **kwargs):
         self.tau = tau
         
         self.r = bp.backend.zeros(size)
         self.input = bp.backend.zeros(size)
 
+        self.g = bp.odeint(self.integral)
+
         super(neu, self).__init__(size=size, **kwargs)
 
-    @staticmethod
-    @bp.odeint
-    def g(r, t, I, tau):
-        return -r / tau + I
 
     def update(self, _t):
         self.r = self.g(self.r, _t, self.input, self.tau)

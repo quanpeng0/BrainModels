@@ -16,7 +16,7 @@ syn = brainmodels.synapses.Gap_junction_lif(pre=neu0, post=neu1, conn=bp.connect
 syn.w = np.ones(syn.w.shape) * .5
 # syn = brainmodels.synapses.Gap_junction(pre=neu0, post=neu1, conn=bp.connect.All2All())
 net = bp.Network(neu0, neu1, syn)
-net.run(20., inputs=(neu0, 'input', 26.), report=True)
+net.run(100., inputs=(neu0, 'input', 26.), report=True)
 
 fig, gs = bp.visualize.get_figure(row_num=2, col_num=1, )
 

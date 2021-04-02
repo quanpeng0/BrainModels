@@ -18,13 +18,13 @@ two_exponentials = brainmodels.synapses.Two_exponentials(pre=pre, post=post,
                                     conn=bp.connect.All2All(), monitors=['s'], delay=10.)
 net = bp.Network(pre, two_exponentials, post)
 
-(current, duration) = bp.inputs.constant_current([(0, 25), (30, 5), (0, 170)])
+(current, duration) = bp.inputs.constant_current([(0, 15), (30, 15), (0, 70)])
 net.run(duration=duration, inputs=(pre, 'input', current), report=True)
 
 # Figure
 ts = net.ts
 plt.plot(ts, two_exponentials.mon.s[:, 0, 0], label='s')
-plt.ylabel('Conductance (µmhos)')
+plt.ylabel('s')
 plt.xlabel('Time (ms)')
 plt.legend()
 plt.show()
