@@ -4,8 +4,7 @@ import brainmodels
 
 neu = brainmodels.neurons.ExpIF(16, monitors=['V', 'spike', 'refractory'])
 
-neu.run(duration = 50., inputs=('input', 0.23), report=True)
-bp.visualize.line_plot(neu.mon.ts, neu.mon.V, 
-                       xlabel = "t", ylabel = "V", 
+neu.run(duration=100, inputs=('input', 1.), report=True)
+bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
+                       xlabel="t", ylabel="V",
                        show=True)
-

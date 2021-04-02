@@ -2,6 +2,7 @@
 
 import brainpy as bp
 
+
 class ExpIF(bp.NeuGroup):
     """Exponential Integrate-and-Fire neuron model.
 
@@ -60,13 +61,19 @@ class ExpIF(bp.NeuGroup):
                mechanisms determine the neuronal response to fluctuating 
                inputs." Journal of Neuroscience 23.37 (2003): 11628-11640.
     """
-    target_backend = 'general'  
+    target_backend = 'general'
 
-    def __init__(self, size, V_rest=-65., V_reset=-68., 
-                 V_th=-30., V_T=-59.9, delta_T=3.48, 
-                 R=10., C=1., tau=10., t_refractory=1.7, 
+    @staticmethod
+    def derivative(V, t, I_ext, V_rest, delta_T, V_T, R, tau):
+        dvdt = (- V + V_rest \
+                + delta_T * bp.backend.exp((V - V_T) / delta_T) + R * I_ext) \
+               / tau
+        return dvdt
+
+    def __init__(self, size, V_rest=-65., V_reset=-68.,
+                 V_th=-30., V_T=-59.9, delta_T=3.48,
+                 R=10., C=1., tau=10., t_refractory=1.7,
                  **kwargs):
-        
         # parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
@@ -81,26 +88,19 @@ class ExpIF(bp.NeuGroup):
         # variables
         self.V = bp.backend.zeros(size)
         self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype = bool)
-        self.refractory = bp.backend.zeros(size, dtype = bool)
+        self.spike = bp.backend.zeros(size, dtype=bool)
+        self.refractory = bp.backend.zeros(size, dtype=bool)
         self.t_last_spike = bp.backend.ones(size) * -1e7
 
-        super(ExpIF, self).__init__(size = size, **kwargs)
-
-    @staticmethod
-    @bp.odeint()
-    def integral(V, t, I_ext, V_rest, delta_T, V_T, R, tau):  # integrate u(t)
-        return (- (V - V_rest) \
-                + delta_T * bp.backend.exp((V - V_T) / delta_T) \
-                + R * I_ext) \
-               / tau
+        self.integral = bp.odeint(self.derivative)
+        super(ExpIF, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
         # update variables
         not_ref = (_t - self.t_last_spike > self.t_refractory)
         self.V[not_ref] = self.integral(
             self.V[not_ref], _t, self.input[not_ref],
-            self.V_rest, self.delta_T, self.V_T, 
+            self.V_rest, self.delta_T, self.V_T,
             self.R, self.tau)
         sp = (self.V > self.V_th)
         self.V[sp] = self.V_reset
@@ -108,4 +108,3 @@ class ExpIF(bp.NeuGroup):
         self.spike = sp
         self.refractory = ~not_ref
         self.input[:] = 0.
-    

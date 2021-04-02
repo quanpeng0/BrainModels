@@ -2,7 +2,8 @@
 
 import brainpy as bp
 
-bp.backend.set('numba', dt = 0.02)
+bp.backend.set('numba', dt=0.02)
+
 
 class HindmarshRose(bp.NeuGroup):
     """
@@ -38,11 +39,11 @@ class HindmarshRose(bp.NeuGroup):
 
                                            Fixed to a value best fit neuron activity.
 
-    r             0.01           \         Model parameter. 
+    r             0.01           \         Model parameter.
 
                                            Controls slow variable z's variation speed.
 
-                                           Governs spiking frequency when spiking, and affects the 
+                                           Governs spiking frequency when spiking, and affects the
 
                                            number of spikes per burst when bursting.
 
@@ -51,7 +52,7 @@ class HindmarshRose(bp.NeuGroup):
     V_rest        -1.6           \         Membrane resting potential.
     ============= ============== ========= ============================================================
 
-    **Neuron Variables**    
+    **Neuron Variables**
 
     An object of neuron class record those variables for each neuron:
 
@@ -68,19 +69,26 @@ class HindmarshRose(bp.NeuGroup):
     ================== ================= =====================================
 
     References:
-        .. [1] Hindmarsh, James L., and R. M. Rose. "A model of neuronal bursting using 
-               three coupled first order differential equations." Proceedings of the 
-               Royal society of London. Series B. Biological sciences 221.1222 (1984): 
+        .. [1] Hindmarsh, James L., and R. M. Rose. "A model of neuronal bursting using
+               three coupled first order differential equations." Proceedings of the
+               Royal society of London. Series B. Biological sciences 221.1222 (1984):
                87-102.
-        .. [2] Storace, Marco, Daniele Linaro, and Enno de Lange. "The Hindmarsh–Rose 
-               neuron model: bifurcation analysis and piecewise-linear approximations." 
-               Chaos: An Interdisciplinary Journal of Nonlinear Science 18.3 (2008): 
+        .. [2] Storace, Marco, Daniele Linaro, and Enno de Lange. "The Hindmarsh–Rose
+               neuron model: bifurcation analysis and piecewise-linear approximations."
+               Chaos: An Interdisciplinary Journal of Nonlinear Science 18.3 (2008):
                033128.
     """
     target_backend = 'general'
 
-    def __init__(self, size, a=1., b=3., 
-                 c=1., d=5., r=0.01, s=4., 
+    @staticmethod
+    def derivative(V, y, z, t, a, b, I_ext, c, d, r, s, V_rest):
+        dVdt = y - a * V * V * V + b * V * V - z + I_ext
+        dydt = c - d * V * V - y
+        dzdt = r * (s * (V - V_rest) - z)
+        return dVdt, dydt, dzdt
+
+    def __init__(self, size, a=1., b=3.,
+                 c=1., d=5., r=0.01, s=4.,
                  V_rest=-1.6, **kwargs):
         # parameters
         self.a = a
@@ -91,28 +99,18 @@ class HindmarshRose(bp.NeuGroup):
         self.s = s
         self.V_rest = V_rest
 
-        #variables
+        # variables
         self.z = bp.backend.zeros(size)
         self.input = bp.backend.zeros(size)
         self.V = bp.backend.ones(size) * -1.6
         self.y = bp.backend.ones(size) * -10.
 
-        super(HindmarshRose, self).__init__(size = size, **kwargs)
-
-    @staticmethod
-    @bp.odeint()
-    def integral(V, y, z, t, a, b, I_ext, c, d, r, s, V_rest):
-        dVdt = y - a * V * V * V + b * V * V - z + I_ext
-        dydt = c - d * V * V - y
-        dzdt = r * (s * (V - V_rest) - z)
-        return dVdt, dydt, dzdt
+        self.integral = bp.odeint(self.derivative)
+        super(HindmarshRose, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
-        V, y, z = self.integral(self.V, self.y, self.z, _t, 
-                                self.a, self.b, self.input, 
-                                self.c, self.d, self.r, self.s, 
-                                self.V_rest)
-        self.V = V
-        self.y = y
-        self.z = z
+        self.V, self.y, self.z = self.integral(self.V, self.y, self.z, _t,
+                                               self.a, self.b, self.input,
+                                               self.c, self.d, self.r, self.s,
+                                               self.V_rest)
         self.input[:] = 0.

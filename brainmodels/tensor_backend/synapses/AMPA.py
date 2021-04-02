@@ -183,7 +183,7 @@ class AMPA2(bp.TwoEndConn):
         self.g.push(self.g_max * self.s)
         self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
 
-
+'''
 class LIF2(bp.NeuGroup):
     target_backend = 'general'
 
@@ -254,4 +254,4 @@ ts = net.ts
 plt.plot(ts, syn_GABAb.mon.s[:, 0, 0], label='s')
 plt.legend()
 plt.show()
-
+'''

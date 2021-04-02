@@ -14,7 +14,7 @@ neu_pre.V = bp.backend.ones(size) * -65.
 neu_pre.t_refractory = 0.
 neu_post = brainmodels.neurons.LIF(size, monitors=['V', 'input', 'spike'])
 
-syn_GABAa = brainmodels.synapses.GABAa2(pre=neu_pre, post=neu_post,
+syn_GABAa = brainmodels.synapses.GABAa1(pre=neu_pre, post=neu_post,
                                         conn=bp.connect.All2All(),
                                         delay=10., monitors=['s'])
 
@@ -23,7 +23,7 @@ net.run(duration, inputs=(neu_pre, 'input', 21.), report=True)
 
 # paint gabaa
 ts = net.ts
-fig, gs = bp.visualize.get_figure(2, 2, 5, 6)
+fig, gs = bp.visualize.get_figure(2, 1, 5, 6)
 
 fig.add_subplot(gs[0, 0])
 plt.plot(ts, syn_GABAa.mon.s[:, 0], label='s')
@@ -31,14 +31,6 @@ plt.legend()
 
 fig.add_subplot(gs[1, 0])
 plt.plot(ts, neu_post.mon.V[:, 0], label='post.V')
-plt.legend()
-
-fig.add_subplot(gs[0, 1])
-plt.plot(ts, neu_pre.mon.V[:, 0], label='pre.V')
-plt.legend()
-
-fig.add_subplot(gs[1, 1])
-plt.plot(ts, neu_pre.mon.spike[:, 0], label='pre.spike')
 plt.legend()
 
 plt.show()
