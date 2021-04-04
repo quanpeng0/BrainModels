@@ -1,12 +1,12 @@
 BrainModels documentation
 =========================
 
-``BrainModels`` provides standard and canonical brain models (including
-various neurons, synapses, networks, and intuitive paper examples) which
-are implemented with `BrainPy <https://brainpy.readthedocs.io/>`_ simulator.
-Moreover, we welcome your brain model implementations, and publish them
+``BrainModels`` provides `BrainPy <https://brainpy.readthedocs.io/>`_
+implementations of standard and canonical brain models (including various
+neurons, synapses, networks, and intuitive paper examples).
+Moreover, we welcome your model implementations, and publish them
 through our `GitHub <https://github.com/PKU-NIP-Lab/BrainModels>`_ homepage.
-In such a way, once your new model is implemented, it can be easily shared
+In such a way, once your new model is created, it can be easily shared
 with other BrainPy users.
 
 

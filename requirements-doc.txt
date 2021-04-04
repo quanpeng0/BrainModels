@@ -2,6 +2,6 @@
 
 # document building requirements
 Jinja2
-sphinx
-sphinx_rtd_theme
-nbsphinx
+sphinx==3.4.3
+sphinx_rtd_theme==0.4.3
+nbsphinx==0.8.1
