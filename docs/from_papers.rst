@@ -40,6 +40,14 @@ Continuous-attractor Network
 
    from_papers/Wu_2008_CANN
 
+Gap Junction Network Models
+===========================
+
+.. toctree::
+   :maxdepth: 1
+
+   from_papers/Sherman_1992_gj_antisynchrony
+
 
 Working Memory
 ==============
