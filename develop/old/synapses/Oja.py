@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-import brainmodels
-import matplotlib.pyplot as plt
 import brainpy as bp
+import matplotlib.pyplot as plt
 import numpy as np
-import sys
-import pdb
 from numba import prange
 
 

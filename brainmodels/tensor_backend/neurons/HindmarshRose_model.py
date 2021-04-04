@@ -55,9 +55,9 @@ class HindmarshRose(bp.NeuGroup):
 
     An object of neuron class record those variables for each neuron:
 
-    ================== ================= =========================================================
+    ================== ================= ====================================================================
     **Variables name** **Initial Value** **Explanation**
-    ------------------ ----------------- ---------------------------------------------------------
+    ------------------ ----------------- --------------------------------------------------------------------
     V                  -1.6              Membrane potential.
 
     y                  -10.              Gating variable.
@@ -65,7 +65,7 @@ class HindmarshRose(bp.NeuGroup):
     z                  0.                Gating variable.
 
     input              0.                External and synaptic input current.
-    ================== ================= =====================================
+    ================== ================= ====================================================================
 
     References:
         .. [1] Hindmarsh, James L., and R. M. Rose. "A model of neuronal bursting using 
