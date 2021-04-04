@@ -9,26 +9,29 @@ through our `GitHub <https://github.com/PKU-NIP-Lab/BrainModels>`_ homepage.
 In such a way, once your new model is created, it can be easily shared
 with other BrainPy users.
 
+Tutorials
+=========
 
 .. toctree::
    :maxdepth: 2
-   :caption: Tutorials
 
    tutorials/neurons
    tutorials/synapses
    tutorials/dynamics_analysis
 
+Examples
+========
 
 .. toctree::
    :maxdepth: 2
-   :caption: Examples
-   
+
    from_papers
 
+API documentation
+=================
 
 .. toctree::
    :maxdepth: 1
-   :caption: API documentation
 
    apis/neurons
    apis/synapses
