@@ -12,7 +12,7 @@ sphinx:
 python:
   version: 3.8
   install:
-    - requirements: docs/requirements-doc.txt
+    - requirements: requirements-doc.txt
     - method: pip
       path: .
       extra_requirements:
