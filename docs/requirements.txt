@@ -6,7 +6,7 @@ brainpy-simulator>=1.0.0b1
 
 # document building requirements
 docutils==0.16.0
-Jinja2==2.11.3
+Jinja2
 sphinx
-sphinx_rtd_theme==0.4.3
-nbsphinx==0.8.0
+sphinx_rtd_theme
+nbsphinx
