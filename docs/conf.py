@@ -26,6 +26,8 @@ author = 'Chaoming Wang'
 # The full version, including alpha/beta/rc tags
 release = brainmodels.__version__
 
+needs_sphinx = '3.4.3'
+
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -46,9 +48,22 @@ templates_path = ['_templates']
 
 # source_suffix = '.rst'
 autosummary_generate = True
+napolean_use_rtype = False
+
+
+# Execute notebooks before conversion: 'always', 'never', 'auto' (default)
+# We execute all notebooks, exclude the slow ones using 'exclude_patterns'
+nbsphinx_execute = 'never'
+
 
 # -- Options for HTML output -------------------------------------------------
+# The suffix(es) of source filenames.
+# You can specify multiple suffix as a list of string:
+#
+source_suffix = '.rst'
 
+# The master toctree document.
+main_doc = 'index'
 master_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and

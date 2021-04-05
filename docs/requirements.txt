@@ -1,0 +1,11 @@
+numpy>=1.15
+sympy>=1.5
+numba>=0.52
+matplotlib>=3.3
+brainpy-simulator>=1.0.0b1
+
+# document building requirements
+Jinja2==2.11.3
+sphinx
+sphinx_rtd_theme==0.4.3
+nbsphinx==0.8.0
