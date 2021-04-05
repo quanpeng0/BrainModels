@@ -5,6 +5,7 @@ matplotlib>=3.3
 brainpy-simulator>=1.0.0b1
 
 # document building requirements
+docutils==0.16.0
 Jinja2==2.11.3
 sphinx
 sphinx_rtd_theme==0.4.3
