@@ -4,7 +4,6 @@ brainmodels.neurons
 
 .. automodule:: brainmodels.neurons
 
-.. currentmodule:: brainmodels.neurons
 
 
 .. autosummary::

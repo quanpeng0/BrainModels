@@ -5,4 +5,4 @@ Synapses
    :maxdepth: 1
    :caption: Synapses
    
-   synapses/Excitatory_models
+   synapses/Excitatory_models.ipynb

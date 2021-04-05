@@ -6,7 +6,7 @@ Neurons
    :maxdepth: 1
    :caption: Neurons
    
-   neurons/LIF_model
-   neurons/HH_model
-   neurons/Izhikevich_model
-   neurons/ExpIF_model
+   neurons/LIF_model.ipynb
+   neurons/HH_model.ipynb
+   neurons/Izhikevich_model.ipynb
+   neurons/ExpIF_model.ipynb

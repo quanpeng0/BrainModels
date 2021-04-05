@@ -3,7 +3,6 @@ brainmodels.synapses
 
 .. automodule:: brainmodels.synapses
 
-.. currentmodule:: brainmodels.synapses
 
 .. autosummary::
     :toctree: _autosummary

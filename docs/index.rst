@@ -9,8 +9,6 @@ through our `GitHub <https://github.com/PKU-NIP-Lab/BrainModels>`_ homepage.
 In such a way, once your new model is created, it can be easily shared
 with other BrainPy users.
 
-.. Tutorials
-.. =========
 
 .. toctree::
    :maxdepth: 2
@@ -20,8 +18,6 @@ with other BrainPy users.
    tutorials/synapses
    tutorials/dynamics_analysis
 
-.. Examples
-.. ========
 
 .. toctree::
    :maxdepth: 2
@@ -29,8 +25,6 @@ with other BrainPy users.
 
    from_papers
 
-.. API documentation
-.. =================
 
 .. toctree::
    :maxdepth: 1
