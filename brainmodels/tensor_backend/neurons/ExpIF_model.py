@@ -97,7 +97,7 @@ class ExpIF(bp.NeuGroup):
 
     def update(self, _t):
         refractory = (_t - self.t_last_spike) <= self.t_refractory
-        V = self.integral(self.V, _t, self.input, self.V_rest, self.R, self.tau)
+        V = self.integral(self.V, _t, self.input, self.V_rest, self.delta_T, self.V_T, self.R, self.tau)
         V = bp.backend.where(refractory, self.V, V)
         spike = self.V_th <= V
         self.t_last_spike = bp.backend.where(spike, _t, self.t_last_spike)
