@@ -1,19 +1,18 @@
 import brainpy as bp
 import brainmodels
 import matplotlib.pyplot as plt
-import numpy as np
 
 bp.backend.set(backend='numpy', dt=0.02)
 
 neu0 = brainmodels.neurons.LIF(2, monitors=['V'], t_refractory=0)
-neu0.V = np.ones(neu0.V.shape) * -10.
+neu0.V = bp.backend.ones(neu0.V.shape) * -10.
 neu1 = brainmodels.neurons.LIF(3, monitors=['V'], t_refractory=0)
-neu1.V = np.ones(neu1.V.shape) * -10.
+neu1.V = bp.backend.ones(neu1.V.shape) * -10.
 
 # gap junction for lif
 syn = brainmodels.synapses.Gap_junction_lif(pre=neu0, post=neu1, conn=bp.connect.All2All(),
                                             k_spikelet=5.)
-syn.w = np.ones(syn.w.shape) * .5
+syn.w = bp.backend.ones(syn.w.shape) * .5
 # syn = brainmodels.synapses.Gap_junction(pre=neu0, post=neu1, conn=bp.connect.All2All())
 net = bp.Network(neu0, neu1, syn)
 net.run(100., inputs=(neu0, 'input', 26.), report=True)
