@@ -1,21 +1,32 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 
+# NumPy
 import numpy as np
-np_clip = np.clip
+bp.backend.set_buffer('numpy', {'clip': np.clip})
 
+# PyTorch
 try:
     import torch
-    torch_clip = torch.clamp
-except ModuleNotFoundError:
-    torch_clip = None
 
+    bp.backend.set_buffer('pytorch', {'clip': torch.clamp})
+
+except ModuleNotFoundError:
+    pass
+
+
+# TensorFlow
 try:
     import tensorflow as tf
-    tf_clip = tf.clip_by_value
-except ModuleNotFoundError:
-    tf_clip = None
 
+    bp.backend.set_buffer('tensorflow', {'clip': tf.clip_by_value})
+
+except ModuleNotFoundError:
+    pass
+
+
+# Numba
 try:
     import numba as nb
 
@@ -24,13 +35,10 @@ try:
         x = np.maximum(x, x_min)
         x = np.minimum(x, x_max)
         return x
+
+    bp.backend.set_buffer('numba', {'clip': nb_clip})
+    bp.backend.set_buffer('numba-parallel', {'clip': nb_clip})
+
 except ModuleNotFoundError:
-    nb_clip = None
+    pass
 
-
-import brainpy as bp
-
-bp.backend.set_buffer('numpy', {'clip': np_clip})
-bp.backend.set_buffer('numba', {'clip': nb_clip})
-bp.backend.set_buffer('pytorch', {'clip': torch_clip})
-bp.backend.set_buffer('tensorflow', {'clip': tf_clip})
