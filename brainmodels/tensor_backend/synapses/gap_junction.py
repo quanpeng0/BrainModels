@@ -6,6 +6,7 @@ __all__ = [
     'Gap_junction_lif',
 ]
 
+
 class Gap_junction(bp.TwoEndConn):
     """
     synapse with gap junction.
@@ -44,7 +45,7 @@ class Gap_junction(bp.TwoEndConn):
 
     def __init__(self, pre, post, conn, delay=0., **kwargs):
         self.delay = delay
-        
+
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
@@ -61,7 +62,6 @@ class Gap_junction(bp.TwoEndConn):
 
         out = self.w * (v_pre - v_post) * self.conn_mat
         self.post.input += bp.backend.sum(out, axis=0)
-
 
 
 class Gap_junction_lif(bp.TwoEndConn):
@@ -97,10 +97,10 @@ class Gap_junction_lif(bp.TwoEndConn):
                 Neural computation 12.7 (2000): 1643-1678.
 
     """
-    
+
     target_backend = 'general'
 
-    def __init__(self, pre, post, conn, delay=0., k_spikelet=0.1, post_refractory=False,  **kwargs):
+    def __init__(self, pre, post, conn, delay=0., k_spikelet=0.1, post_refractory=False, **kwargs):
         self.delay = delay
         self.k_spikelet = k_spikelet
         self.post_refractory = post_refractory
@@ -116,7 +116,6 @@ class Gap_junction_lif(bp.TwoEndConn):
 
         super(Gap_junction_lif, self).__init__(pre=pre, post=post, **kwargs)
 
-
     def update(self, _t):
         v_post = bp.backend.vstack((self.post.V,) * self.size[0])
         v_pre = bp.backend.vstack((self.pre.V,) * self.size[1]).T
@@ -125,8 +124,9 @@ class Gap_junction_lif(bp.TwoEndConn):
         self.post.input += bp.backend.sum(out, axis=0)
 
         if self.post_refractory:
-            self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat * (1. - self.post.refractory))
+            self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat * (
+                        1. - self.post.refractory))
         else:
             self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat)
-        
+
         self.post.V += bp.backend.sum(self.spikelet.pull(), axis=0)

@@ -6,6 +6,7 @@ __all__ = [
     'Two_exponentials'
 ]
 
+
 class Two_exponentials(bp.TwoEndConn):
     '''
     two_exponentials synapse model.
@@ -105,7 +106,6 @@ class Two_exponentials(bp.TwoEndConn):
 
         super(Two_exponentials, self).__init__(pre=pre, post=post, **kwargs)
 
-    
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
@@ -114,7 +114,7 @@ class Two_exponentials(bp.TwoEndConn):
             self.x[i] += self.pre.spike[pre_id]
 
             self.out.push(i, self.w[i] * self.s[i])
-            
+
             # output
             post_id = self.post_ids[i]
             self.post.input[post_id] += self.out.pull(i)

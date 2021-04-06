@@ -5,6 +5,8 @@ from numba import prange
 __all__ = [
     'NMDA'
 ]
+
+
 class NMDA(bp.TwoEndConn):
     """NMDA conductance-based synapse.
 
@@ -78,7 +80,7 @@ class NMDA(bp.TwoEndConn):
                Journal of computational neuroscience, 2001, 11(1): 63-85.
     
     """
-    
+
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
     @staticmethod
@@ -88,7 +90,7 @@ class NMDA(bp.TwoEndConn):
         return dsdt, dxdt
 
     def __init__(self, pre, post, conn, delay=0., g_max=0.15, E=0., cc_Mg=1.2,
-                    alpha=0.062, beta=3.57, tau=100, a=0.5, tau_rise = 2., **kwargs):
+                 alpha=0.062, beta=3.57, tau=100, a=0.5, tau_rise=2., **kwargs):
         # parameters
         self.g_max = g_max
         self.E = E
@@ -114,8 +116,6 @@ class NMDA(bp.TwoEndConn):
 
         super(NMDA, self).__init__(pre=pre, post=post, **kwargs)
 
-
-    
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]

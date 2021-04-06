@@ -4,6 +4,8 @@ import brainpy as bp
 __all__ = [
     'STP'
 ]
+
+
 class STP(bp.TwoEndConn):
     """Short-term plasticity proposed by Tsodyks and Markram (Tsodyks 98) [1]_.
 
@@ -81,7 +83,7 @@ class STP(bp.TwoEndConn):
         dxdt = (1 - x) / tau_d
         return dsdt, dudt, dxdt
 
-    def __init__(self, pre, post, conn, delay=0., U=0.15, tau_f=1500., tau_d=200., tau=8.,  **kwargs):
+    def __init__(self, pre, post, conn, delay=0., U=0.15, tau_f=1500., tau_d=200., tau=8., **kwargs):
         # parameters
         self.tau_d = tau_d
         self.tau_f = tau_f
@@ -105,15 +107,14 @@ class STP(bp.TwoEndConn):
 
         super(STP, self).__init__(pre=pre, post=post, **kwargs)
 
-
     def update(self, _t):
         self.s, u, x = self.integral(self.s, self.u, self.x, _t, self.tau, self.tau_d, self.tau_f)
-        
+
         pre_spike_map = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        u += self.U * (1-self.u) * pre_spike_map
+        u += self.U * (1 - self.u) * pre_spike_map
         self.s += self.w * u * self.x * pre_spike_map
         x -= u * self.x * pre_spike_map
-        
+
         self.u = u
         self.x = x
 

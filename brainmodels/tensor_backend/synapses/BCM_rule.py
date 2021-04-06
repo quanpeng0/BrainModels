@@ -5,6 +5,7 @@ __all__ = [
     'BCM'
 ]
 
+
 class BCM(bp.TwoEndConn):
     """
     Bienenstock-Cooper-Munro (BCM) rule.
@@ -80,18 +81,17 @@ class BCM(bp.TwoEndConn):
 
         super(BCM, self).__init__(pre=pre, post=post, **kwargs)
 
-    
     def update(self, _t):
         # update threshold
         self.sum_post_r += self.post.r
-        r_th = self.sum_post_r / (_t / self.dt + 1) 
+        r_th = self.sum_post_r / (_t / self.dt + 1)
 
         # resize to matrix
         w = self.w * self.conn_mat
         dim = self.size
-        r_th = bp.backend.vstack((r_th,)*dim[0])
-        r_post = bp.backend.vstack((self.post.r,)*dim[0])
-        r_pre = bp.backend.vstack((self.pre.r,)*dim[1]).T
+        r_th = bp.backend.vstack((r_th,) * dim[0])
+        r_post = bp.backend.vstack((self.post.r,) * dim[0])
+        r_pre = bp.backend.vstack((self.pre.r,) * dim[1]).T
 
         # update w
         w = self.int_w(w, _t, self.lr, r_pre, r_post, r_th)

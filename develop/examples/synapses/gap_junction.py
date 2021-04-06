@@ -12,7 +12,7 @@ neu1.V = np.ones(neu1.V.shape) * -10.
 
 # gap junction for lif
 syn = brainmodels.synapses.Gap_junction_lif(pre=neu0, post=neu1, conn=bp.connect.All2All(),
-                    k_spikelet=5.)
+                                            k_spikelet=5.)
 syn.w = np.ones(syn.w.shape) * .5
 # syn = brainmodels.synapses.Gap_junction(pre=neu0, post=neu1, conn=bp.connect.All2All())
 net = bp.Network(neu0, neu1, syn)

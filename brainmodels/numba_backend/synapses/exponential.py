@@ -5,6 +5,8 @@ from numba import prange
 __all__ = [
     'Exponential'
 ]
+
+
 class Exponential(bp.TwoEndConn):
     '''
     Single Exponential decay synapse model.
@@ -92,4 +94,4 @@ class Exponential(bp.TwoEndConn):
 
             # output
             post_id = self.post_ids[i]
-            self.post.input[post_id] += self.out.pull(i) 
+            self.post.input[post_id] += self.out.pull(i)

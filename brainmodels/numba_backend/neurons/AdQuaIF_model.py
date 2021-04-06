@@ -7,6 +7,7 @@ __all__ = [
     'AdQuaIF'
 ]
 
+
 class AdQuaIF(bp.NeuGroup):
     """Adaptive Quadratic Integrate-and-Fire neuron model.
         
@@ -87,16 +88,16 @@ class AdQuaIF(bp.NeuGroup):
     target_backend = 'general'
 
     @staticmethod
-    def derivative(V, w, t, I_ext, V_rest, V_c, R, tau, tau_w, a, a_0): 
+    def derivative(V, w, t, I_ext, V_rest, V_c, R, tau, tau_w, a, a_0):
         dwdt = (a * (V - V_rest) - w) / tau_w
         dVdt = (a_0 * (V - V_rest) * (V - V_c) - R * w + R * I_ext) / tau
         return dVdt, dwdt
 
-    def __init__(self, size, V_rest=-65., V_reset=-68., 
-                 V_th=-30., V_c=-50.0, a_0 = .07,
-                 a = 1., b=.1, R=1., tau=10., tau_w = 10.,
+    def __init__(self, size, V_rest=-65., V_reset=-68.,
+                 V_th=-30., V_c=-50.0, a_0=.07,
+                 a=1., b=.1, R=1., tau=10., tau_w=10.,
                  t_refractory=0., **kwargs):
-        
+
         # parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
@@ -121,16 +122,16 @@ class AdQuaIF(bp.NeuGroup):
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
-        super(AdQuaIF, self).__init__(size = size, **kwargs)
+        super(AdQuaIF, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
         for i in prange(self.size[0]):
             spike = 0.
             refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
             if not refractory:
-                V, w = self.integral(self.V[i], self.w[i], _t, self.input[i], 
-                                  self.V_rest, self.V_c, self.R, 
-                                  self.tau, self.tau_w, self.a, self.a_0)
+                V, w = self.integral(self.V[i], self.w[i], _t, self.input[i],
+                                     self.V_rest, self.V_c, self.R,
+                                     self.tau, self.tau_w, self.a, self.a_0)
                 spike = (V >= self.V_th)
                 if spike:
                     V = self.V_rest

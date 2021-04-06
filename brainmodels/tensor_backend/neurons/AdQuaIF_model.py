@@ -7,6 +7,7 @@ __all__ = [
     'AdQuaIF'
 ]
 
+
 class AdQuaIF(bp.NeuGroup):
     """Adaptive Quadratic Integrate-and-Fire neuron model.
         
@@ -92,11 +93,10 @@ class AdQuaIF(bp.NeuGroup):
         dVdt = (a_0 * (V - V_rest) * (V - V_c) - R * w + R * I_ext) / tau
         return dVdt, dwdt
 
-    def __init__(self, size, V_rest=-65., V_reset=-68., 
-                 V_th=-30., V_c=-50.0, a_0 = .07,
-                 a = 1., b=.1, R=1., tau=10., tau_w = 10.,
+    def __init__(self, size, V_rest=-65., V_reset=-68.,
+                 V_th=-30., V_c=-50.0, a_0=.07,
+                 a=1., b=.1, R=1., tau=10., tau_w=10.,
                  t_refractory=0., **kwargs):
-        
         # parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
@@ -121,14 +121,13 @@ class AdQuaIF(bp.NeuGroup):
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
-        super(AdQuaIF, self).__init__(size = size, **kwargs)
-
+        super(AdQuaIF, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
         not_ref = (_t - self.t_last_spike > self.t_refractory)
-        self.V[not_ref], self.w[not_ref] = self.integral(self.V[not_ref], self.w[not_ref], _t,  
-                                                    self.input[not_ref], self.V_rest, self.V_c, self.R, 
-                                                    self.tau, self.tau_w, self.a, self.a_0)
+        self.V[not_ref], self.w[not_ref] = self.integral(self.V[not_ref], self.w[not_ref], _t,
+                                                         self.input[not_ref], self.V_rest, self.V_c, self.R,
+                                                         self.tau, self.tau_w, self.a, self.a_0)
         spike = (self.V >= self.V_th)
         self.t_last_spike[spike] = _t
         self.V[spike] = self.V_reset

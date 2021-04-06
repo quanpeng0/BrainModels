@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 bp.backend.set(backend='numpy', dt=.02)
 
+
 class neu(bp.NeuGroup):
     target_backend = 'general'
 
@@ -14,14 +15,13 @@ class neu(bp.NeuGroup):
 
     def __init__(self, size, tau=10., **kwargs):
         self.tau = tau
-        
+
         self.r = bp.backend.zeros(size)
         self.input = bp.backend.zeros(size)
 
         self.g = bp.odeint(self.integral)
 
         super(neu, self).__init__(size=size, **kwargs)
-
 
     def update(self, _t):
         self.r = self.g(self.r, _t, self.input, self.tau)
@@ -33,8 +33,8 @@ n_post = 1
 n_pre = 20
 
 # group selection
-group1, duration = bp.inputs.constant_current(([1.5, 1], [0, 1])*20)
-group2, duration = bp.inputs.constant_current(([0, 1], [1., 1])*20)
+group1, duration = bp.inputs.constant_current(([1.5, 1], [0, 1]) * 20)
+group2, duration = bp.inputs.constant_current(([0, 1], [1., 1]) * 20)
 
 input_r = np.vstack((
                     (group1,)*10, (group2,)*10
@@ -42,15 +42,15 @@ input_r = np.vstack((
 
 pre = neu(n_pre, monitors=['r'])
 post = neu(n_post, monitors=['r'])
-bcm = brainmodels.synapses.BCM(pre=pre, post=post, 
-                    conn=bp.connect.All2All(),
-                    monitors=['w'])
+bcm = brainmodels.synapses.BCM(pre=pre, post=post,
+                               conn=bp.connect.All2All(),
+                               monitors=['w'])
 
-net=bp.Network(pre, bcm, post)
+net = bp.Network(pre, bcm, post)
 net.run(duration, inputs=(pre, 'r', input_r.T, "="))
 
-w1 = np.mean(bcm.mon.w[:,:10,0], 1)
-w2 = np.mean(bcm.mon.w[:,10:,0], 1)
+w1 = np.mean(bcm.mon.w[:, :10, 0], 1)
+w2 = np.mean(bcm.mon.w[:, 10:, 0], 1)
 
 r1 = np.mean(pre.mon.r[:, :10], 1)
 r2 = np.mean(pre.mon.r[:, 10:], 1)
@@ -83,4 +83,3 @@ plt.legend()
 '''
 
 plt.show()
-

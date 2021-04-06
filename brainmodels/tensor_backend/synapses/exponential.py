@@ -4,6 +4,8 @@ import brainpy as bp
 __all__ = [
     'Exponential'
 ]
+
+
 class Exponential(bp.TwoEndConn):
     '''
     Single Exponential decay synapse model.
@@ -58,7 +60,7 @@ class Exponential(bp.TwoEndConn):
     target_backend = 'general'
 
     @staticmethod
-    def derivative(s, t, tau): 
+    def derivative(s, t, tau):
         ds = -s / tau
         return ds
 

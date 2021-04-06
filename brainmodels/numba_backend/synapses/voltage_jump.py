@@ -5,6 +5,8 @@ from numba import prange
 __all__ = [
     'Voltage_jump'
 ]
+
+
 class Voltage_jump(bp.TwoEndConn):
     """Voltage jump synapses without post-synaptic neuron refractory.
 
@@ -31,10 +33,10 @@ class Voltage_jump(bp.TwoEndConn):
         bp.SynType.
     
     """
-        
+
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
-    def __init__(self, pre, post, conn, delay=0., post_refractory=False,  **kwargs):
+    def __init__(self, pre, post, conn, delay=0., post_refractory=False, **kwargs):
         # parameters
         self.delay = delay
         self.post_refractory = post_refractory
@@ -50,7 +52,6 @@ class Voltage_jump(bp.TwoEndConn):
 
         super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)
 
-    
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
@@ -62,5 +63,5 @@ class Voltage_jump(bp.TwoEndConn):
                 self.g.push(i, self.s[i] * (1. - self.post.refractory[post_id]))
             else:
                 self.g.push(i, self.s[i])
-            
+
             self.post.V[post_id] += self.g.pull(i)

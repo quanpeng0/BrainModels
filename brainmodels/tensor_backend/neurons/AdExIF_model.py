@@ -7,6 +7,7 @@ __all__ = [
     'AdExIF'
 ]
 
+
 class AdExIF(bp.NeuGroup):
     """Adaptive Exponential Integrate-and-Fire neuron model.
     
@@ -90,11 +91,10 @@ class AdExIF(bp.NeuGroup):
         dVdt = (- (V - V_rest) + delta_T * bp.backend.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau
         return dVdt, dwdt
 
-    def __init__(self, size, V_rest=-65., V_reset=-68., 
+    def __init__(self, size, V_rest=-65., V_reset=-68.,
                  V_th=-30., V_T=-59.9, delta_T=3.48,
-                 a = 1., b=1., R=10., tau=10., tau_w = 30.,
+                 a=1., b=1., R=10., tau=10., tau_w=30.,
                  t_refractory=0., **kwargs):
-        
         # parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
@@ -119,14 +119,13 @@ class AdExIF(bp.NeuGroup):
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
-        super(AdExIF, self).__init__(size = size, **kwargs)
-
+        super(AdExIF, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
         not_ref = (_t - self.t_last_spike > self.t_refractory)
-        self.V[not_ref], self.w[not_ref] = self.integral(self.V[not_ref], self.w[not_ref], _t,  
-                                                self.input[not_ref], self.V_rest, self.delta_T, 
-                                                self.V_T, self.R, self.tau, self.tau_w, self.a)
+        self.V[not_ref], self.w[not_ref] = self.integral(self.V[not_ref], self.w[not_ref], _t,
+                                                         self.input[not_ref], self.V_rest, self.delta_T,
+                                                         self.V_T, self.R, self.tau, self.tau_w, self.a)
         spike = (self.V >= self.V_th)
         self.t_last_spike[spike] = _t
         self.V[spike] = self.V_reset

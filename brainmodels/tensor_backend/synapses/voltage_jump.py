@@ -4,6 +4,8 @@ import brainpy as bp
 __all__ = [
     'Voltage_jump'
 ]
+
+
 class Voltage_jump(bp.TwoEndConn):
     """Voltage jump synapses without post-synaptic neuron refractory.
 
@@ -30,10 +32,10 @@ class Voltage_jump(bp.TwoEndConn):
         bp.SynType.
     
     """
-        
+
     target_backend = 'general'
 
-    def __init__(self, pre, post, conn, delay=0., post_refractory=False,  **kwargs):
+    def __init__(self, pre, post, conn, delay=0., post_refractory=False, **kwargs):
         # parameters
         self.delay = delay
         self.post_refractory = post_refractory
@@ -48,14 +50,14 @@ class Voltage_jump(bp.TwoEndConn):
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
         super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)
-    
+
     def update(self, _t):
         self.s = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
-             
+
         if self.post_refractory:
             refra_map = (1. - bp.backend.unsqueeze(self.post.refractory, 0)) * self.conn_mat
             self.out.push(self.s * refra_map)
         else:
             self.out.push(self.s)
-        
+
         self.post.V += bp.backend.sum(self.out.pull(), axis=0)

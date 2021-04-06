@@ -5,6 +5,8 @@ from numba import prange
 __all__ = [
     'STP'
 ]
+
+
 class STP(bp.TwoEndConn):
     """Short-term plasticity proposed by Tsodyks and Markram (Tsodyks 98) [1]_.
 
@@ -82,7 +84,7 @@ class STP(bp.TwoEndConn):
         dxdt = (1 - x) / tau_d
         return dsdt, dudt, dxdt
 
-    def __init__(self, pre, post, conn, delay=0., U=0.15, tau_f=1500., tau_d=200., tau=8.,  **kwargs):
+    def __init__(self, pre, post, conn, delay=0., U=0.15, tau_f=1500., tau_d=200., tau=8., **kwargs):
         # parameters
         self.tau_d = tau_d
         self.tau_f = tau_f
@@ -106,13 +108,12 @@ class STP(bp.TwoEndConn):
 
         super(STP, self).__init__(pre=pre, post=post, **kwargs)
 
-    
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
 
             self.s[i], u, x = self.integral(self.s[i], self.u[i], self.x[i], _t, self.tau, self.tau_d, self.tau_f)
-            
+
             if self.pre.spike[pre_id] > 0:
                 u += self.U * (1 - self.u[i])
                 self.s[i] += self.w[i] * u * self.x[i]

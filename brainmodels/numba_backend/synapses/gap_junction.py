@@ -7,6 +7,7 @@ __all__ = [
     'Gap_junction_lif',
 ]
 
+
 class Gap_junction(bp.TwoEndConn):
     """
     synapse with gap junction.
@@ -55,15 +56,12 @@ class Gap_junction(bp.TwoEndConn):
 
         super(Gap_junction, self).__init__(pre=pre, post=post, **kwargs)
 
-
-    
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
             post_id = self.post_ids[i]
 
             self.post.input[post_id] += self.w[i] * (self.pre.V[pre_id] - self.post.V[post_id])
-
 
 
 class Gap_junction_lif(bp.TwoEndConn):
@@ -99,10 +97,10 @@ class Gap_junction_lif(bp.TwoEndConn):
                 Neural computation 12.7 (2000): 1643-1678.
 
     """
-    
+
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
-    def __init__(self, pre, post, conn, delay=0., k_spikelet=0.1, post_refractory=False,  **kwargs):
+    def __init__(self, pre, post, conn, delay=0., k_spikelet=0.1, post_refractory=False, **kwargs):
         self.delay = delay
         self.k_spikelet = k_spikelet
         self.post_refractory = post_refractory
@@ -118,7 +116,6 @@ class Gap_junction_lif(bp.TwoEndConn):
 
         super(Gap_junction_lif, self).__init__(pre=pre, post=post, **kwargs)
 
-
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
@@ -127,8 +124,9 @@ class Gap_junction_lif(bp.TwoEndConn):
             self.post.input[post_id] += self.w[i] * (self.pre.V[pre_id] - self.post.V[post_id])
 
             if self.post_refractory:
-                self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id] * (1. - self.post.refractory[post_id]))
+                self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id] * (
+                            1. - self.post.refractory[post_id]))
             else:
                 self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id])
-            
+
             self.post.V[post_id] += self.spikelet.pull(i)

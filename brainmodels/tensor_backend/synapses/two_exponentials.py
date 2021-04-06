@@ -4,6 +4,8 @@ import brainpy as bp
 __all__ = [
     'Two_exponentials'
 ]
+
+
 class Two_exponentials(bp.TwoEndConn):
     '''
     two_exponentials synapse model.
@@ -108,4 +110,3 @@ class Two_exponentials(bp.TwoEndConn):
         self.x += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.out.push(self.w * self.s)
         self.post.input += bp.backend.sum(self.out.pull(), axis=0)
-

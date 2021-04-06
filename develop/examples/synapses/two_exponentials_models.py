@@ -14,16 +14,16 @@ post = brainmodels.neurons.LIF(10, monitors=['V', 'input', 'spike'])
 post.V = -65. * np.ones(pre.V.shape)
 
 # Set synapse connection & network
-two_exponentials = brainmodels.synapses.Two_exponentials(pre=pre, post=post,
-                                    conn=bp.connect.All2All(), monitors=['s'], delay=10.)
-net = bp.Network(pre, two_exponentials, post)
+syn = brainmodels.synapses.Two_exponentials(pre=pre, post=post,
+                                            conn=bp.connect.All2All(), monitors=['s'], delay=10.)
+net = bp.Network(pre, syn, post)
 
 (current, duration) = bp.inputs.constant_current([(0, 15), (30, 15), (0, 70)])
 net.run(duration=duration, inputs=(pre, 'input', current), report=True)
 
 # Figure
 ts = net.ts
-plt.plot(ts, two_exponentials.mon.s[:, 0, 0], label='s')
+plt.plot(ts, syn.mon.s[:, 0, 0], label='s')
 plt.ylabel('s')
 plt.xlabel('Time (ms)')
 plt.legend()

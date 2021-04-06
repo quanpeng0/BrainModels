@@ -4,6 +4,8 @@ import brainpy as bp
 __all__ = [
     'NMDA'
 ]
+
+
 class NMDA(bp.TwoEndConn):
     """NMDA conductance-based synapse.
 
@@ -77,7 +79,7 @@ class NMDA(bp.TwoEndConn):
                Journal of computational neuroscience, 2001, 11(1): 63-85.
     
     """
-    
+
     target_backend = 'general'
 
     @staticmethod
@@ -87,7 +89,7 @@ class NMDA(bp.TwoEndConn):
         return dsdt, dxdt
 
     def __init__(self, pre, post, conn, delay=0., g_max=0.15, E=0., cc_Mg=1.2,
-                    alpha=0.062, beta=3.57, tau=100, a=0.5, tau_rise = 2., **kwargs):
+                 alpha=0.062, beta=3.57, tau=100, a=0.5, tau_rise=2., **kwargs):
         # parameters
         self.g_max = g_max
         self.E = E
@@ -113,11 +115,10 @@ class NMDA(bp.TwoEndConn):
 
         super(NMDA, self).__init__(pre=pre, post=post, **kwargs)
 
-
     def update(self, _t):
-        self.x += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat        
+        self.x += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.s, self.x = self.integral(self.s, self.x, _t, self.tau_rise, self.tau, self.a)
-        
+
         self.g.push(self.g_max * self.s)
         g_inf = 1 + self.cc_Mg / self.beta * bp.backend.exp(-self.alpha * self.post.V)
         g_inf = 1 / g_inf

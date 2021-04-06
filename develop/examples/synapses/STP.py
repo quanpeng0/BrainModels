@@ -18,8 +18,8 @@ tau_f = 100.
 neu1 = bm.neurons.LIF(1, monitors=['V'])
 neu2 = bm.neurons.LIF(1, monitors=['V'])
 
-syn = bm.synapses.STP(U=U, tau_d=tau_d, tau_f=tau_f, pre=neu1, post=neu2, 
-          conn=bp.connect.All2All(), monitors=['s', 'u', 'x'])
+syn = bm.synapses.STP(U=U, tau_d=tau_d, tau_f=tau_f, pre=neu1, post=neu2,
+                      conn=bp.connect.All2All(), monitors=['s', 'u', 'x'])
 net = bp.Network(neu1, syn, neu2)
 net.run(100., inputs=(neu1, 'input', 28.))
 

@@ -5,6 +5,7 @@ __all__ = [
     'STDP'
 ]
 
+
 class STDP(bp.TwoEndConn):
     """
     Spike-time dependent plasticity.
@@ -92,17 +93,17 @@ class STDP(bp.TwoEndConn):
     """
 
     target_backend = 'general'
-    
+
     @staticmethod
     def derivative(s, A_s, A_t, t, tau, tau_s, tau_t):
         dsdt = -s / tau
         dAsdt = - A_s / tau_s
         dAtdt = - A_t / tau_t
         return dsdt, dAsdt, dAtdt
-    
-    def __init__(self, pre, post, conn, delay=0., 
-                delta_A_s=0.5, delta_A_t=0.5, w_min=0., w_max=20., 
-                tau_s=10., tau_t=10., tau=10., **kwargs):
+
+    def __init__(self, pre, post, conn, delay=0.,
+                 delta_A_s=0.5, delta_A_t=0.5, w_min=0., w_max=20.,
+                 tau_s=10., tau_t=10., tau=10., **kwargs):
         # parameters
         self.tau_s = tau_s
         self.tau_t = tau_t
@@ -126,12 +127,11 @@ class STDP(bp.TwoEndConn):
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
-        
+
         super(STDP, self).__init__(pre=pre, post=post, **kwargs)
 
-
     def update(self, _t):
-        s, A_s, A_t = self.integral(self.s, self.A_s, self.A_t, 
+        s, A_s, A_t = self.integral(self.s, self.A_s, self.A_t,
                                     _t, self.tau, self.tau_s, self.tau_t)
         w = self.w
 
@@ -139,11 +139,11 @@ class STDP(bp.TwoEndConn):
         s += w * pre_spike_map
         A_s += self.delta_A_s * pre_spike_map
         w -= A_t * pre_spike_map
-        
+
         post_spike_map = bp.backend.unsqueeze(self.post.spike, 0) * self.conn_mat
         A_t += self.delta_A_t * post_spike_map
         w += A_s * post_spike_map
-        
+
         self.A_s = A_s
         self.A_t = A_t
         self.w = bp.backend.clip(w, self.w_min, self.w_max)

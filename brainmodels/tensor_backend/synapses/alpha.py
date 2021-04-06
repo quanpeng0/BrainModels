@@ -4,6 +4,8 @@ import brainpy as bp
 __all__ = [
     'Alpha'
 ]
+
+
 class Alpha(bp.TwoEndConn):
     """
     Alpha synapse.
@@ -68,7 +70,7 @@ class Alpha(bp.TwoEndConn):
                 "The Synapse." Principles of Computational Modelling in Neuroscience. 
                 Cambridge: Cambridge UP, 2011. 172-95. Print.
     """
-    
+
     target_backend = 'general'
 
     @staticmethod
@@ -90,7 +92,7 @@ class Alpha(bp.TwoEndConn):
         # variables
         self.s = bp.backend.zeros(self.size)
         self.x = bp.backend.zeros(self.size)
-        
+
         self.w = bp.backend.ones(self.size) * .2
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 

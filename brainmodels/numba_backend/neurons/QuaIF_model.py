@@ -7,6 +7,7 @@ __all__ = [
     'QuaIF'
 ]
 
+
 class QuaIF(bp.NeuGroup):
     """Quadratic Integrate-and-Fire neuron model.
         
@@ -88,10 +89,10 @@ class QuaIF(bp.NeuGroup):
         dVdt = (a_0 * (V - V_rest) * (V - V_c) + R * I_ext) / tau
         return dVdt
 
-    def __init__(self, size, V_rest=-65., V_reset=-68., 
-                 V_th=-30., V_c=-50.0, a_0 = .07,
+    def __init__(self, size, V_rest=-65., V_reset=-68.,
+                 V_th=-30., V_c=-50.0, a_0=.07,
                  R=1., tau=10., t_refractory=0., **kwargs):
-        
+
         # parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
@@ -112,16 +113,15 @@ class QuaIF(bp.NeuGroup):
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
-        super(QuaIF, self).__init__(size = size, **kwargs)
-
+        super(QuaIF, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
         for i in prange(self.size[0]):
             spike = 0.
             refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
             if not refractory:
-                V = self.integral(self.V[i], _t, self.input[i], 
-                                  self.V_rest, self.V_c, self.R, 
+                V = self.integral(self.V[i], _t, self.input[i],
+                                  self.V_rest, self.V_c, self.R,
                                   self.tau, self.a_0)
                 spike = (V >= self.V_th)
                 if spike:

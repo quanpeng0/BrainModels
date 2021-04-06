@@ -5,6 +5,8 @@ from numba import prange
 __all__ = [
     'Alpha'
 ]
+
+
 class Alpha(bp.TwoEndConn):
     """
     Alpha synapse.
@@ -69,7 +71,7 @@ class Alpha(bp.TwoEndConn):
                 "The Synapse." Principles of Computational Modelling in Neuroscience. 
                 Cambridge: Cambridge UP, 2011. 172-95. Print.
     """
-    
+
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
     @staticmethod
@@ -91,14 +93,14 @@ class Alpha(bp.TwoEndConn):
         # variables
         self.s = bp.backend.zeros(self.size)
         self.x = bp.backend.zeros(self.size)
-        
+
         self.w = bp.backend.ones(self.size) * .2
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
         super(Alpha, self).__init__(pre=pre, post=post, **kwargs)
-    
+
     def update(self, _t):
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
@@ -107,7 +109,7 @@ class Alpha(bp.TwoEndConn):
             self.x[i] += self.pre.spike[pre_id]
 
             self.out.push(i, self.w[i] * self.s[i])
-            
+
             # output
             post_id = self.post_ids[i]
-            self.post.input[post_id] += self.out.pull(i) 
+            self.post.input[post_id] += self.out.pull(i)
