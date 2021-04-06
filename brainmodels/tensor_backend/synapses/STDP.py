@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
-import numpy as np
 
 __all__ = [
     'STDP'
@@ -147,7 +146,7 @@ class STDP(bp.TwoEndConn):
         
         self.A_s = A_s
         self.A_t = A_t
-        self.w = np.clip(w, self.w_min, self.w_max)
+        self.w = bp.backend.clip(w, self.w_min, self.w_max)
         self.s = s
 
         self.out.push(self.s)

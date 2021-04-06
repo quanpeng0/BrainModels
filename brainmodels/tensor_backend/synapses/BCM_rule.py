@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
-import numpy as np
 
 __all__ = [
     'BCM'
@@ -96,7 +95,7 @@ class BCM(bp.TwoEndConn):
 
         # update w
         w = self.int_w(w, _t, self.lr, r_pre, r_post, r_th)
-        self.w = np.clip(w, self.w_min, self.w_max)
+        self.w = bp.backend.clip(w, self.w_min, self.w_max)
 
         # output
         self.post.r = bp.backend.sum(w.T * self.pre.r, axis=1)
