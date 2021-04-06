@@ -3,12 +3,12 @@ import brainpy as bp
 import brainmodels
 
 # set parameters
-num2mode = ["tonic_spiking",       "class_1",                           "spike_frequency_adaptation",
-            "phasic_spiking",      "accomodation",                      "threshold_variability",
-            "rebound_spike",       "class_2",                           "integrator",
-            "input_bistability",   "hyperpolarization_induced_spiking", "hyperpolarization_induced_bursting",
-            "tonic_bursting",      "phasic_bursting",                   "rebound_burst",
-            "mixed_mode",          "afterpotentials",                   "basal_bistability",
+num2mode = ["tonic_spiking", "class_1", "spike_frequency_adaptation",
+            "phasic_spiking", "accomodation", "threshold_variability",
+            "rebound_spike", "class_2", "integrator",
+            "input_bistability", "hyperpolarization_induced_spiking", "hyperpolarization_induced_bursting",
+            "tonic_bursting", "phasic_bursting", "rebound_burst",
+            "mixed_mode", "afterpotentials", "basal_bistability",
             "preferred_frequency", "spike_latency"]
 
 mode2param = {
@@ -114,13 +114,13 @@ mode2param = {
         "input": [(8., 2.), (0, 48.)]
     }
 }
-    
-def run_GIF_with_mode(mode = 'tonic_spiking', size = 10.,
-                      row_p = 0, col_p = 0, fig = None, gs = None):
-    
+
+
+def run_GIF_with_mode(mode='tonic_spiking', size=10.,
+                      row_p=0, col_p=0, fig=None, gs=None):
     print(f"Running GIF neuron neu with mode '{mode}'")
-    neu = brainmodels.neurons.GeneralizedIF(size, monitors = ['V', 'V_th', 'I1', 'I2', 'input'])
-    #neu = brainmodels.numba_backend.neurons.GeneralizedIF(size, monitors = ['V', 'V_th', 'I1', 'I2', 'input'])
+    neu = brainmodels.neurons.GeneralizedIF(size, monitors=['V', 'V_th', 'I1', 'I2', 'input'])
+    # neu = brainmodels.numba_backend.neurons.GeneralizedIF(size, monitors = ['V', 'V_th', 'I1', 'I2', 'input'])
     param = mode2param[mode].items()
     member_type = 0
     for (k, v) in param:
@@ -128,11 +128,11 @@ def run_GIF_with_mode(mode = 'tonic_spiking', size = 10.,
             I_ext, dur = bp.inputs.constant_current(v)
             member_type += 1
         else:
-            if member_type==0:
-                exec("neu.%s = %f"%(k, v))
+            if member_type == 0:
+                exec("neu.%s = %f" % (k, v))
             else:
-                exec("neu.%s = bp.backend.ones(size) * %f"%(k, v))
-    neu.run(dur, inputs = ('input', I_ext), report = False)
+                exec("neu.%s = bp.backend.ones(size) * %f" % (k, v))
+    neu.run(dur, inputs=('input', I_ext), report=False)
 
     ts = neu.mon.ts
     ax1 = fig.add_subplot(gs[row_p, col_p])
@@ -146,12 +146,13 @@ def run_GIF_with_mode(mode = 'tonic_spiking', size = 10.,
     plt.legend()
 
     ax2 = ax1.twinx()
-    ax2.plot(ts, I_ext, color = 'turquoise', label='input')
+    ax2.plot(ts, I_ext, color='turquoise', label='input')
     ax2.set_xlabel('Time (ms)')
     ax2.set_ylabel('External input')
     ax2.set_xlim(-0.1, ts[-1] + 0.1)
     ax2.set_ylim(-5., 20.)
-    plt.legend(loc = 'lower left')
+    plt.legend(loc='lower left')
+
 
 size = 10
 pattern_num = 20
@@ -162,9 +163,9 @@ for i in range(pattern_num):
     if i % size_b == 0:
         fig, gs = bp.visualize.get_figure(row_b, col_b, 4, 8)
     mode = num2mode[i]
-    run_GIF_with_mode(mode = mode, size = size,
-                      row_p = i % size_b // col_b,
-                      col_p = i % size_b % col_b,
-                      fig = fig, gs = gs)
-    if (i+1) % size_b == 0:
+    run_GIF_with_mode(mode=mode, size=size,
+                      row_p=i % size_b // col_b,
+                      col_p=i % size_b % col_b,
+                      fig=fig, gs=gs)
+    if (i + 1) % size_b == 0:
         plt.show()

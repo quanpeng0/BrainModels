@@ -108,12 +108,22 @@ class GeneralizedIF(bp.NeuGroup):
 
     target_backend = 'general'
 
-    def __init__(self, size, V_rest=-70., V_reset=-70., 
-                 V_th_inf=-50., V_th_reset=-60., R=20., tau=20., 
-                 a=0., b=0.01, k1=0.2, k2=0.02, 
+    @staticmethod
+    def derivative(I1, I2, V_th, V, t,
+                   k1, k2, a, V_rest, b, V_th_inf,
+                   R, I_ext, tau):
+        dI1dt = - k1 * I1
+        dI2dt = - k2 * I2
+        dVthdt = a * (V - V_rest) - b * (V_th - V_th_inf)
+        dVdt = (- (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau
+        return dI1dt, dI2dt, dVthdt, dVdt
+
+    def __init__(self, size, V_rest=-70., V_reset=-70.,
+                 V_th_inf=-50., V_th_reset=-60., R=20., tau=20.,
+                 a=0., b=0.01, k1=0.2, k2=0.02,
                  R1=0., R2=1., A1=0., A2=0.,
                  **kwargs):
-        #params
+        # params
         self.V_rest = V_rest
         self.V_reset = V_reset
         self.V_th_inf = V_th_inf
@@ -129,32 +139,22 @@ class GeneralizedIF(bp.NeuGroup):
         self.A1 = A1
         self.A2 = A2
 
-        #vars
+        # vars
         self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype = bool)
+        self.spike = bp.backend.zeros(size, dtype=bool)
         self.I1 = bp.backend.zeros(size)
         self.I2 = bp.backend.zeros(size)
         self.V = bp.backend.ones(size) * -70.
         self.V_th = bp.backend.ones(size) * -50.
 
-        super(GeneralizedIF, self).__init__(size = size, **kwargs)
-    
-    @staticmethod
-    @bp.odeint()
-    def integral(I1, I2, V_th, V, t, 
-                 k1, k2, a, V_rest, b, V_th_inf,
-                 R, I_ext, tau):
-        dI1dt = - k1 * I1
-        dI2dt = - k2 * I2
-        dVthdt = a * (V - V_rest) - b * (V_th - V_th_inf)
-        dVdt = (- (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau
-        return dI1dt, dI2dt, dVthdt, dVdt
-    
+        self.integral = bp.odeint(self.derivative)
+        super(GeneralizedIF, self).__init__(size=size, **kwargs)
+
     def update(self, _t):
         I1, I2, V_th, V = self.integral(
-            self.I1, self.I2, self.V_th, self.V, _t, 
+            self.I1, self.I2, self.V_th, self.V, _t,
             self.k1, self.k2, self.a, self.V_rest,
-            self.b, self.V_th_inf, 
+            self.b, self.V_th_inf,
             self.R, self.input, self.tau)
         sp = (self.V_th < V)
         V[sp] = self.V_reset
@@ -168,4 +168,3 @@ class GeneralizedIF(bp.NeuGroup):
         self.V_th = V_th
         self.V = V
         self.input[:] = 0.
-

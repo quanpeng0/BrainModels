@@ -176,7 +176,7 @@ class AMPA2(bp.TwoEndConn):
         super(AMPA2, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        spike = bp.backend.upsqueeze(self.pre.spike, 1) * self.conn_mat
+        spike = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
         TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
         self.s = self.int_s(self.s, _t, TT, self.alpha, self.beta)

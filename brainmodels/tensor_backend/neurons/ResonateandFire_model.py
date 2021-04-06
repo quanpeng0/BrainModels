@@ -4,6 +4,7 @@ import brainpy as bp
 
 bp.backend.set('numpy', dt=0.002)
 
+
 class ResonateandFire(bp.NeuGroup):
     """Resonate-and-fire neuron model.
 
@@ -80,30 +81,30 @@ class ResonateandFire(bp.NeuGroup):
 
     target_backend = 'general'
 
-    def __init__(self, size, b=-1., omega=10., 
+    @staticmethod
+    def derivative(V, x, t, b, omega):
+        dVdt = omega * x + b * V
+        dxdt = b * x - omega * V
+        return dVdt, dxdt
+
+    def __init__(self, size, b=-1., omega=10.,
                  V_th=1., V_reset=1., x_reset=0.,
                  **kwargs):
-        #parameters
+        # parameters
         self.b = b
         self.omega = omega
         self.V_th = V_th
         self.V_reset = V_reset
         self.x_reset = x_reset
 
-        #variables
+        # variables
         self.V = bp.backend.zeros(size)
         self.x = bp.backend.zeros(size)
         self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype = bool)
+        self.spike = bp.backend.zeros(size, dtype=bool)
 
-        super(ResonateandFire, self).__init__(size = size, **kwargs)
-
-    @staticmethod
-    @bp.odeint()
-    def integral(V, x, t, b, omega):
-        dVdt = omega * x + b * V
-        dxdt = b * x - omega * V
-        return dVdt, dxdt
+        self.integral = bp.odeint(self.derivative)
+        super(ResonateandFire, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
         x = self.x + self.input

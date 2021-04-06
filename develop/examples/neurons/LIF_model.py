@@ -4,13 +4,10 @@ import brainmodels
 
 dt = 0.02
 bp.backend.set('numpy', dt=dt)
-neu = brainmodels.neurons.LIF(16, monitors=['V', 'refractory', 'spike'], show_code = True)
+neu = brainmodels.neurons.LIF(100, monitors=['V', 'refractory', 'spike'])
 
 net = bp.Network(neu)
-net.run(duration = 200., inputs=(neu, 'input', 21.), report=True)
-bp.visualize.line_plot(neu.mon.ts, neu.mon.V, 
-                       xlabel = "t", ylabel = "V", 
+net.run(duration=200., inputs=(neu, 'input', 21.), report=True)
+bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
+                       xlabel="t", ylabel="V",
                        show=True)
-bp.visualize.line_plot(neu.mon.ts, neu.mon.spike, 
-                       xlabel = "t", ylabel = "spike", 
-                       show=True)                       

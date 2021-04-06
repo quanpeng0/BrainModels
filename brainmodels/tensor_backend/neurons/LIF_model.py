@@ -2,6 +2,7 @@
 
 import brainpy as bp
 
+
 class LIF(bp.NeuGroup):
     """
     Leaky Integrate-and-Fire neuron model.
@@ -53,13 +54,16 @@ class LIF(bp.NeuGroup):
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single
                neurons to networks and models of cognition. Cambridge
                University Press, 2014.
-       """
+    """
     target_backend = 'general'
 
-    def __init__(self, size, V_rest = 0., V_reset= -5., 
-                 V_th = 20., R = 1., tau = 10., 
-                 t_refractory = 5., **kwargs):
-        
+    @staticmethod
+    def derivative(V, t, Iext, V_rest, R, tau):
+        dvdt = (-V + V_rest + R * Iext) / tau
+        return dvdt
+
+    def __init__(self, size, t_refractory=1., V_rest=0.,
+                 V_reset=-5., V_th=20., R=1., tau=10., **kwargs):
         # parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
@@ -69,28 +73,23 @@ class LIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        self.V = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype = bool)
-        self.refractory = bp.backend.zeros(size, dtype = bool)
-        self.t_last_spike = bp.backend.ones(size) * -1e7
+        num = bp.size2len(size)
+        self.t_last_spike = bp.backend.ones(num) * -1e7
+        self.input = bp.backend.zeros(num)
+        self.V = bp.backend.ones(num) * V_reset
+        self.refractory = bp.backend.zeros(num, dtype=bool)
+        self.spike = bp.backend.zeros(num, dtype=bool)
 
-        super(LIF, self).__init__(size = size, **kwargs)
+        self.integral = bp.odeint(self.derivative)
+        super(LIF, self).__init__(size=size, **kwargs)
 
-    @staticmethod
-    @bp.odeint()
-    def integral(V, t, I_ext, V_rest, R, tau): 
-        return (- (V - V_rest) + R * I_ext) / tau
-    
     def update(self, _t):
-        # update variables
-        not_ref = (_t - self.t_last_spike > self.t_refractory)
-        self.V[not_ref] = self.integral(
-            self.V[not_ref], _t, self.input[not_ref],
-            self.V_rest, self.R, self.tau)
-        sp = (self.V > self.V_th)
-        self.V[sp] = self.V_reset
-        self.t_last_spike[sp] = _t
-        self.spike = sp
-        self.refractory = ~not_ref
+        refractory = (_t - self.t_last_spike) <= self.t_refractory
+        V = self.integral(self.V, _t, self.input, self.V_rest, self.R, self.tau)
+        V = bp.backend.where(refractory, self.V, V)
+        spike = self.V_th <= V
+        self.t_last_spike = bp.backend.where(spike, _t, self.t_last_spike)
+        self.V = bp.backend.where(spike, self.V_reset, V)
+        self.refractory = refractory
         self.input[:] = 0.
+        self.spike = spike
