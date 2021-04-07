@@ -124,7 +124,7 @@ class STDP(bp.TwoEndConn):
         self.A_s = bp.backend.zeros(self.size)
         self.A_t = bp.backend.zeros(self.size)
         self.w = bp.backend.ones(self.size) * 1.
-        self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
+        self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
 
@@ -149,5 +149,5 @@ class STDP(bp.TwoEndConn):
         self.w = bp.backend.clip(w, self.w_min, self.w_max)
         self.s = s
 
-        self.out.push(self.s)
-        self.post.input += bp.backend.sum(self.out.pull(), axis=0)
+        self.I_syn.push(self.s)
+        self.post.input += bp.backend.sum(self.I_syn.pull(), axis=0)

@@ -2,17 +2,15 @@ import brainpy as bp
 import brainmodels
 import matplotlib.pyplot as plt
 
-
 print(bp.__version__)
 
-bp.backend.set(backend='numpy', dt=0.01)
+brainmodels.set_backend(backend='numpy')
 
 neu1 = brainmodels.neurons.LIF(1, monitors=['V'])
 neu2 = brainmodels.neurons.LIF(1, monitors=['V'])
-syn = brainmodels.synapses.Voltage_jump(pre=neu1, post=neu2, conn=bp.connect.All2All(),
-                                        # post_refractory=True,
-                                        delay=0., monitors=['s'])
-
+syn = brainmodels.synapses.Voltage_jump(weight=15., pre=neu1, post=neu2, conn=bp.connect.All2All(),
+                                        post_refractory=True,
+                                        delay=1., monitors=['s'])
 
 net = bp.Network(neu1, neu2, syn)
 net.run(100., inputs=(neu1, 'input', 30.), report=True)

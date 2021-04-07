@@ -4,7 +4,7 @@ import brainpy as bp
 import brainmodels
 
 dt = 0.02
-bp.backend.set(backend='numpy', dt=dt)
+bp.backend.set(backend='numba', dt=dt)
 
 # Set pre & post NeuGroup
 pre = brainmodels.neurons.LIF(10, monitors=['V', 'input', 'spike'])

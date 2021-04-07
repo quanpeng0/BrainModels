@@ -95,7 +95,7 @@ class Alpha(bp.TwoEndConn):
         self.x = bp.backend.zeros(self.size)
 
         self.w = bp.backend.ones(self.size) * .2
-        self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
+        self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
@@ -108,8 +108,8 @@ class Alpha(bp.TwoEndConn):
             self.s[i], self.x[i] = self.integral(self.s[i], self.x[i], _t, self.tau)
             self.x[i] += self.pre.spike[pre_id]
 
-            self.out.push(i, self.w[i] * self.s[i])
+            self.I_syn.push(i, self.w[i] * self.s[i])
 
             # output
             post_id = self.post_ids[i]
-            self.post.input[post_id] += self.out.pull(i)
+            self.post.input[post_id] += self.I_syn.pull(i)

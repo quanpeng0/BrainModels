@@ -78,7 +78,7 @@ class Exponential(bp.TwoEndConn):
         # variables
         self.s = bp.backend.zeros(self.size)
         self.w = bp.backend.ones(self.size) * .1
-        self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
+        self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
 
@@ -90,8 +90,8 @@ class Exponential(bp.TwoEndConn):
 
             self.s[i] = self.integral(self.s[i], _t, self.tau)
             self.s[i] += self.pre.spike[pre_id]
-            self.out.push(i, self.w[i] * self.s[i])
+            self.I_syn.push(i, self.w[i] * self.s[i])
 
             # output
             post_id = self.post_ids[i]
-            self.post.input[post_id] += self.out.pull(i)
+            self.post.input[post_id] += self.I_syn.pull(i)

@@ -18,7 +18,7 @@ duration = 60.
 
 syn = bm.synapses.STDP(pre=pre, post=post, conn=bp.connect.All2All(), monitors=['s', 'A_s', 'A_t', 'w'])
 net = bp.Network(pre, syn, post)
-net.run(duration, inputs=[(pre, 'input', I_pre), (post, 'input', I_post)])
+net.run(duration, inputs=[(pre, 'input', I_pre), (post, 'input', I_post)], report=True)
 
 # plot
 fig, gs = bp.visualize.get_figure(3, 1)

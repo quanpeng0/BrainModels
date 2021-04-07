@@ -103,7 +103,7 @@ class Gap_junction_lif(bp.TwoEndConn):
     def __init__(self, pre, post, conn, delay=0., k_spikelet=0.1, post_refractory=False, **kwargs):
         self.delay = delay
         self.k_spikelet = k_spikelet
-        self.post_refractory = post_refractory
+        self.post_has_refractory = post_refractory
 
         # connections
         self.conn = conn(pre.size, post.size)
@@ -112,7 +112,7 @@ class Gap_junction_lif(bp.TwoEndConn):
 
         # variables
         self.w = bp.backend.ones(self.size)
-        self.spikelet = self.register_constant_delay('spikelet', size=self.size, delay_time=delay)
+        self.spikelet = self.register_constant_delay('spikelet', size=self.size, delay_time=self.delay)
 
         super(Gap_junction_lif, self).__init__(pre=pre, post=post, **kwargs)
 
@@ -123,10 +123,10 @@ class Gap_junction_lif(bp.TwoEndConn):
 
             self.post.input[post_id] += self.w[i] * (self.pre.V[pre_id] - self.post.V[post_id])
 
-            if self.post_refractory:
-                self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id] * (
-                            1. - self.post.refractory[post_id]))
-            else:
-                self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id])
+            self.spikelet.push(i, self.w[i] * self.k_spikelet * self.pre.spike[pre_id])
 
-            self.post.V[post_id] += self.spikelet.pull(i)
+            out = self.spikelet.pull(i)
+            if self.post_has_refractory:
+                self.post.V[post_id] += out * (1. - self.post.refractory[post_id])
+            else:
+                self.post.V[post_id] += out

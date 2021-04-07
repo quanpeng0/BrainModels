@@ -36,10 +36,10 @@ class Voltage_jump(bp.TwoEndConn):
 
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
-    def __init__(self, pre, post, conn, delay=0., post_refractory=False, **kwargs):
+    def __init__(self, pre, post, conn, delay=0., post_refractory=False, weight=1., **kwargs):
         # parameters
         self.delay = delay
-        self.post_refractory = post_refractory
+        self.post_has_refractory = post_refractory
 
         # connections
         self.conn = conn(pre.size, post.size)
@@ -48,7 +48,8 @@ class Voltage_jump(bp.TwoEndConn):
 
         # variables
         self.s = bp.backend.zeros(self.size)
-        self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
+        self.w = bp.backend.ones(self.size) * weight
+        self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)
 
@@ -59,9 +60,11 @@ class Voltage_jump(bp.TwoEndConn):
 
             # output
             post_id = self.post_ids[i]
-            if self.post_refractory:
-                self.g.push(i, self.s[i] * (1. - self.post.refractory[post_id]))
-            else:
-                self.g.push(i, self.s[i])
 
-            self.post.V[post_id] += self.g.pull(i)
+            self.I_syn.push(i, self.s[i] * self.w[i])
+            I_syn = self.I_syn.pull(i)
+
+            if self.post_has_refractory:
+                self.post.V += I_syn * (1. - self.post.refractory[post_id])
+            else:
+                self.post.V += I_syn

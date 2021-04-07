@@ -43,9 +43,7 @@ class Gap_junction(bp.TwoEndConn):
 
     target_backend = 'general'
 
-    def __init__(self, pre, post, conn, delay=0., **kwargs):
-        self.delay = delay
-
+    def __init__(self, pre, post, conn, **kwargs):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
@@ -60,8 +58,8 @@ class Gap_junction(bp.TwoEndConn):
         v_post = bp.backend.vstack((self.post.V,) * self.size[0])
         v_pre = bp.backend.vstack((self.pre.V,) * self.size[1]).T
 
-        out = self.w * (v_pre - v_post) * self.conn_mat
-        self.post.input += bp.backend.sum(out, axis=0)
+        I_syn = self.w * (v_pre - v_post) * self.conn_mat
+        self.post.input += bp.backend.sum(I_syn, axis=0)
 
 
 class Gap_junction_lif(bp.TwoEndConn):
@@ -112,7 +110,7 @@ class Gap_junction_lif(bp.TwoEndConn):
 
         # variables
         self.w = bp.backend.ones(self.size)
-        self.spikelet = self.register_constant_delay('spikelet', size=self.size, delay_time=delay)
+        self.spikelet = self.register_constant_delay('spikelet', size=self.size, delay_time=self.delay)
 
         super(Gap_junction_lif, self).__init__(pre=pre, post=post, **kwargs)
 
@@ -120,13 +118,12 @@ class Gap_junction_lif(bp.TwoEndConn):
         v_post = bp.backend.vstack((self.post.V,) * self.size[0])
         v_pre = bp.backend.vstack((self.pre.V,) * self.size[1]).T
 
-        out = self.w * (v_pre - v_post) * self.conn_mat
-        self.post.input += bp.backend.sum(out, axis=0)
+        I_syn = self.w * (v_pre - v_post) * self.conn_mat
+        self.post.input += bp.backend.sum(I_syn, axis=0)
+
+        self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat)
 
         if self.post_refractory:
-            self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat * (
-                        1. - self.post.refractory))
+            self.post.V += bp.backend.sum(self.spikelet.pull(), axis=0) * (1. - self.post.refractory)
         else:
-            self.spikelet.push(self.w * self.k_spikelet * bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat)
-
-        self.post.V += bp.backend.sum(self.spikelet.pull(), axis=0)
+            self.post.V += bp.backend.sum(self.spikelet.pull(), axis=0)

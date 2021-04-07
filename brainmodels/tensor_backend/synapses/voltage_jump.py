@@ -35,7 +35,7 @@ class Voltage_jump(bp.TwoEndConn):
 
     target_backend = 'general'
 
-    def __init__(self, pre, post, conn, delay=0., post_refractory=False, **kwargs):
+    def __init__(self, pre, post, conn, weight=1., delay=0., post_refractory=False, **kwargs):
         # parameters
         self.delay = delay
         self.post_refractory = post_refractory
@@ -47,17 +47,18 @@ class Voltage_jump(bp.TwoEndConn):
 
         # variables
         self.s = bp.backend.zeros(self.size)
-        self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
+        self.w = bp.backend.ones(self.size) * weight
+        self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
         self.s = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
 
+        self.I_syn.push(self.s * self.w)
+
         if self.post_refractory:
             refra_map = (1. - bp.backend.unsqueeze(self.post.refractory, 0)) * self.conn_mat
-            self.out.push(self.s * refra_map)
+            self.post.V += bp.backend.sum(self.I_syn.pull() * refra_map, axis=0)
         else:
-            self.out.push(self.s)
-
-        self.post.V += bp.backend.sum(self.out.pull(), axis=0)
+            self.post.V += bp.backend.sum(self.I_syn.pull(), axis=0)

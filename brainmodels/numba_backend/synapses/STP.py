@@ -102,7 +102,7 @@ class STP(bp.TwoEndConn):
         self.x = bp.backend.ones(self.size)
         self.u = bp.backend.zeros(self.size)
         self.w = bp.backend.ones(self.size)
-        self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
+        self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
 
@@ -123,5 +123,5 @@ class STP(bp.TwoEndConn):
 
             # output
             post_id = self.post_ids[i]
-            self.out.push(i, self.s[i])
-            self.post.input[post_id] += self.out.pull(i)
+            self.I_syn.push(i, self.s[i])
+            self.post.input[post_id] += self.I_syn.pull(i)

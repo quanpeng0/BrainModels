@@ -94,7 +94,7 @@ class Alpha(bp.TwoEndConn):
         self.x = bp.backend.zeros(self.size)
 
         self.w = bp.backend.ones(self.size) * .2
-        self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
+        self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
         super(Alpha, self).__init__(pre=pre, post=post, **kwargs)
@@ -102,5 +102,5 @@ class Alpha(bp.TwoEndConn):
     def update(self, _t):
         self.s, self.x = self.integral(self.s, self.x, _t, self.tau)
         self.x += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        self.out.push(self.w * self.s)
-        self.post.input += bp.backend.sum(self.out.pull(), axis=0)
+        self.I_syn.push(self.w * self.s)
+        self.post.input += bp.backend.sum(self.I_syn.pull(), axis=0)
