@@ -8,7 +8,7 @@ neu = brainmodels.neurons.LIF(100, monitors=['V', 'refractory', 'spike'])
 neu.t_refractory = 5.
 net = bp.Network(neu)
 net.run(duration=200., inputs=(neu, 'input', 21.), report=True)
-fig, gs = bp.visualize.get_figure(3, 1, 4, 10)
+fig, gs = bp.visualize.get_figure(1, 1, 4, 10)
 fig.add_subplot(gs[0, 0])
 bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
-                       xlabel="t", ylabel="V")
+                       xlabel="t", ylabel="V", show=True)

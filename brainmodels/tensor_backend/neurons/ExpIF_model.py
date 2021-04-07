@@ -102,6 +102,6 @@ class ExpIF(bp.NeuGroup):
         spike = self.V_th <= V
         self.t_last_spike = bp.backend.where(spike, _t, self.t_last_spike)
         self.V = bp.backend.where(spike, self.V_reset, V)
-        self.refractory = refractory
+        self.refractory = refractory | spike
         self.input[:] = 0.
         self.spike = spike

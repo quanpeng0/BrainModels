@@ -115,13 +115,13 @@ class QuaIF(bp.NeuGroup):
         super(QuaIF, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
-        not_ref = (_t - self.t_last_spike > self.t_refractory)
-        self.V[not_ref] = self.integral(self.V[not_ref], _t, self.input[not_ref],
-                                        self.V_rest, self.V_c, self.R,
-                                        self.tau, self.a_0)
-        spike = (self.V >= self.V_th)
-        self.t_last_spike[spike] = _t
-        self.V[spike] = self.V_reset
-        self.refractory = ~not_ref
-        self.spike = spike
+        refractory = (_t - self.t_last_spike) <= self.t_refractory
+        V = self.integral(self.V, _t, self.input, self.V_rest,
+                          self.V_c, self.R, self.tau, self.a_0)
+        V = bp.backend.where(refractory, self.V, V)
+        spike = self.V_th <= V
+        self.t_last_spike = bp.backend.where(spike, _t, self.t_last_spike)
+        self.V = bp.backend.where(spike, self.V_reset, V)
+        self.refractory = refractory | spike
         self.input[:] = 0.
+        self.spike = spike
