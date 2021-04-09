@@ -76,7 +76,7 @@ class LIF(bp.NeuGroup):
         num = bp.size2len(size)
         self.t_last_spike = bp.backend.ones(num) * -1e7
         self.input = bp.backend.zeros(num)
-        self.V = bp.backend.ones(num) * V_reset
+        self.V = bp.backend.ones(num) * V_rest
         self.refractory = bp.backend.zeros(num, dtype=bool)
         self.spike = bp.backend.zeros(num, dtype=bool)
 

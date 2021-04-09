@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 duration = 100.
 dt = 0.02
-bp.backend.set('numpy', dt=dt)
+bp.backend.set('numba', dt=dt)
 size = 10
 neu_pre = brainmodels.neurons.LIF(size, monitors=['V', 'input', 'spike'])
 neu_pre.V_rest = -65.
@@ -14,7 +14,7 @@ neu_pre.V = bp.backend.ones(size) * -65.
 neu_pre.t_refractory = 0.
 neu_post = brainmodels.neurons.LIF(size, monitors=['V', 'input', 'spike'])
 
-syn_GABAa = brainmodels.synapses.GABAa1(pre=neu_pre, post=neu_post,
+syn_GABAa = brainmodels.synapses.GABAa2(pre=neu_pre, post=neu_post,
                                         conn=bp.connect.All2All(),
                                         delay=10., monitors=['s'])
 

@@ -2,6 +2,8 @@
 
 from .alpha import *
 from .AMPA import *
+from .GABAa import *
+from .GABAb import *
 from .exponential import *
 from .gap_junction import *
 from .NMDA import *
