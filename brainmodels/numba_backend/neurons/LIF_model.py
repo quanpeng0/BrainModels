@@ -76,7 +76,8 @@ class LIF(bp.NeuGroup):
 
     @staticmethod
     def derivative(V, t, Iext, V_rest, R, tau):
-        return (-V + V_rest + R * Iext) / tau
+        dvdt = (-V + V_rest + R * Iext) / tau
+        return dvdt
 
     def __init__(self, size, t_refractory=1., V_rest=0.,
                  V_reset=-5., V_th=20., R=1., tau=10., **kwargs):
@@ -94,7 +95,7 @@ class LIF(bp.NeuGroup):
         self.input = bp.backend.zeros(num)
         self.refractory = bp.backend.zeros(num, dtype=bool)
         self.spike = bp.backend.zeros(num, dtype=bool)
-        self.V = bp.backend.ones(num) * V_reset
+        self.V = bp.backend.ones(num) * V_rest
 
         self.integral = bp.odeint(self.derivative)
         super(LIF, self).__init__(size=size, **kwargs)

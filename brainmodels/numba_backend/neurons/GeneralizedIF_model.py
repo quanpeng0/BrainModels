@@ -109,6 +109,16 @@ class GeneralizedIF(bp.NeuGroup):
 
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(I1, I2, V_th, V, t,
+                 k1, k2, a, V_rest, b, V_th_inf,
+                 R, I_ext, tau):
+        dI1dt = - k1 * I1
+        dI2dt = - k2 * I2
+        dVthdt = a * (V - V_rest) - b * (V_th - V_th_inf)
+        dVdt = (- (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau
+        return dI1dt, dI2dt, dVthdt, dVdt
+
     def __init__(self, size, V_rest=-70., V_reset=-70., 
                  V_th_inf=-50., V_th_reset=-60., R=20., tau=20., 
                  a=0., b=0.01, k1=0.2, k2=0.02, 
@@ -138,18 +148,8 @@ class GeneralizedIF(bp.NeuGroup):
         self.V = bp.backend.ones(size) * -70.
         self.V_th = bp.backend.ones(size) * -50.
 
+        self.integral = bp.odeint(self.derivative)
         super(GeneralizedIF, self).__init__(size = size, **kwargs)
-    
-    @staticmethod
-    @bp.odeint()
-    def integral(I1, I2, V_th, V, t, 
-                 k1, k2, a, V_rest, b, V_th_inf,
-                 R, I_ext, tau):
-        dI1dt = - k1 * I1
-        dI2dt = - k2 * I2
-        dVthdt = a * (V - V_rest) - b * (V_th - V_th_inf)
-        dVdt = (- (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau
-        return dI1dt, dI2dt, dVthdt, dVdt
     
     def update(self, _t):
         for i in prange(self.size[0]):

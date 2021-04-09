@@ -86,43 +86,41 @@ class HindmarshRose(bp.NeuGroup):
     target_backend = 'general'
 
     @staticmethod
-    def derivative(V, y, z, t, a, b, c, d, r, s, x_r, Isyn):
-        dV = y - a * V ** 3 + b * V * V - z + Isyn
-        dy = c - d * V * V - y
-        dz = r * (s * (V - x_r) - z)
-        return dV, dy, dz
+    def derivative(V, y, z, t, a, b, I_ext, c, d, r, s, V_rest):
+        dVdt = y - a * V * V * V + b * V * V - z + I_ext
+        dydt = c - d * V * V - y
+        dzdt = r * (s * (V - V_rest) - z)
+        return dVdt, dydt, dzdt
 
-    def __init__(self, size, a=1., b=3., c=1., d=5., s=4., x_r=-1.6,
-                 r=0.001, Vth=1.9, **kwargs):
+    def __init__(self, size, a=1., b=3.,
+                 c=1., d=5., r=0.01, s=4.,
+                 V_rest=-1.6, **kwargs):
         # parameters
         self.a = a
         self.b = b
         self.c = c
         self.d = d
-        self.s = s
-        self.x_r = x_r
         self.r = r
-        self.Vth = Vth
+        self.s = s
+        self.V_rest = V_rest
 
         # variables
         num = bp.size2len(size)
-        self.V = -1.6 * bp.backend.ones(num)
-        self.y = -10 * bp.backend.ones(num)
         self.z = bp.backend.zeros(num)
         self.input = bp.backend.zeros(num)
+        self.V = bp.backend.ones(num) * -1.6
+        self.y = bp.backend.ones(num) * -10.
         self.spike = bp.backend.zeros(num, dtype=bool)
 
         self.integral = bp.odeint(f=self.derivative)
-
         super(HindmarshRose, self).__init__(size=size, **kwargs)
 
     def update(self, _t):
         for i in prange(self.num):
-            V, y, z = self.integral(self.V[i], self.y[i], self.z[i], _t,
-                                    self.a, self.b, self.c, self.d, self.r,
-                                    self.s, self.x_r, self.input[i])
-            self.spike[i] = (V >= self.Vth) * (self.V[i] < self.Vth)
+            V, self.y[i], self.z[i] = self.integral(
+                self.V[i], self.y[i], self.z[i], _t,
+                self.a, self.b, self.input[i],
+                self.c, self.d, self.r, self.s,
+                self.V_rest)
             self.V[i] = V
-            self.y[i] = y
-            self.z[i] = z
             self.input[i] = 0.

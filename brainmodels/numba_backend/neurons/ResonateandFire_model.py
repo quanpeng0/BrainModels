@@ -79,6 +79,12 @@ class ResonateandFire(bp.NeuGroup):
 
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(V, x, t, b, omega):
+        dVdt = omega * x + b * V
+        dxdt = b * x - omega * V
+        return dVdt, dxdt
+
     def __init__(self, size, b=-1., omega=10., 
                  V_th=1., V_reset=1., x_reset=0.,
                  **kwargs):
@@ -95,14 +101,8 @@ class ResonateandFire(bp.NeuGroup):
         self.input = bp.backend.zeros(size)
         self.spike = bp.backend.zeros(size, dtype = bool)
 
+        self.integral = bp.odeint(self.derivative)
         super(ResonateandFire, self).__init__(size = size, **kwargs)
-
-    @staticmethod
-    @bp.odeint()
-    def integral(V, x, t, b, omega):
-        dVdt = omega * x + b * V
-        dxdt = b * x - omega * V
-        return dVdt, dxdt
 
     def update(self, _t):
         for i in prange(self.size[0]):
@@ -110,8 +110,8 @@ class ResonateandFire(bp.NeuGroup):
             V, x = self.integral(self.V[i], x, _t, self.b, self.omega)
             self.spike[i]= (V > self.V_th)
             if self.spike[i]:
-                V = V_reset
-                x = x_reset
+                V = self.V_reset
+                x = self.x_reset
             self.V[i] = V
             self.x[i] = x
         self.input[:] = 0
