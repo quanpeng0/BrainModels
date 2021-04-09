@@ -10,3 +10,4 @@ from .NMDA import *
 from .STP import *
 from .two_exponentials import *
 from .voltage_jump import *
+from .Oja_rule import *
