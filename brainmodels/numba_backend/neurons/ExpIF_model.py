@@ -63,6 +63,14 @@ class ExpIF(bp.NeuGroup):
     """
     target_backend = 'general'
 
+    @staticmethod
+    def derivative(V, t, I_ext, V_rest, delta_T, V_T, R, tau):  # integrate u(t)
+        dvdt = (- (V - V_rest) \
+                + delta_T * bp.backend.exp((V - V_T) / delta_T) \
+                + R * I_ext) \
+               / tau
+        return dvdt
+
     def __init__(self, size, V_rest=-65., V_reset=-68., 
                  V_th=-30., V_T=-59.9, delta_T=3.48, 
                  R=10., C=1., tau=10., t_refractory=1.7, 
@@ -86,15 +94,8 @@ class ExpIF(bp.NeuGroup):
         self.refractory = bp.backend.zeros(size, dtype = bool)
         self.t_last_spike = bp.backend.ones(size) * -1e7
 
+        self.integral = bp.odeint(self.derivative)
         super(ExpIF, self).__init__(size = size, **kwargs)
-
-    @staticmethod
-    @bp.odeint()
-    def integral(V, t, I_ext, V_rest, delta_T, V_T, R, tau):  # integrate u(t)
-        return (- (V - V_rest) \
-                + delta_T * bp.backend.exp((V - V_T) / delta_T) \
-                + R * I_ext) \
-               / tau
 
     def update(self, _t):            
         for i in prange(self.num):

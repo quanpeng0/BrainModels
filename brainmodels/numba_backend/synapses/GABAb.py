@@ -79,6 +79,12 @@ class GABAb1(bp.TwoEndConn):
     """
     target_backend = ['numba', 'numba-parallel', 'numba-cuda']
 
+    @staticmethod
+    def derivative(R, G, t, k3, TT, k4, k1, k2):
+        dRdt = k3 * TT * (1 - R) - k4 * R
+        dGdt = k1 * R - k2 * G
+        return dRdt, dGdt
+
     def __init__(self, pre, post, conn, delay = 0., 
                  g_max=0.02, E=-95., 
                  k1=0.18, k2=0.034, k3=0.09, k4=0.0012,
@@ -106,14 +112,8 @@ class GABAb1(bp.TwoEndConn):
         self.s = bp.backend.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
+        self.integral = bp.odeint(f=self.derivative)
         super(GABAb1, self).__init__(pre = pre, post = post, **kwargs)
-
-    @staticmethod
-    @bp.odeint()
-    def integral(R, G, t, k3, TT, k4, k1, k2):
-        dRdt = k3 * TT * (1 - R) - k4 * R
-        dGdt = k1 * R - k2 * G
-        return dRdt, dGdt
 
     def update(self, _t):
         #pdb.set_trace()
@@ -221,7 +221,14 @@ class GABAb2(bp.TwoEndConn):
 
     """
     target_backend = ['numba', 'numba-parallel', 'numba-cuda']
-    
+
+    @staticmethod
+    def derivative(R, D, G, t, k1, k2, k3, TT, k4, k5, k6):
+        dRdt = k1 * TT * (1 - R - D) - k2 * R + k3 * D
+        dDdt = k4 * R - k3 * D
+        dGdt = k5 * R - k6 * G
+        return dRdt, dDdt, dGdt
+
     def __init__(self, pre, post, conn, delay = 0.,
                  g_max=0.02, E=-95., k1=0.66, k2=0.02, 
                  k3=0.0053, k4=0.017, k5=8.3e-5, k6=7.9e-3, 
@@ -253,15 +260,8 @@ class GABAb2(bp.TwoEndConn):
         self.g = self.register_constant_delay('g', size=self.size, delay_time = delay)
         self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
 
+        self.integral = bp.odeint(f=self.derivative)
         super(GABAb2, self).__init__(pre = pre, post = post, **kwargs)
-    
-    @staticmethod
-    @bp.odeint
-    def integral(R, D, G, t, k1, k2, k3, TT, k4, k5, k6):
-        dRdt = k1 * TT * (1 - R - D) - k2 * R + k3 * D
-        dDdt = k4 * R - k3 * D
-        dGdt = k5 * R - k6 * G
-        return dRdt, dDdt, dGdt
 
     def update(self, _t):
         for i in prange(self.size):

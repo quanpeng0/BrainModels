@@ -120,7 +120,6 @@ def run_GIF_with_mode(mode='tonic_spiking', size=10.,
                       row_p=0, col_p=0, fig=None, gs=None):
     print(f"Running GIF neuron neu with mode '{mode}'")
     neu = brainmodels.neurons.GeneralizedIF(size, monitors=['V', 'V_th', 'I1', 'I2', 'input'])
-    # neu = brainmodels.numba_backend.neurons.GeneralizedIF(size, monitors = ['V', 'V_th', 'I1', 'I2', 'input'])
     param = mode2param[mode].items()
     member_type = 0
     for (k, v) in param:

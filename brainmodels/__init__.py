@@ -9,7 +9,6 @@ from . import tensor_backend
 from .tensor_backend import neurons
 from .tensor_backend import synapses
 
-from .utils import backend_buffer
 
 def set_backend(backend):
     global neurons
