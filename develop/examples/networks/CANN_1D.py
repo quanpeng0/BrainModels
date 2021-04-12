@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
 Implementation of the paper:
 
 - Si Wu, Kosuke Hamaguchi, and Shun-ichi Amari. "Dynamics and computation
- of continuous attractors." Neural computation 20.4 (2008): 994-1025.
+  of continuous attractors." Neural computation 20.4 (2008): 994-1025.
 
 The mathematical equation of the Continuous-attractor Neural Network (CANN) is
 given by:
