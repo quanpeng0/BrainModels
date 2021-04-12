@@ -11,3 +11,4 @@ from .HindmarshRose_model import *
 from .HodgkinHuxley_model import *
 from .ResonateandFire_model import *
 from .MorrisLecar import *
+from .Izhikevich import *
