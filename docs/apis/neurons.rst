@@ -11,11 +11,13 @@ brainmodels.neurons
     LIF
     QuaIF
     ExpIF
+    Izhikevich
     AdQuaIF
     AdExIF
     GeneralizedIF
     ResonateandFire
     HindmarshRose
+    MorrisLecar
     FitzHughNagumo
 
 
@@ -31,6 +33,9 @@ brainmodels.neurons
 .. autoclass:: ExpIF
    :members:
 
+.. autoclass:: Izhikevich
+   :members:
+   
 .. autoclass:: AdQuaIF
    :members:
 
@@ -44,6 +49,9 @@ brainmodels.neurons
    :members:
 
 .. autoclass:: HindmarshRose
+   :members:
+
+.. autoclass:: MorrisLecar
    :members:
 
 .. autoclass:: FitzHughNagumo
