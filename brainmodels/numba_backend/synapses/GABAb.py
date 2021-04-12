@@ -106,10 +106,10 @@ class GABAb1(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         #data
-        self.R = bp.backend.zeros(self.size)
-        self.G = bp.backend.zeros(self.size)
-        self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
-        self.s = bp.backend.zeros(self.size)
+        self.R = bp.ops.zeros(self.size)
+        self.G = bp.ops.zeros(self.size)
+        self.t_last_pre_spike = bp.ops.ones(self.size) * -1e7
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative)
@@ -253,12 +253,12 @@ class GABAb2(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         #vars
-        self.D = bp.backend.zeros(self.size)
-        self.R = bp.backend.zeros(self.size)
-        self.G = bp.backend.zeros(self.size)
-        self.s = bp.backend.zeros(self.size)
+        self.D = bp.ops.zeros(self.size)
+        self.R = bp.ops.zeros(self.size)
+        self.G = bp.ops.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time = delay)
-        self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
+        self.t_last_pre_spike = bp.ops.ones(self.size) * -1e7
 
         self.integral = bp.odeint(f=self.derivative)
         super(GABAb2, self).__init__(pre = pre, post = post, **kwargs)

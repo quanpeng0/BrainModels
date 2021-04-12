@@ -66,10 +66,10 @@ class GABAa1(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # data
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size,
                                               delay_time=delay)
 
@@ -78,9 +78,9 @@ class GABAa1(bp.TwoEndConn):
 
     def update(self, _t):
         self.s = self.integral(self.s, _t, self.tau)
-        self.s += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.s += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), axis=0) \
+        self.post.input -= bp.ops.sum(self.g.pull(), axis=0) \
                            * (self.post.V - self.E)
 
 
@@ -157,22 +157,22 @@ class GABAa2(bp.TwoEndConn):
 
         self.conn = conn(pre.size, post.size)
         self.conn_mat = self.conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size,
                                               delay_time=delay)
-        self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
+        self.t_last_pre_spike = bp.ops.ones(self.size) * -1e7
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
         super(GABAa2, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        spike = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        self.t_last_pre_spike = bp.backend.where(spike, _t,
+        spike = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.t_last_pre_spike = bp.ops.where(spike, _t,
                                                  self.t_last_pre_spike)
         TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
         self.s = self.integral(self.s, _t, TT, self.alpha, self.beta)
         self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), 0) \
+        self.post.input -= bp.ops.sum(self.g.pull(), 0) \
                            * (self.post.V - self.E)

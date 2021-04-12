@@ -69,7 +69,7 @@ class GABAa1(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         # data
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay(
             'g', size=self.size, delay_time=delay
         )
@@ -166,11 +166,11 @@ class GABAa2(bp.TwoEndConn):
             'pre_ids', 'post_ids')
         self.size = len(self.pre_ids)
 
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay(
             'g', size = self.size, delay_time = delay
         )
-        self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
+        self.t_last_pre_spike = bp.ops.ones(self.size) * -1e7
 
         self.integral = bp.odeint(
             f=self.derivative, method='exponential_euler'

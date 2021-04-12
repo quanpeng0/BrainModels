@@ -10,7 +10,7 @@ neu_pre = brainmodels.neurons.LIF(size, monitors=['V', 'input', 'spike'])
 neu_pre.V_rest = -65.
 neu_pre.V_th = -50.
 neu_pre.V_reset = -70.
-neu_pre.V = bp.backend.ones(size) * -65.
+neu_pre.V = bp.ops.ones(size) * -65.
 neu_pre.t_refractory = 0.
 neu_post = brainmodels.neurons.LIF(size, monitors=['V', 'input', 'spike'])
 

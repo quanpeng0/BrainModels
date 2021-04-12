@@ -103,20 +103,20 @@ class GABAb1(bp.TwoEndConn):
 
         self.conn = conn(pre.size, post.size)
         self.conn_mat = self.conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
-        self.R = bp.backend.zeros(self.size)
-        self.G = bp.backend.zeros(self.size)
-        self.s = bp.backend.zeros(self.size)
+        self.R = bp.ops.zeros(self.size)
+        self.G = bp.ops.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
-        self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
+        self.t_last_pre_spike = bp.ops.ones(self.size) * -1e7
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
         super(GABAb1, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        spike = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
+        spike = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.t_last_pre_spike = bp.ops.where(spike, _t, self.t_last_pre_spike)
         TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
         self.G, self.R = self.integral(
             self.G, self.R, _t,
@@ -124,7 +124,7 @@ class GABAb1(bp.TwoEndConn):
             self.k2, self.k4, TT)
         self.s = self.G ** 4 / (self.G ** 4 + self.kd)
         self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
+        self.post.input -= bp.ops.sum(self.g.pull(), 0) * (self.post.V - self.E)
 
 
 class GABAb2(bp.TwoEndConn):
@@ -244,22 +244,22 @@ class GABAb2(bp.TwoEndConn):
         # conns
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # vars
-        self.D = bp.backend.zeros(self.size)
-        self.R = bp.backend.zeros(self.size)
-        self.G = bp.backend.zeros(self.size)
-        self.s = bp.backend.zeros(self.size)
+        self.D = bp.ops.zeros(self.size)
+        self.R = bp.ops.zeros(self.size)
+        self.G = bp.ops.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
-        self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
+        self.t_last_pre_spike = bp.ops.ones(self.size) * -1e7
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
         super(GABAb2, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        spike = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
+        spike = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.t_last_pre_spike = bp.ops.where(spike, _t, self.t_last_pre_spike)
         TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
         self.R, self.D, self.G = self.integral(
             self.R, self.D, self.G, _t,
@@ -267,4 +267,4 @@ class GABAb2(bp.TwoEndConn):
             self.k4, self.k5, self.k6)
         self.s = (self.G ** 4 / (self.G ** 4 + self.kd))
         self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), axis=0) * (self.post.V - self.E)
+        self.post.input -= bp.ops.sum(self.g.pull(), axis=0) * (self.post.V - self.E)
