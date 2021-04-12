@@ -66,7 +66,7 @@ class BCM(bp.TwoEndConn):
         self.lr = lr
         self.w_max = w_max
         self.w_min = w_min
-        self.dt = bp.ops._dt
+        self.dt = bp.backend._dt
 
         # connections
         self.conn = conn(pre.size, post.size)

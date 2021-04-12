@@ -2,9 +2,9 @@ import brainpy as bp
 import brainmodels
 import matplotlib.pyplot as plt
 
-print(bp.__version__)
-
-brainmodels.set_backend(backend='numpy')
+backend = 'numpy'
+bp.backend.set(backend=backend)
+brainmodels.set_backend(backend=backend)
 
 neu1 = brainmodels.neurons.LIF(1, monitors=['V'])
 neu2 = brainmodels.neurons.LIF(1, monitors=['V'])

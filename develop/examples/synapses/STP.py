@@ -2,7 +2,9 @@ import brainpy as bp
 import brainmodels as bm
 import matplotlib.pyplot as plt
 
-bp.backend.set(backend='numpy', dt=0.01)
+backend = 'numpy'
+bp.backend.set(backend=backend, dt=.01)
+bm.set_backend(backend=backend)
 
 # STD
 # U = 0.55

@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import brainpy as bp
 import brainmodels
 
-dt = 0.02
-bp.backend.set(backend='numba', dt=dt)
+backend = 'numba'
+bp.backend.set(backend=backend, dt=.02)
+brainmodels.set_backend(backend=backend)
 
 # Set pre & post NeuGroup
 pre = brainmodels.neurons.LIF(10, monitors=['V', 'input', 'spike'])
@@ -22,7 +23,7 @@ net.run(duration=duration, inputs=(pre, 'input', current), report=True)
 
 # Figure
 ts = net.ts
-plt.plot(ts, syn.mon.s[:, 0, 0], label='s')
+plt.plot(ts, syn.mon.s[:, 0], label='s')
 plt.ylabel('Conductance (µmhos)')
 plt.xlabel('Time (ms)')
 plt.legend()

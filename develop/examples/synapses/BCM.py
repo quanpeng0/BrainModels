@@ -2,7 +2,9 @@ import brainpy as bp
 import matplotlib.pyplot as plt
 import brainmodels
 
-bp.backend.set(backend='numpy', dt=.02)
+backend = 'numpy'
+bp.backend.set(backend=backend, dt=.02)
+brainmodels.set_backend(backend=backend)
 
 
 class neu(bp.NeuGroup):
@@ -10,7 +12,8 @@ class neu(bp.NeuGroup):
 
     @staticmethod
     def integral(r, t, I, tau):
-        return -r / tau + I
+        dr = -r / tau + I
+        return dr
 
     def __init__(self, size, tau=10., **kwargs):
         self.tau = tau
@@ -36,11 +39,11 @@ group1, duration = bp.inputs.constant_current(([1.5, 1], [0, 1]) * 20)
 group2, duration = bp.inputs.constant_current(([0, 1], [1., 1]) * 20)
 
 group1 = bp.ops.vstack((
-                    (group1,)*10))
+        (group1,) * 10))
 
 group2 = bp.ops.vstack((
-                    (group2,)*10
-                    ))
+        (group2,) * 10
+))
 input_r = bp.ops.vstack((group1, group2))
 
 pre = neu(n_pre, monitors=['r'])
