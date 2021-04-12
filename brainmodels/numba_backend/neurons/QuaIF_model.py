@@ -129,5 +129,5 @@ class QuaIF(bp.NeuGroup):
                     self.t_last_spike[i] = _t
                 self.V[i] = V
             self.spike[i] = spike
-            self.refractory[i] = refractory
+            self.refractory[i] = refractory or spike
             self.input[i] = 0.  # reset input here or it will be brought to next step

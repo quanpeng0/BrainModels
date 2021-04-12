@@ -9,67 +9,58 @@ __all__ = [
 
 
 class LIF(bp.NeuGroup):
-    """Leaky Integrate-and-Fire neuron model.
+    """
+    Leaky Integrate-and-Fire neuron model.
 
-       .. math::
+    .. math::
 
-           \\tau \\frac{d V}{d t}=-(V-V_{rest}) + RI(t)
+        \\tau \\frac{d V}{d t}=-(V-V_{rest}) + RI(t)
 
-       **Neuron Parameters**
+    **Neuron Parameters**
 
-       ============= ============== ======== =========================================
-       **Parameter** **Init Value** **Unit** **Explanation**
-       ------------- -------------- -------- -----------------------------------------
-       V_rest        0.             mV       Resting potential.
+    ============= ============== ======== =========================================
+    **Parameter** **Init Value** **Unit** **Explanation**
+    ------------- -------------- -------- -----------------------------------------
+    V_rest        0.             mV       Resting potential.
 
-       V_reset       -5.            mV       Reset potential after spike.
+    V_reset       -5.            mV       Reset potential after spike.
 
-       V_th          20.            mV       Threshold potential of spike.
+    V_th          20.            mV       Threshold potential of spike.
 
-       R             1.             \        Membrane resistance.
+    R             1.             \        Membrane resistance.
 
-       tau           10.            \        Membrane time constant. Compute by R * C.
+    tau           10.            \        Membrane time constant. Compute by R * C.
 
-       t_refractory  5.             ms       Refractory period length.(ms)
+    t_refractory  5.             ms       Refractory period length.(ms)
+    ============= ============== ======== =========================================
 
-       noise         0.             \        noise.
+    **Neuron Variables**
 
-       mode          'scalar'       \        Data structure of ST members.
-       ============= ============== ======== =========================================
+    An object of neuron class record those variables for each neuron:
 
-       Returns:
-           bp.Neutype: return description of LIF model.
+    ================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
+    V                  0.                Membrane potential.
 
-       **Neuron State**
+    input              0.                External and synaptic input current.
 
-       ST refers to neuron state, members of ST are listed below:
-
-       =============== ================= =========================================================
-       **Member name** **Initial Value** **Explanation**
-       --------------- ----------------- ---------------------------------------------------------
-       V               0.                Membrane potential.
-
-       input           0.                External and synaptic input current.
-
-       spike           0.                Flag to mark whether the neuron is spiking.
+    spike              0.                Flag to mark whether the neuron is spiking.
 
                                          Can be seen as bool.
 
-       refractory      0.                Flag to mark whether the neuron is in refractory period.
+    refractory         0.                Flag to mark whether the neuron is in refractory period.
 
                                          Can be seen as bool.
 
-       t_last_spike    -1e7              Last spike time stamp.
-       =============== ================= =========================================================
+    t_last_spike       -1e7              Last spike time stamp.
+    ================== ================= =========================================================
 
-       Note that all ST members are saved as floating point type in BrainPy,
-       though some of them represent other data types (such as boolean).
-
-       References:
-           .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single
-                  neurons to networks and models of cognition. Cambridge
-                  University Press, 2014.
-       """
+    References:
+        .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single
+               neurons to networks and models of cognition. Cambridge
+               University Press, 2014.
+    """
 
     target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
 
@@ -111,5 +102,5 @@ class LIF(bp.NeuGroup):
                     self.t_last_spike[i] = _t
                 self.V[i] = V
             self.spike[i] = spike
-            self.refractory[i] = refractory
+            self.refractory[i] = refractory or spike
             self.input[i] = 0.

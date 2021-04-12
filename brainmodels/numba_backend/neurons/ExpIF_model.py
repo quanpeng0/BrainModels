@@ -88,7 +88,7 @@ class ExpIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        self.V = bp.ops.zeros(size)
+        self.V = bp.ops.ones(size) * V_rest
         self.input = bp.ops.zeros(size)
         self.spike = bp.ops.zeros(size, dtype = bool)
         self.refractory = bp.ops.zeros(size, dtype = bool)
@@ -112,5 +112,5 @@ class ExpIF(bp.NeuGroup):
                     self.t_last_spike[i] = _t
                 self.V[i] = V
             self.spike[i] = spike
-            self.refractory[i] = refractory
+            self.refractory[i] = refractory or spike
         self.input[:] = 0.

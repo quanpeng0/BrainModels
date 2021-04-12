@@ -138,5 +138,5 @@ class AdExIF(bp.NeuGroup):
                 self.V[i] = V
                 self.w[i] = w
             self.spike[i] = spike
-            self.refractory[i] = refractory
+            self.refractory[i] = refractory or spike
             self.input[i] = 0.  # reset input here or it will be brought to next step

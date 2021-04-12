@@ -4,7 +4,7 @@ import brainmodels
 
 dt = 0.1
 bp.backend.set('numpy', dt=dt)
-neu = brainmodels.neurons.LIF(100, monitors=['V', 'refractory', 'spike'])
+neu = brainmodels.numba_backend.neurons.LIF(100, monitors=['V', 'refractory', 'spike'])
 neu.t_refractory = 5.
 net = bp.Network(neu)
 net.run(duration=200., inputs=(neu, 'input', 21.), report=True)
