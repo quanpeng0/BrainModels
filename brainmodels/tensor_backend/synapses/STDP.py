@@ -117,13 +117,13 @@ class STDP(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.A_s = bp.backend.zeros(self.size)
-        self.A_t = bp.backend.zeros(self.size)
-        self.w = bp.backend.ones(self.size) * 1.
+        self.s = bp.ops.zeros(self.size)
+        self.A_s = bp.ops.zeros(self.size)
+        self.A_t = bp.ops.zeros(self.size)
+        self.w = bp.ops.ones(self.size) * 1.
         self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
@@ -135,19 +135,19 @@ class STDP(bp.TwoEndConn):
                                     _t, self.tau, self.tau_s, self.tau_t)
         w = self.w
 
-        pre_spike_map = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        pre_spike_map = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
         s += w * pre_spike_map
         A_s += self.delta_A_s * pre_spike_map
         w -= A_t * pre_spike_map
 
-        post_spike_map = bp.backend.unsqueeze(self.post.spike, 0) * self.conn_mat
+        post_spike_map = bp.ops.unsqueeze(self.post.spike, 0) * self.conn_mat
         A_t += self.delta_A_t * post_spike_map
         w += A_s * post_spike_map
 
         self.A_s = A_s
         self.A_t = A_t
-        self.w = bp.backend.clip(w, self.w_min, self.w_max)
+        self.w = bp.ops.clip(w, self.w_min, self.w_max)
         self.s = s
 
         self.I_syn.push(self.s)
-        self.post.input += bp.backend.sum(self.I_syn.pull(), axis=0)
+        self.post.input += bp.ops.sum(self.I_syn.pull(), axis=0)

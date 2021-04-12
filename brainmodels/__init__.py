@@ -2,12 +2,12 @@
 
 __version__ = "1.0.1"
 
-
 from . import numba_backend
 from . import tensor_backend
 
 from .tensor_backend import neurons
 from .tensor_backend import synapses
+from .utils import ops_buffer
 
 
 def set_backend(backend):

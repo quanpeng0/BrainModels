@@ -9,12 +9,12 @@ post = bm.neurons.LIF(1, monitors=['spike'])
 
 # pre before post
 duration = 60.
-(I_pre, _) = bp.inputs.constant_current([(0, 5), (30, 15), 
-                                         (0, 5), (30, 15), 
-                                         (0, duration-40)])
-(I_post, _) = bp.inputs.constant_current([(0, 7), (30, 15), 
-                                          (0, 5), (30, 15), 
-                                          (0, duration-7-35)])
+(I_pre, _) = bp.inputs.constant_current([(0, 5), (30, 15),
+                                         (0, 5), (30, 15),
+                                         (0, duration - 40)])
+(I_post, _) = bp.inputs.constant_current([(0, 7), (30, 15),
+                                          (0, 5), (30, 15),
+                                          (0, duration - 7 - 35)])
 
 syn = bm.synapses.STDP(pre=pre, post=post, conn=bp.connect.All2All(), monitors=['s', 'A_s', 'A_t', 'w'])
 net = bp.Network(pre, syn, post)
@@ -28,8 +28,8 @@ plt.plot(net.ts, syn.mon.w[:, 0], label='w')
 plt.legend()
 
 fig.add_subplot(gs[2, 0])
-plt.plot(net.ts, 2*pre.mon.spike[:, 0], label='pre_spike')
-plt.plot(net.ts, 2*post.mon.spike[:, 0], label='post_spike')
+plt.plot(net.ts, 2 * pre.mon.spike[:, 0], label='pre_spike')
+plt.plot(net.ts, 2 * post.mon.spike[:, 0], label='post_spike')
 plt.legend()
 
 fig.add_subplot(gs[1, 0])

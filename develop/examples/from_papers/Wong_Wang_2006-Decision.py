@@ -29,11 +29,11 @@ class Decision(bp.NeuGroup):
         I2 = JAext * I * (1. - coh)
 
         I_syn1 = J_rec * s1 - J_inh * s2 + I_0 + I1
-        r1 = (a * I_syn1 - b) / (1. - bp.backend.exp(-d * (a * I_syn1 - b)))
+        r1 = (a * I_syn1 - b) / (1. - bp.ops.exp(-d * (a * I_syn1 - b)))
         ds1dt = - s1 / tau_s + (1. - s1) * gamma * r1
 
         I_syn2 = J_rec * s2 - J_inh * s1 + I_0 + I2
-        r2 = (a * I_syn2 - b) / (1. - bp.backend.exp(-d * (a * I_syn2 - b)))
+        r2 = (a * I_syn2 - b) / (1. - bp.ops.exp(-d * (a * I_syn2 - b)))
         ds2dt = - s2 / tau_s + (1. - s2) * gamma * r2
 
         return ds1dt, ds2dt
@@ -56,9 +56,9 @@ class Decision(bp.NeuGroup):
         self.d = d
 
         # variables
-        self.s1 = bp.backend.ones(size) * .06
-        self.s2 = bp.backend.ones(size) * .06
-        self.input = bp.backend.zeros(size)
+        self.s1 = bp.ops.ones(size) * .06
+        self.s2 = bp.ops.ones(size) * .06
+        self.input = bp.ops.zeros(size)
 
         self.integral = bp.odeint(f=self.derivative, method='rk4', dt=0.01)
 

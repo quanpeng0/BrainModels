@@ -98,10 +98,10 @@ class STP(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.x = bp.backend.ones(self.size)
-        self.u = bp.backend.zeros(self.size)
-        self.w = bp.backend.ones(self.size)
+        self.s = bp.ops.zeros(self.size)
+        self.x = bp.ops.ones(self.size)
+        self.u = bp.ops.zeros(self.size)
+        self.w = bp.ops.ones(self.size)
         self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='exponential_euler')

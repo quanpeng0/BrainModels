@@ -2,15 +2,16 @@
 
 
 import brainpy as bp
-import brainmodels.numba_backend as bpmodels
+import brainmodels
 
-bp.backend.set('numba', dt=0.01)
+backend = 'numba'
+bp.backend.set(backend=backend, dt=.01)
+brainmodels.set_backend(backend=backend)
 
-group = bpmodels.neurons.HH(100, monitors=['V'], show_code=True)
+group = brainmodels.neurons.HH(100, monitors=['V'])
 
 group.run(200., inputs=('input', 10.), report=True)
 bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
 
 group.run(200., report=True)
 bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
-

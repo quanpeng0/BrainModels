@@ -94,13 +94,13 @@ class STP(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.x = bp.backend.ones(self.size)
-        self.u = bp.backend.zeros(self.size)
-        self.w = bp.backend.ones(self.size)
+        self.s = bp.ops.zeros(self.size)
+        self.x = bp.ops.ones(self.size)
+        self.u = bp.ops.zeros(self.size)
+        self.w = bp.ops.ones(self.size)
         self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
@@ -110,7 +110,7 @@ class STP(bp.TwoEndConn):
     def update(self, _t):
         self.s, u, x = self.integral(self.s, self.u, self.x, _t, self.tau, self.tau_d, self.tau_f)
 
-        pre_spike_map = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        pre_spike_map = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
         u += self.U * (1 - self.u) * pre_spike_map
         self.s += self.w * u * self.x * pre_spike_map
         x -= u * self.x * pre_spike_map
@@ -119,4 +119,4 @@ class STP(bp.TwoEndConn):
         self.x = x
 
         self.I_syn.push(self.s)
-        self.post.input += bp.backend.sum(self.I_syn.pull(), axis=0)
+        self.post.input += bp.ops.sum(self.I_syn.pull(), axis=0)

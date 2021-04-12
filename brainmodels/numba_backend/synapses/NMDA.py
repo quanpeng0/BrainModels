@@ -108,8 +108,8 @@ class NMDA(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.x = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
+        self.x = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
@@ -128,6 +128,6 @@ class NMDA(bp.TwoEndConn):
 
             post_id = self.post_ids[i]
 
-            g_inf = 1 + self.cc_Mg / self.beta * bp.backend.exp(-self.alpha * self.post.V[post_id])
+            g_inf = 1 + self.cc_Mg / self.beta * bp.ops.exp(-self.alpha * self.post.V[post_id])
 
             self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E) / g_inf

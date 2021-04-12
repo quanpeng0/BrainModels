@@ -43,22 +43,22 @@ class Voltage_jump(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.w = bp.backend.ones(self.size) * weight
+        self.s = bp.ops.zeros(self.size)
+        self.w = bp.ops.ones(self.size) * weight
         self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        self.s = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.s = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
 
         self.I_syn.push(self.s * self.w)
 
         if self.post_refractory:
-            refra_map = (1. - bp.backend.unsqueeze(self.post.refractory, 0)) * self.conn_mat
-            self.post.V += bp.backend.sum(self.I_syn.pull() * refra_map, axis=0)
+            refra_map = (1. - bp.ops.unsqueeze(self.post.refractory, 0)) * self.conn_mat
+            self.post.V += bp.ops.sum(self.I_syn.pull() * refra_map, axis=0)
         else:
-            self.post.V += bp.backend.sum(self.I_syn.pull(), axis=0)
+            self.post.V += bp.ops.sum(self.I_syn.pull(), axis=0)

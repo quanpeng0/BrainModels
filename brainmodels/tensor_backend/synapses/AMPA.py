@@ -73,10 +73,10 @@ class AMPA1(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # data
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
         self.int_s = bp.odeint(f=self.derivative, method='exponential_euler')
@@ -84,9 +84,9 @@ class AMPA1(bp.TwoEndConn):
 
     def update(self, _t):
         self.s = self.int_s(self.s, _t, self.tau)
-        self.s += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.s += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
+        self.post.input -= bp.ops.sum(self.g.pull(), 0) * (self.post.V - self.E)
 
 
 class AMPA2(bp.TwoEndConn):
@@ -165,21 +165,21 @@ class AMPA2(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
-        self.t_last_pre_spike = -1e7 * bp.backend.ones(self.size)
+        self.t_last_pre_spike = -1e7 * bp.ops.ones(self.size)
 
         self.int_s = bp.odeint(f=self.derivative, method='exponential_euler')
         super(AMPA2, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        spike = bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        self.t_last_pre_spike = bp.backend.where(spike, _t, self.t_last_pre_spike)
+        spike = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.t_last_pre_spike = bp.ops.where(spike, _t, self.t_last_pre_spike)
         TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
         self.s = self.int_s(self.s, _t, TT, self.alpha, self.beta)
         self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), 0) * (self.post.V - self.E)
+        self.post.input -= bp.ops.sum(self.g.pull(), 0) * (self.post.V - self.E)
 

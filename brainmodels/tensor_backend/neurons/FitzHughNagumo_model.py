@@ -27,10 +27,10 @@ class FitzHughNagumo(bp.NeuGroup):
         self.Vth = Vth
 
         num = bp.size2len(size)
-        self.V = bp.backend.zeros(num)
-        self.w = bp.backend.zeros(num)
-        self.spike = bp.backend.zeros(num, dtype=bool)
-        self.input = bp.backend.zeros(num)
+        self.V = bp.ops.zeros(num)
+        self.w = bp.ops.zeros(num)
+        self.spike = bp.ops.zeros(num, dtype=bool)
+        self.input = bp.ops.zeros(num)
 
         self.integral = bp.odeint(self.derivative)
         super(FitzHughNagumo, self).__init__(size=size, **kwargs)

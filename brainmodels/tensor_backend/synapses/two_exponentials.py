@@ -93,12 +93,12 @@ class Two_exponentials(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.x = bp.backend.zeros(self.size)
-        self.w = bp.backend.ones(self.size) * .2
+        self.s = bp.ops.zeros(self.size)
+        self.x = bp.ops.zeros(self.size)
+        self.w = bp.ops.ones(self.size) * .2
         self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
@@ -107,6 +107,6 @@ class Two_exponentials(bp.TwoEndConn):
 
     def update(self, _t):
         self.s, self.x = self.integral(self.s, self.x, _t, self.tau1, self.tau2)
-        self.x += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.x += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.I_syn.push(self.w * self.s)
-        self.post.input += bp.backend.sum(self.I_syn.pull(), axis=0)
+        self.post.input += bp.ops.sum(self.I_syn.pull(), axis=0)

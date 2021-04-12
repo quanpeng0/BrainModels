@@ -92,16 +92,16 @@ class HH(bp.NeuGroup):
 
     @staticmethod
     def derivative(V, m, h, n, t, C, gNa, ENa, gK, EK, gL, EL, Iext):
-        alpha = 0.1 * (V + 40) / (1 - bp.backend.exp(-(V + 40) / 10))
-        beta = 4.0 * bp.backend.exp(-(V + 65) / 18)
+        alpha = 0.1 * (V + 40) / (1 - bp.ops.exp(-(V + 40) / 10))
+        beta = 4.0 * bp.ops.exp(-(V + 65) / 18)
         dmdt = alpha * (1 - m) - beta * m
 
-        alpha = 0.07 * bp.backend.exp(-(V + 65) / 20.)
-        beta = 1 / (1 + bp.backend.exp(-(V + 35) / 10))
+        alpha = 0.07 * bp.ops.exp(-(V + 65) / 20.)
+        beta = 1 / (1 + bp.ops.exp(-(V + 35) / 10))
         dhdt = alpha * (1 - h) - beta * h
 
-        alpha = 0.01 * (V + 55) / (1 - bp.backend.exp(-(V + 55) / 10))
-        beta = 0.125 * bp.backend.exp(-(V + 65) / 80)
+        alpha = 0.01 * (V + 55) / (1 - bp.ops.exp(-(V + 55) / 10))
+        beta = 0.125 * bp.ops.exp(-(V + 65) / 80)
         dndt = alpha * (1 - n) - beta * n
 
         I_Na = (gNa * m ** 3.0 * h) * (V - ENa)
@@ -125,12 +125,12 @@ class HH(bp.NeuGroup):
 
         # variables
         num = bp.size2len(size)
-        self.V = -65. * bp.backend.ones(num)
-        self.m = 0.5 * bp.backend.ones(num)
-        self.h = 0.6 * bp.backend.ones(num)
-        self.n = 0.32 * bp.backend.ones(num)
-        self.spike = bp.backend.zeros(num, dtype=bool)
-        self.input = bp.backend.zeros(num)
+        self.V = -65. * bp.ops.ones(num)
+        self.m = 0.5 * bp.ops.ones(num)
+        self.h = 0.6 * bp.ops.ones(num)
+        self.n = 0.32 * bp.ops.ones(num)
+        self.spike = bp.ops.zeros(num, dtype=bool)
+        self.input = bp.ops.zeros(num)
 
         # numerical solver
         self.integral = bp.odeint(f=self.derivative, method='exponential_euler')

@@ -104,11 +104,11 @@ class QuaIF(bp.NeuGroup):
 
         # variables
         num = bp.size2len(size)
-        self.V = bp.backend.ones(num) * V_reset
-        self.input = bp.backend.zeros(num)
-        self.spike = bp.backend.zeros(num, dtype=bool)
-        self.refractory = bp.backend.zeros(num, dtype=bool)
-        self.t_last_spike = bp.backend.ones(num) * -1e7
+        self.V = bp.ops.ones(num) * V_reset
+        self.input = bp.ops.zeros(num)
+        self.spike = bp.ops.zeros(num, dtype=bool)
+        self.refractory = bp.ops.zeros(num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(num) * -1e7
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
@@ -118,10 +118,10 @@ class QuaIF(bp.NeuGroup):
         refractory = (_t - self.t_last_spike) <= self.t_refractory
         V = self.integral(self.V, _t, self.input, self.V_rest,
                           self.V_c, self.R, self.tau, self.a_0)
-        V = bp.backend.where(refractory, self.V, V)
+        V = bp.ops.where(refractory, self.V, V)
         spike = self.V_th <= V
-        self.t_last_spike = bp.backend.where(spike, _t, self.t_last_spike)
-        self.V = bp.backend.where(spike, self.V_reset, V)
+        self.t_last_spike = bp.ops.where(spike, _t, self.t_last_spike)
+        self.V = bp.ops.where(spike, self.V_reset, V)
         self.refractory = refractory | spike
         self.input[:] = 0.
         self.spike = spike
