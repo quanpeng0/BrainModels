@@ -26,9 +26,9 @@ class LIF(bp.NeuGroup):
         self.V_th = V_th
         self.tau = tau
 
-        self.V = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype = bool)
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype = bool)
 
         super(LIF, self).__init__(size = size, **kwargs)
 
@@ -62,8 +62,8 @@ class Syn(bp.TwoEndConn):
         self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
         self.size = len(self.pre_ids)
 
-        self.s = bp.backend.zeros(self.size)
-        self.g = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
+        self.g = bp.ops.zeros(self.size)
 
         super(Syn, self).__init__(pre = pre, post = post, **kwargs)
     

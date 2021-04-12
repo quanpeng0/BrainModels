@@ -78,11 +78,11 @@ class LIF(bp.NeuGroup):
         self.tau = tau
         self.t_refractory = t_refractory
 
-        self.V = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype=bool)
-        self.refractory = bp.backend.zeros(size, dtype=bool)
-        self.t_last_spike = bp.backend.ones(size) * -1e7
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype=bool)
+        self.refractory = bp.ops.zeros(size, dtype=bool)
+        self.t_last_spike = bp.ops.ones(size) * -1e7
 
         self.integral = bp.odeint(self.derivative)
         super(LIF, self).__init__(size=size, **kwargs)
@@ -146,11 +146,11 @@ class NMDA(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.x = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
+        self.x = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size,
                                               delay_time=delay)
 
@@ -158,15 +158,15 @@ class NMDA(bp.TwoEndConn):
         super(NMDA, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        self.x += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.x += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.s, self.x = self.integral(self.s, self.x, _t,
                                        self.tau_rise, self.tau, self.a)
 
         self.g.push(self.g_max * self.s)
         g_inf = 1 + self.cc_Mg / self.beta * \
-                bp.backend.exp(-self.alpha * self.post.V)
+                bp.ops.exp(-self.alpha * self.post.V)
         g_inf = 1 / g_inf
-        self.post.input -= bp.backend.sum(self.g.pull(), axis=0) * \
+        self.post.input -= bp.ops.sum(self.g.pull(), axis=0) * \
                            (self.post.V - self.E) * g_inf
 
 
@@ -189,10 +189,10 @@ class AMPA(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # data
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size,
                                               delay_time=delay)
 
@@ -201,9 +201,9 @@ class AMPA(bp.TwoEndConn):
 
     def update(self, _t):
         self.s = self.int_s(self.s, _t, self.tau)
-        self.s += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.s += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), 0) \
+        self.post.input -= bp.ops.sum(self.g.pull(), 0) \
                            * (self.post.V - self.E)
 
 
@@ -227,10 +227,10 @@ class GABAa(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # data
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size,
                                               delay_time=delay)
 
@@ -244,7 +244,7 @@ class GABAa(bp.TwoEndConn):
                 self.s[i] += self.conn_mat[i]
         self.g.push(self.g_max * self.s)
         g = self.g.pull()
-        self.post.input -= bp.backend.sum(g, axis=0) * (self.post.V - self.E)
+        self.post.input -= bp.ops.sum(g, axis=0) * (self.post.V - self.E)
 
 
 # set syn weights (only used in recurrent E connections)
@@ -287,7 +287,7 @@ neu_A.V_th = V_th_E
 neu_A.R = R_E
 neu_A.tau = tau_E
 neu_A.t_refractory = t_refractory_E
-neu_A.V = bp.backend.ones(N_A) * V_rest_E
+neu_A.V = bp.ops.ones(N_A) * V_rest_E
 
 neu_B = LIF(N_B, monitors=['spike', 'input', 'V'])
 neu_B.V_rest = V_rest_E
@@ -296,7 +296,7 @@ neu_B.V_th = V_th_E
 neu_B.R = R_E
 neu_B.tau = tau_E
 neu_B.t_refractory = t_refractory_E
-neu_B.V = bp.backend.ones(N_B) * V_rest_E
+neu_B.V = bp.ops.ones(N_B) * V_rest_E
 
 neu_non = LIF(N_non, monitors=['spike', 'input', 'V'])
 neu_non.V_rest = V_rest_E
@@ -305,7 +305,7 @@ neu_non.V_th = V_th_E
 neu_non.R = R_E
 neu_non.tau = tau_E
 neu_non.t_refractory = t_refractory_E
-neu_non.V = bp.backend.ones(N_non) * V_rest_E
+neu_non.V = bp.ops.ones(N_non) * V_rest_E
 
 # def I neurons/interneurons
 neu_I = LIF(N_I, monitors=['input', 'V'])
@@ -315,7 +315,7 @@ neu_I.V_th = V_th_I
 neu_I.R = R_I
 neu_I.tau = tau_I
 neu_I.t_refractory = t_refractory_I
-neu_I.V = bp.backend.ones(N_I) * V_rest_I
+neu_I.V = bp.ops.ones(N_I) * V_rest_I
 
 # def synapse connections
 ## define E2E conn
@@ -495,7 +495,7 @@ class PoissonInput(bp.NeuGroup):
         self.freqs = freqs
         self.dt = dt
 
-        self.spike = bp.backend.zeros(size, dtype=bool)
+        self.spike = bp.ops.zeros(size, dtype=bool)
 
         super(PoissonInput, self).__init__(size=size, **kwargs)
 
@@ -558,7 +558,7 @@ class PoissonStim(bp.NeuGroup):
 
         self.freq = 0.
         self.t_last_change_freq = -1e7
-        self.spike = bp.backend.zeros(size, dtype=bool)
+        self.spike = bp.ops.zeros(size, dtype=bool)
 
         super(PoissonStim, self).__init__(size=size, **kwargs)
 

@@ -84,11 +84,11 @@ class LIF(bp.NeuGroup):
         self.tau = tau
         self.t_refractory = t_refractory
 
-        self.V = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype=bool)
-        self.refractory = bp.backend.zeros(size, dtype=bool)
-        self.t_last_spike = bp.backend.ones(size) * -1e7
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype=bool)
+        self.refractory = bp.ops.zeros(size, dtype=bool)
+        self.t_last_spike = bp.ops.ones(size) * -1e7
 
         self.integral = bp.odeint(self.derivative)
         super(LIF, self).__init__(size=size, **kwargs)
@@ -120,7 +120,7 @@ class PoissonInput(bp.NeuGroup):
         self.freqs = freqs
         self.dt = dt
 
-        self.spike = bp.backend.zeros(size, dtype=bool)
+        self.spike = bp.ops.zeros(size, dtype=bool)
 
         super(PoissonInput, self).__init__(size=size, **kwargs)
 
@@ -181,11 +181,11 @@ class NMDA(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.x = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
+        self.x = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size,
                                               delay_time=delay)
 
@@ -193,15 +193,15 @@ class NMDA(bp.TwoEndConn):
         super(NMDA, self).__init__(pre=pre, post=post, **kwargs)
 
     def update(self, _t):
-        self.x += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.x += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.s, self.x = self.integral(self.s, self.x, _t,
                                        self.tau_rise, self.tau, self.a)
 
         self.g.push(self.g_max * self.s)
         g_inf = 1 + self.cc_Mg / self.beta * \
-                bp.backend.exp(-self.alpha * self.post.V)
+                bp.ops.exp(-self.alpha * self.post.V)
         g_inf = 1 / g_inf
-        self.post.input -= bp.backend.sum(self.g.pull(), axis=0) * \
+        self.post.input -= bp.ops.sum(self.g.pull(), axis=0) * \
                            (self.post.V - self.E) * g_inf
 
 
@@ -224,10 +224,10 @@ class AMPA1(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # data
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size,
                                               delay_time=delay)
 
@@ -236,9 +236,9 @@ class AMPA1(bp.TwoEndConn):
 
     def update(self, _t):
         self.s = self.int_s(self.s, _t, self.tau)
-        self.s += bp.backend.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        self.s += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
         self.g.push(self.g_max * self.s)
-        self.post.input -= bp.backend.sum(self.g.pull(), 0) \
+        self.post.input -= bp.ops.sum(self.g.pull(), 0) \
                            * (self.post.V - self.E)
 
 
@@ -262,10 +262,10 @@ class GABAa1(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # data
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size,
                                               delay_time=delay)
 
@@ -279,7 +279,7 @@ class GABAa1(bp.TwoEndConn):
                 self.s[i] += self.conn_mat[i]
         self.g.push(self.g_max * self.s)
         g = self.g.pull()
-        self.post.input -= bp.backend.sum(g, axis=0) * (self.post.V - self.E)
+        self.post.input -= bp.ops.sum(g, axis=0) * (self.post.V - self.E)
 
 
 ## set stimulus params
