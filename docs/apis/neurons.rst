@@ -4,8 +4,6 @@ brainmodels.neurons
 
 .. automodule:: brainmodels.neurons
 
-
-
 .. autosummary::
     :toctree: _autosummary
 

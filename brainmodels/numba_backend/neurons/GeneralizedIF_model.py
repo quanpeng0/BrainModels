@@ -99,7 +99,7 @@ class GeneralizedIF(bp.NeuGroup):
     I2                 0.                Internal current 2.
 
     t_last_spike       -1e7              Last spike time stamp.
-    ================== ================= ==============================================
+    ================== ================= =========================================================
 
     References:
         .. [1] Mihalaş, Ştefan, and Ernst Niebur. "A generalized linear 

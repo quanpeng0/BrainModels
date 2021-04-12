@@ -32,6 +32,18 @@ brainmodels.synapses
 .. autoclass:: NMDA
    :members:
 
+.. autoclass:: GABAa1
+   :members:
+
+.. autoclass:: GABAa2
+   :members:
+
+.. autoclass:: GABAb1
+   :members:
+
+.. autoclass::GABAb2
+   :members:
+
 .. autoclass:: Alpha
    :members:
 

@@ -37,9 +37,9 @@ class ResonateandFire(bp.NeuGroup):
 
     **Neuron Parameters**
 
-    ============= ============== ======== ========================================================
+    ============= ============== ======== =========================================================
     **Parameter** **Init Value** **Unit** **Explanation**
-    ------------- -------------- -------- --------------------------------------------------------
+    ------------- -------------- -------- ---------------------------------------------------------
     b             -1.            \        Parameter, refers to the rate of attrsction to the rest.
 
     omega         10.            \        Parameter. refers to the frequency of the oscillations.
@@ -49,7 +49,7 @@ class ResonateandFire(bp.NeuGroup):
     V_reset       1.             \        Reset value for voltage-like variable after spike.
 
     x_reset       0.             \        Reset value for current-like variable after spike.
-    ============= ============== ======== ========================================================
+    ============= ============== ======== =========================================================
 
     **Neuron Variables**    
 
@@ -69,7 +69,7 @@ class ResonateandFire(bp.NeuGroup):
                                          Can be seen as bool.
 
     t_last_spike       -1e7              Last spike time stamp.
-    ================== ================= ==============================================
+    ================== ================= =========================================================
 
     References:
         .. [1] Izhikevich, Eugene M. "Resonate-and-fire neurons." 
