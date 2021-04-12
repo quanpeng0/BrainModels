@@ -113,12 +113,12 @@ class AdQuaIF(bp.NeuGroup):
 
         # variables
         num = bp.size2len(size)
-        self.V = bp.backend.ones(num) * V_reset
-        self.w = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(num)
-        self.spike = bp.backend.zeros(num, dtype=bool)
-        self.refractory = bp.backend.zeros(num, dtype=bool)
-        self.t_last_spike = bp.backend.ones(num) * -1e7
+        self.V = bp.ops.ones(num) * V_reset
+        self.w = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(num)
+        self.spike = bp.ops.zeros(num, dtype=bool)
+        self.refractory = bp.ops.zeros(num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(num) * -1e7
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 

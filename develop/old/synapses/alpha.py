@@ -84,10 +84,10 @@ class Alpha(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.x = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
+        self.x = bp.ops.zeros(self.size)
         
-        self.w = bp.backend.ones(self.size) * .2
+        self.w = bp.ops.ones(self.size) * .2
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
         super(Alpha, self).__init__(pre=pre, post=post, **kwargs)

@@ -88,7 +88,7 @@ class AdExIF(bp.NeuGroup):
     @staticmethod
     def derivative(V, w, t, I_ext, V_rest, delta_T, V_T, R, tau, tau_w, a):
         dwdt = (a * (V - V_rest) - w) / tau_w
-        dVdt = (- (V - V_rest) + delta_T * bp.backend.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau
+        dVdt = (- (V - V_rest) + delta_T * bp.ops.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau
         return dVdt, dwdt
 
     def __init__(self, size, V_rest=-65., V_reset=-68.,
@@ -111,12 +111,12 @@ class AdExIF(bp.NeuGroup):
 
         # variables
         num = bp.size2len(size)
-        self.V = bp.backend.ones(num) * V_reset
-        self.w = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(num)
-        self.spike = bp.backend.zeros(num, dtype=bool)
-        self.refractory = bp.backend.zeros(num, dtype=bool)
-        self.t_last_spike = bp.backend.ones(num) * -1e7
+        self.V = bp.ops.ones(num) * V_reset
+        self.w = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(num)
+        self.spike = bp.ops.zeros(num, dtype=bool)
+        self.refractory = bp.ops.zeros(num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(num) * -1e7
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 

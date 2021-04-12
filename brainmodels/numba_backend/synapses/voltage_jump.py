@@ -47,8 +47,8 @@ class Voltage_jump(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.w = bp.backend.ones(self.size) * weight
+        self.s = bp.ops.zeros(self.size)
+        self.w = bp.ops.ones(self.size) * weight
         self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
         super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)

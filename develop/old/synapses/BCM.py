@@ -61,16 +61,16 @@ class BCM(bp.TwoEndConn):
         self.lr = lr
         self.w_max = w_max
         self.w_min = w_min
-        self.dt = bp.backend._dt
+        self.dt = bp.ops._dt
 
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # variables
-        self.w = bp.backend.ones(self.size)
-        self.sum_post_r = bp.backend.zeros(post.size[0])
+        self.w = bp.ops.ones(self.size)
+        self.sum_post_r = bp.ops.zeros(post.size[0])
 
         super(BCM, self).__init__(pre=pre, post=post, **kwargs)
 

@@ -107,10 +107,10 @@ class GABAb1_vec(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         #data
-        self.R = bp.backend.zeros(self.size)
-        self.G = bp.backend.zeros(self.size)
-        self.t_last_pre_spike = bp.backend.ones(self.size) * -1e7
-        self.s = bp.backend.zeros(self.size)
+        self.R = bp.ops.zeros(self.size)
+        self.G = bp.ops.zeros(self.size)
+        self.t_last_pre_spike = bp.ops.ones(self.size) * -1e7
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
         super(GABAb1_vec, self).__init__(pre = pre, post = post, **kwargs)
@@ -154,11 +154,11 @@ class LIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        self.V = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size)
-        self.refractory = bp.backend.zeros(size)
-        self.t_last_spike = bp.backend.ones(size) * -1e7
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size)
+        self.refractory = bp.ops.zeros(size)
+        self.t_last_spike = bp.ops.ones(size) * -1e7
 
         super(LIF, self).__init__(size = size, **kwargs)
 
@@ -192,11 +192,11 @@ if __name__ == "__main__":
     neu_pre = LIF(size, monitors = ['V', 'input', 'spike'])
     neu_pre.V_rest = -65.
     neu_pre.V_th = -50.
-    neu_pre.V = bp.backend.ones(size) * -65.
+    neu_pre.V = bp.ops.ones(size) * -65.
     neu_pre.t_refractory = 0.
     neu_post = LIF(size, monitors = ['V', 'input', 'spike'])
     neu_post.V_rest = -65.
-    neu_post.V = bp.backend.ones(size) * -65.
+    neu_post.V = bp.ops.ones(size) * -65.
 
     syn_GABAa = GABAb1_vec(pre = neu_pre, post = neu_post, 
                            conn = bp.connect.One2One(),

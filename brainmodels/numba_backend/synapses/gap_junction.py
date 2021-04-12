@@ -52,7 +52,7 @@ class Gap_junction(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         # variables
-        self.w = bp.backend.ones(self.size)
+        self.w = bp.ops.ones(self.size)
 
         super(Gap_junction, self).__init__(pre=pre, post=post, **kwargs)
 
@@ -111,7 +111,7 @@ class Gap_junction_lif(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         # variables
-        self.w = bp.backend.ones(self.size)
+        self.w = bp.ops.ones(self.size)
         self.spikelet = self.register_constant_delay('spikelet', size=self.size, delay_time=self.delay)
 
         super(Gap_junction_lif, self).__init__(pre=pre, post=post, **kwargs)

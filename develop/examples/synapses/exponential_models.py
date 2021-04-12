@@ -8,9 +8,9 @@ bp.backend.set(backend='numba', dt=dt)
 
 # Set pre & post NeuGroup
 pre = brainmodels.neurons.LIF(10, monitors=['V', 'input', 'spike'])
-pre.V = -65. * bp.backend.ones(pre.V.shape)
+pre.V = -65. * bp.ops.ones(pre.V.shape)
 post = brainmodels.neurons.LIF(10, monitors=['V', 'input', 'spike'])
-post.V = -65. * bp.backend.ones(pre.V.shape)
+post.V = -65. * bp.ops.ones(pre.V.shape)
 
 # Set synapse connection & network
 syn = brainmodels.synapses.Exponential(pre=pre, post=post,

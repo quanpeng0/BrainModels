@@ -24,7 +24,7 @@ class Oja(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         #data
-        self.w = bp.backend.ones(self.size) * 0.05
+        self.w = bp.ops.ones(self.size) * 0.05
 
         super(Oja, self).__init__(pre = pre, post = post, **kwargs)
     
@@ -34,7 +34,7 @@ class Oja(bp.TwoEndConn):
         return gamma * (r_post * r_pre - r_post * r_post * w)
 
     def update(self, _t):
-        post_r = bp.backend.zeros(self.post.size[0])
+        post_r = bp.ops.zeros(self.post.size[0])
         for i in prange(self.size):
             pre_id = self.pre_ids[i]
             post_id = self.post_ids[i]
@@ -51,7 +51,7 @@ class fr_neu(bp.NeuGroup):
     target_backend = 'general'
 
     def __init__(self, size, **kwargs):
-        self.r = bp.backend.zeros(size)
+        self.r = bp.ops.zeros(size)
         super(fr_neu, self).__init__(size = size, **kwargs)
     
     def update(self, _t):

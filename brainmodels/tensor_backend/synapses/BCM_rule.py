@@ -66,16 +66,16 @@ class BCM(bp.TwoEndConn):
         self.lr = lr
         self.w_max = w_max
         self.w_min = w_min
-        self.dt = bp.backend._dt
+        self.dt = bp.ops._dt
 
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # variables
-        self.w = bp.backend.ones(self.size)
-        self.sum_post_r = bp.backend.zeros(post.size[0])
+        self.w = bp.ops.ones(self.size)
+        self.sum_post_r = bp.ops.zeros(post.size[0])
 
         self.int_w = bp.odeint(f=self.derivative, method='rk4')
 
@@ -89,13 +89,13 @@ class BCM(bp.TwoEndConn):
         # resize to matrix
         w = self.w * self.conn_mat
         dim = self.size
-        r_th = bp.backend.vstack((r_th,) * dim[0])
-        r_post = bp.backend.vstack((self.post.r,) * dim[0])
-        r_pre = bp.backend.vstack((self.pre.r,) * dim[1]).T
+        r_th = bp.ops.vstack((r_th,) * dim[0])
+        r_post = bp.ops.vstack((self.post.r,) * dim[0])
+        r_pre = bp.ops.vstack((self.pre.r,) * dim[1]).T
 
         # update w
         w = self.int_w(w, _t, self.lr, r_pre, r_post, r_th)
-        self.w = bp.backend.clip(w, self.w_min, self.w_max)
+        self.w = bp.ops.clip(w, self.w_min, self.w_max)
 
         # output
-        self.post.r = bp.backend.sum(w.T * self.pre.r, axis=1)
+        self.post.r = bp.ops.sum(w.T * self.pre.r, axis=1)

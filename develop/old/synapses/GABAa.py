@@ -71,7 +71,7 @@ class GABAa1_vec(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         # data
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
         super(GABAa1_vec, self).__init__(pre=pre, post=post, **kwargs)
@@ -106,10 +106,10 @@ class GABAa1_mat(bp.TwoEndConn):
         # connections
         self.conn = conn(pre.size, post.size)
         self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.backend.shape(self.conn_mat)
+        self.size = bp.ops.shape(self.conn_mat)
 
         # data
-        self.s = bp.backend.zeros(self.size)
+        self.s = bp.ops.zeros(self.size)
         self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
         super(GABAa1_mat, self).__init__(pre=pre, post=post, **kwargs)
@@ -126,7 +126,7 @@ class GABAa1_mat(bp.TwoEndConn):
                 self.s[i] += self.conn_mat[i]
         self.g.push(self.g_max * self.s)
         g=self.g.pull()
-        self.post.input -= bp.backend.sum(g, axis=0) * (self.post.V - self.E)
+        self.post.input -= bp.ops.sum(g, axis=0) * (self.post.V - self.E)
 
 
 class LIF(bp.NeuGroup):
@@ -145,11 +145,11 @@ class LIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        self.V = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size)
-        self.refractory = bp.backend.zeros(size)
-        self.t_last_spike = bp.backend.ones(size) * -1e7
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size)
+        self.refractory = bp.ops.zeros(size)
+        self.t_last_spike = bp.ops.ones(size) * -1e7
 
         super(LIF, self).__init__(size = size, **kwargs)
 
@@ -187,11 +187,11 @@ if __name__ == "__main__":
     neu_pre = LIF(size, monitors = ['V', 'input', 'spike'])
     neu_pre.V_rest = -65.
     neu_pre.V_th = -50.
-    neu_pre.V = bp.backend.ones(size) * -65.
+    neu_pre.V = bp.ops.ones(size) * -65.
     neu_pre.t_refractory = 0.
     neu_post = LIF(size, monitors = ['V', 'input', 'spike'])
     neu_post.V_rest = -65.
-    neu_post.V = bp.backend.ones(size) * -65.
+    neu_post.V = bp.ops.ones(size) * -65.
 
     syn_GABAa = GABAa1_mat(pre = neu_pre, post = neu_post, 
                            conn = bp.connect.One2One(),

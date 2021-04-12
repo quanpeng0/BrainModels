@@ -70,8 +70,8 @@ class Exponential(bp.TwoEndConn):
         self.size = len(self.pre_ids)
 
         # variables
-        self.s = bp.backend.zeros(self.size)
-        self.w = bp.backend.ones(self.size) * .1
+        self.s = bp.ops.zeros(self.size)
+        self.w = bp.ops.ones(self.size) * .1
         self.out = self.register_constant_delay('out', size=self.size, delay_time=delay)
 
         super(Exponential, self).__init__(pre=pre, post=post, **kwargs)
