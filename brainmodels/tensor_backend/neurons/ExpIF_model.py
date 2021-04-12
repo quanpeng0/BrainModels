@@ -66,7 +66,7 @@ class ExpIF(bp.NeuGroup):
     @staticmethod
     def derivative(V, t, I_ext, V_rest, delta_T, V_T, R, tau):
         dvdt = (- V + V_rest \
-                + delta_T * bp.backend.exp((V - V_T) / delta_T) + R * I_ext) \
+                + delta_T * bp.ops.exp((V - V_T) / delta_T) + R * I_ext) \
                / tau
         return dvdt
 
@@ -86,11 +86,11 @@ class ExpIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        self.V = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype=bool)
-        self.refractory = bp.backend.zeros(size, dtype=bool)
-        self.t_last_spike = bp.backend.ones(size) * -1e7
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype=bool)
+        self.refractory = bp.ops.zeros(size, dtype=bool)
+        self.t_last_spike = bp.ops.ones(size) * -1e7
 
         self.integral = bp.odeint(self.derivative)
         super(ExpIF, self).__init__(size=size, **kwargs)
@@ -98,10 +98,10 @@ class ExpIF(bp.NeuGroup):
     def update(self, _t):
         refractory = (_t - self.t_last_spike) <= self.t_refractory
         V = self.integral(self.V, _t, self.input, self.V_rest, self.delta_T, self.V_T, self.R, self.tau)
-        V = bp.backend.where(refractory, self.V, V)
+        V = bp.ops.where(refractory, self.V, V)
         spike = self.V_th <= V
-        self.t_last_spike = bp.backend.where(spike, _t, self.t_last_spike)
-        self.V = bp.backend.where(spike, self.V_reset, V)
+        self.t_last_spike = bp.ops.where(spike, _t, self.t_last_spike)
+        self.V = bp.ops.where(spike, self.V_reset, V)
         self.refractory = refractory | spike
         self.input[:] = 0.
         self.spike = spike

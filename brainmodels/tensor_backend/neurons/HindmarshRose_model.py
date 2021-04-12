@@ -2,9 +2,6 @@
 
 import brainpy as bp
 
-bp.backend.set('numba', dt=0.02)
-
-
 class HindmarshRose(bp.NeuGroup):
     """
     Hindmarsh-Rose neuron model.
@@ -100,10 +97,10 @@ class HindmarshRose(bp.NeuGroup):
         self.V_rest = V_rest
 
         # variables
-        self.z = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.V = bp.backend.ones(size) * -1.6
-        self.y = bp.backend.ones(size) * -10.
+        self.z = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.V = bp.ops.ones(size) * -1.6
+        self.y = bp.ops.ones(size) * -10.
 
         self.integral = bp.odeint(self.derivative)
         super(HindmarshRose, self).__init__(size=size, **kwargs)

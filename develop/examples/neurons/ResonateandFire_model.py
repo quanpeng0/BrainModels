@@ -2,6 +2,7 @@
 import brainpy as bp
 import brainmodels
 
+bp.backend.set('numpy', dt=0.002)
 group = brainmodels.neurons.ResonateandFire(1, monitors=['x', 'V'], show_code=False)
 current = bp.inputs.spike_current(points=[0.0], lengths=0.002,
                                   sizes=-2., duration=20.)

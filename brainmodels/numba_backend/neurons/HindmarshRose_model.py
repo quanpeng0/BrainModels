@@ -106,11 +106,11 @@ class HindmarshRose(bp.NeuGroup):
 
         # variables
         num = bp.size2len(size)
-        self.z = bp.backend.zeros(num)
-        self.input = bp.backend.zeros(num)
-        self.V = bp.backend.ones(num) * -1.6
-        self.y = bp.backend.ones(num) * -10.
-        self.spike = bp.backend.zeros(num, dtype=bool)
+        self.z = bp.ops.zeros(num)
+        self.input = bp.ops.zeros(num)
+        self.V = bp.ops.ones(num) * -1.6
+        self.y = bp.ops.ones(num) * -10.
+        self.spike = bp.ops.zeros(num, dtype=bool)
 
         self.integral = bp.odeint(f=self.derivative)
         super(HindmarshRose, self).__init__(size=size, **kwargs)

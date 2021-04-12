@@ -3,6 +3,7 @@
 import brainpy as bp
 import brainmodels
 
+bp.backend.set('numba', dt=0.02)
 mode = 'irregular_bursting'
 param = {'quiescence': [1.0, 2.0],  # a
          'spiking': [3.5, 5.0],  # c

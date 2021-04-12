@@ -130,7 +130,7 @@ def run_GIF_with_mode(mode='tonic_spiking', size=10.,
             if member_type == 0:
                 exec("neu.%s = %f" % (k, v))
             else:
-                exec("neu.%s = bp.backend.ones(size) * %f" % (k, v))
+                exec("neu.%s = bp.ops.ones(size) * %f" % (k, v))
     neu.run(dur, inputs=('input', I_ext), report=False)
 
     ts = neu.mon.ts

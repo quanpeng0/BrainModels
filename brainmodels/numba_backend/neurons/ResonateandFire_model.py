@@ -96,10 +96,10 @@ class ResonateandFire(bp.NeuGroup):
         self.x_reset = x_reset
 
         #variables
-        self.V = bp.backend.zeros(size)
-        self.x = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype = bool)
+        self.V = bp.ops.zeros(size)
+        self.x = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype = bool)
 
         self.integral = bp.odeint(self.derivative)
         super(ResonateandFire, self).__init__(size = size, **kwargs)

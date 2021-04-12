@@ -66,7 +66,7 @@ class ExpIF(bp.NeuGroup):
     @staticmethod
     def derivative(V, t, I_ext, V_rest, delta_T, V_T, R, tau):  # integrate u(t)
         dvdt = (- (V - V_rest) \
-                + delta_T * bp.backend.exp((V - V_T) / delta_T) \
+                + delta_T * bp.ops.exp((V - V_T) / delta_T) \
                 + R * I_ext) \
                / tau
         return dvdt
@@ -88,11 +88,11 @@ class ExpIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        self.V = bp.backend.zeros(size)
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype = bool)
-        self.refractory = bp.backend.zeros(size, dtype = bool)
-        self.t_last_spike = bp.backend.ones(size) * -1e7
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype = bool)
+        self.refractory = bp.ops.zeros(size, dtype = bool)
+        self.t_last_spike = bp.ops.ones(size) * -1e7
 
         self.integral = bp.odeint(self.derivative)
         super(ExpIF, self).__init__(size = size, **kwargs)

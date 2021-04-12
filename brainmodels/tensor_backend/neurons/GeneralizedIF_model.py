@@ -140,12 +140,12 @@ class GeneralizedIF(bp.NeuGroup):
         self.A2 = A2
 
         # vars
-        self.input = bp.backend.zeros(size)
-        self.spike = bp.backend.zeros(size, dtype=bool)
-        self.I1 = bp.backend.zeros(size)
-        self.I2 = bp.backend.zeros(size)
-        self.V = bp.backend.ones(size) * -70.
-        self.V_th = bp.backend.ones(size) * -50.
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype=bool)
+        self.I1 = bp.ops.zeros(size)
+        self.I2 = bp.ops.zeros(size)
+        self.V = bp.ops.ones(size) * -70.
+        self.V_th = bp.ops.ones(size) * -50.
 
         self.integral = bp.odeint(self.derivative)
         super(GeneralizedIF, self).__init__(size=size, **kwargs)
