@@ -9,19 +9,17 @@ brainmodels.neurons
 .. autosummary::
     :toctree: _autosummary
 
-    FitzHughNagumo
-    HindmarshRose
     HH
     LIF
-    AdExIF
-    AdQuaIF
     QuaIF
+    ExpIF
+    AdQuaIF
+    AdExIF
+    GeneralizedIF
+    ResonateandFire
+    HindmarshRose
+    FitzHughNagumo
 
-.. autoclass:: FitzHughNagumo
-   :members:
-
-.. autoclass:: HindmarshRose
-   :members:
 
 .. autoclass:: HH
    :members:
@@ -29,12 +27,27 @@ brainmodels.neurons
 .. autoclass:: LIF
    :members:
 
-.. autoclass:: AdExLIF
-   :members:
-
-.. autoclass:: AdQuaLIF
-   :members:
-
 .. autoclass:: QuaLIF
+   :members:
+
+.. autoclass:: ExpIF
+   :members:
+
+.. autoclass:: AdQuaIF
+   :members:
+
+.. autoclass:: AdExIF
+   :members:
+
+.. autoclass:: GeneralizedIF
+   :members:
+
+.. autoclass:: ResonateandFire
+   :members:
+
+.. autoclass:: HindmarshRose
+   :members:
+
+.. autoclass:: FitzHughNagumo
    :members:
 

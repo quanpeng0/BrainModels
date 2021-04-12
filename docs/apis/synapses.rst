@@ -10,6 +10,10 @@ brainmodels.synapses
     AMPA1
     AMPA2
     NMDA
+    GABAa1
+    GABAa2
+    GABAb1
+    GABAb2
     Alpha
     Exponential
     Two_exponentials
