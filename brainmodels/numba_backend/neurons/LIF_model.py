@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import brainpy as bp
 from numba import prange
 
@@ -100,7 +99,7 @@ class LIF(bp.NeuGroup):
         self.integral = bp.odeint(self.derivative)
         super(LIF, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):            
+    def update(self, _t):
         for i in prange(self.size[0]):
             spike = 0.
             refractory = (_t - self.t_last_spike[i] <= self.t_refractory)

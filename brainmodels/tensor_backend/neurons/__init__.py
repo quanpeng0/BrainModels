@@ -10,3 +10,4 @@ from .AdExIF_model import *
 from .AdQuaIF_model import *
 from .QuaIF_model import *
 from .GeneralizedIF_model import *
+from .MorrisLecar import *
