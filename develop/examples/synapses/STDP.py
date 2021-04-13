@@ -2,7 +2,9 @@ import brainmodels as bm
 import brainpy as bp
 import matplotlib.pyplot as plt
 
-bp.backend.set(backend='numpy', dt=0.1)
+backend = 'numba'
+bp.backend.set(backend=backend, dt=.1)
+bm.set_backend(backend=backend)
 
 pre = bm.neurons.LIF(1, monitors=['spike'])
 post = bm.neurons.LIF(1, monitors=['spike'])

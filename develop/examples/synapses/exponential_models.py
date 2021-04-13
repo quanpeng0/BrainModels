@@ -8,9 +8,9 @@ bp.backend.set(backend=backend, dt=.02)
 brainmodels.set_backend(backend=backend)
 
 # Set pre & post NeuGroup
-pre = brainmodels.neurons.LIF(10, monitors=['V', 'input', 'spike'])
+pre = brainmodels.neurons.LIF(1, monitors=['V', 'input', 'spike'])
 pre.V = -65. * bp.ops.ones(pre.V.shape)
-post = brainmodels.neurons.LIF(10, monitors=['V', 'input', 'spike'])
+post = brainmodels.neurons.LIF(1, monitors=['V', 'input', 'spike'])
 post.V = -65. * bp.ops.ones(pre.V.shape)
 
 # Set synapse connection & network

@@ -55,8 +55,12 @@ bcm = brainmodels.synapses.BCM(pre=pre, post=post,
 net = bp.Network(pre, bcm, post)
 net.run(duration, inputs=(pre, 'r', input_r.T, "="))
 
-w1 = bp.ops.mean(bcm.mon.w[:, :10, 0], 1)
-w2 = bp.ops.mean(bcm.mon.w[:, 10:, 0], 1)
+if backend == "numba":
+    w1 = bp.ops.mean(bcm.mon.w[:, :10], 1)
+    w2 = bp.ops.mean(bcm.mon.w[:, 10:], 1)
+else:
+    w1 = bp.ops.mean(bcm.mon.w[:, :10, 0], 1)
+    w2 = bp.ops.mean(bcm.mon.w[:, 10:, 0], 1)
 
 r1 = bp.ops.mean(pre.mon.r[:, :10], 1)
 r2 = bp.ops.mean(pre.mon.r[:, 10:], 1)
