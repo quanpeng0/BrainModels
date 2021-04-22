@@ -1,4 +1,4 @@
-## 1.2 Reduced models
+1.2 Reduced models
 
 Inspired by biophysical experiments, Hodgkin-Huxley model is precise but costful. Researchers proposed the reduced models to reduce the consumption on computing resources and running time in simulation. 
 
@@ -8,12 +8,14 @@ These models are simple and easy to compute, while they can still reproduce the 
 
 The most typical reduced model is the Leaky Integrate-and-Fire model (LIF model) presented by Lapicque (1907).  LIF model can be seen as a combination of integrate process represented by differential equation and spike process represented by conditional judgment:
 
-$$ \tau \frac{dV}{dt} = - (V - V_{rest}) + R I(t)$$
-
+$$
+\tau \frac{dV}{dt} = - (V - V_{rest}) + R I(t)
+$$
 If  $$V > V_{th}$$, neuron fire, 
 
-$$ V \gets V_{reset}$$.
-
+$$
+V \gets V_{reset}
+$$
 The `derivative` method of LIF model is simpler than of HH model. However the `update` method is more complex because of the conditional judgement.
 
 
@@ -96,7 +98,9 @@ Compare to the HH model, LIF model does not model the spike period of action pot
 
 To persue higher representation capability, Latham et al. (2000) proposed Quadratic Integrate-and-Fire model, in which they add a second order term in differential equation so the neurons can generate spike better.
 
-$$\tau\frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) + RI(t)$$
+$$
+\tau\frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) + RI(t)
+$$
 
 
 ```python
@@ -162,7 +166,9 @@ bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
 ### 1.2.3 Exponential Integrate-and-Fire model
 Exponential Integrate-and-Fire model (ExpIF model) (Fourcaud-Trocme et al., 2003) is more expressive than QuaIF model.
 
-$$ \tau \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} + R I(t)$$
+$$
+\tau \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} + R I(t)
+$$
 
 
 ```python
@@ -233,8 +239,13 @@ With the model parameter $$V_T$$, ExpIF model reproduce the burst of membrane po
 
 To reproduce the adaptation behavior of neurons, researchers add a weight variable w to existing integrate-and-fire models like LIF, QuaIF and ExpIF models. Here we introduce a typical one: Adaptative Exponential Integrate-and-Fire model (AdExIF model)(Gerstner et al, 2014).
 
-$$ \tau_m \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} - R w + R I(t)$$
-$$ \tau_w \frac{dw}{dt} = a(V - V_{rest})- w + b \tau_w \sum \delta(t - t^f))$$
+$$
+\tau_m \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} - R w + R I(t)
+$$
+
+$$
+\tau_w \frac{dw}{dt} = a(V - V_{rest})- w + b \tau_w \sum \delta(t - t^f))
+$$
 
 Facing a constant input, the firing rate of AdExIF neuron decreases over time. These adaptation is controlled by the weight variable w.
 
@@ -327,15 +338,21 @@ Other than the integrators we introduced above, there is another neuron type cal
 
 <center><b>Fig.1-12 Integrator vs. Resonator</b></center>
 
-This subthreshold oscillations of resonators are caused by the interactions between ion channels. To model the oscillations, Izhikevich and Eugene (2001) proposed Resonate-and-Fire model (RF model) which includes two model variables x, y to represent the current-like and voltage-like variables in neurons.
+This sub-threshold oscillations of resonators are caused by the interactions between ion channels. To model the oscillations, Izhikevich and Eugene (2001) proposed Resonate-and-Fire model (RF model) which includes two model variables x, y to represent the current-like and voltage-like variables in neurons.
 
-$$\frac{dx}{dt} = bx - wy$$
+$$
+\frac{dx}{dt} = bx - wy
+$$
 
-$$\frac{dy}{dt} = wx + by$$
+$$
+\frac{dy}{dt} = wx + by
+$$
 
 When spike,
 
-$$ x \gets 0, y \gets 1$$
+$$
+x \gets 0, y \gets 1
+$$
 
 
 ```python
@@ -410,11 +427,17 @@ After a short stimulus is given, paint the trajectory of x and y on complex fiel
 
 To simulate the bursting spike pattern in neurons (i.e. continuously firing in a short time period), Hindmarsh and Rose (1984) proposed Hindmarsh-Rose neuron model, import a third model variable as slow variable to control the bursting of neuron.
 
-$$\frac{d V}{d t} = y - a V^3 + b V^2 - z + I$$
+$$
+\frac{d V}{d t} = y - a V^3 + b V^2 - z + I
+$$
 
-$$\frac{d y}{d t} = c - d V^2 - y$$
+$$
+\frac{d y}{d t} = c - d V^2 - y
+$$
 
-$$\frac{d z}{d t} = r (s (V - V_{rest}) - z)$$
+$$
+\frac{d z}{d t} = r (s (V - V_{rest}) - z)
+$$
 
 
 ```python
@@ -546,19 +569,31 @@ In HR model, the trajectory of x and y approaches a limit cycle, that’s why th
 
 Generalized Integrate-and-Fire model (GIF model)(Mihalaş et al., 2009) integrates several firing patterns in one model. With 4 model variables, it can generate more than 20 types of firing patterns, and is able to alternate between patterns by fitting parameters.
 
-$$\frac{d I_j}{d t} = - k_j I_j, j = {1, 2}$$
+$$
+\frac{d I_j}{d t} = - k_j I_j, j = {1, 2}
+$$
 
-$$\tau \frac{d V}{d t} = ( - (V - V_{rest}) + R\sum_{j}I_j + RI)$$
+$$
+\tau \frac{d V}{d t} = ( - (V - V_{rest}) + R\sum_{j}I_j + RI)
+$$
 
-$$\frac{d V_{th}}{d t} = a(V - V_{rest}) - b(V_{th} - V_{th\infty})$$
+$$
+\frac{d V_{th}}{d t} = a(V - V_{rest}) - b(V_{th} - V_{th\infty})
+$$
 
 When V meet Vth, Generalized IF neuron fire:
 
-$$I_j \leftarrow R_j I_j + A_j$$
+$$
+I_j \leftarrow R_j I_j + A_j
+$$
 
-$$V \leftarrow V_{reset}$$
+$$
+V \leftarrow V_{reset}
+$$
 
-$$V_{th} \leftarrow max(V_{th_{reset}}, V_{th})$$
+$$
+V_{th} \leftarrow max(V_{th_{reset}}, V_{th})
+$$
 
 
 ```python
