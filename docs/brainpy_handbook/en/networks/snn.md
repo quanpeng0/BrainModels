@@ -24,7 +24,7 @@ As a result, we say E/I balanced network may provide a fast response mechanism f
 
 Fig. 3-2 shows the structure of E/I balanced network:
 
-1)	Neurons: LIF neurons are used in the network. The neurons can be divided into excitatory neurons and inhibitory neurons, the number of two types of neurons are $N_E$: $N_I$ = 4:1.
+1)	Neurons: LIF neurons are used in the network. The neurons can be divided into excitatory neurons and inhibitory neurons, the number of two types of neurons are $$N_E$$: $$N_I$$ = 4:1.
 
     neu_E = LIF(N_E, monitors = ['spike'])
     neu_I = LIF(N_I, monitors = ['spike'])

@@ -1,11 +1,11 @@
 
 ## 1.3 Firing Rate models
 
-Firing Rate models are simpler than reduced models. In these models, each compute unit represents a neuron group, the membrane potential variable $V$ in single neuron models is replaced by firing rate variable $a$ (or $r$ or $\nu$). Here we introduce a canonical firing rate unit.
+Firing Rate models are simpler than reduced models. In these models, each compute unit represents a neuron group, the membrane potential variable $$V$$ in single neuron models is replaced by firing rate variable $$a$$ (or $$r$$ or $$\nu$$). Here we introduce a canonical firing rate unit.
 
 ### 1.3.1 Firing Rate Units
 
-Wilson and Cowan (1972) proposed this unit to represent the activites in excitatory and inhibitory neuron columns. Each element of variables $a_e$ and $a_i$ refers to the average activity of a neuron column, which contains multiple neurons in each unit.
+Wilson and Cowan (1972) proposed this unit to represent the activites in excitatory and inhibitory neuron columns. Each element of variables $$a_e$$ and $$a_i$$ refers to the average activity of a neuron column, which contains multiple neurons in each unit.
 
 $$\tau_e \frac{d a_e(t)}{d t} = - a_e(t) + (k_e - r_e * a_e(t)) * \mathcal{S}_e(c_1 a_e(t) - c_2 a_i(t) + I_{ext_e}(t))$$
 
