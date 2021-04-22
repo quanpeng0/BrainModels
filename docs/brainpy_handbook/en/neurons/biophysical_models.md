@@ -8,35 +8,75 @@ Hodgkin and Huxley (1952) recorded the generation of action potential on squid g
 
 <center><b> Fig. 1-1 Neuron membrane | NeuroDynamics </b></center>
 
-Fig. 1-1 is a general diagram of neuron membrane with phospholipid bilayer and ion channels. The Na+ ion concentration is higher out of the neuron, and K+ ion concentration is higher in the neuron. Intracellular potential is  lower than extracellular potential.
+Fig. 1-1 is a general diagram of neuron membrane with phospholipid bilayer and ion channels. The Na+ ion concentration is higher out of the neuron, and K+ ion concentration is higher in the neuron. Intracellular potential is lower than extracellular potential.
 
 <center><img src="../../figs/neurons/1-2.png">	</center>
 
 <center><b>Fig. 1-2 Equivalent circuit diagram | NeuroDynamics </b></center>
 
-The equivalent circuit diagram of Fig.1-1 is shown in Fig. 1-2, in which the battery $E_L$ refers to the potential difference across membrane, electric current $I$ refers to the external stimulus, capacitance $C$ refers to the hydrophobic phospholipid bilayer with low conductance, resistance $R$ refers to the resistance correspond to leaky current, i.e. the resistance of all non-specific ion channels. 
+The equivalent circuit diagram of Fig.1-1 is shown in Fig. 1-2, in which the battery $E_L$ refers to the potential difference across membrane, electric current $$I$$ refers to the external stimulus, capacitance $$C$$ refers to the hydrophobic phospholipid bilayer with low conductance, resistance $$R$$ refers to the resistance correspond to leaky current, i.e. the resistance of all non-specific ion channels. 
 
-As Na+ ion channel and K+ ion channel are important in the generation of action potentials, these two ion channels are modeled as the two resistances $R_{Na}$ and $R_K$ in parallel on the right side of the circuit diagram, and the two batteries $E_{Na}$ and $E_K$ refer to the ion potential differences caused by ion concentration differences of Na+ and K+, respectively.
+As Na+ ion channel and K+ ion channel are important in the generation of action potentials, these two ion channels are modeled as the two resistances $$R_{Na}$$ and $$R_K$$ in parallel on the right side of the circuit diagram, and the two batteries $$E_{Na}$$ and $$E_K$$ refer to the ion potential differences caused by ion concentration differences of Na+ and K+, respectively.
 
 Consider the Kirchhoff’s first law, that is,  for any node in an electrical circuit, the sum of currents flowing into that node is equal to the sum of currents flowing out of that node, Fig. 1-2 can be modeled as differential equations:
 
+\begin{equation}
+
 $$ C \frac{dV}{dt} = -(\bar{g}_{Na} m^3 h (V - E_{Na}) + \bar{g}_K n^4(V - E_K) + g_{leak}(V - E_{leak})) + I(t) $$
+
+\label{eq:1}
+\end{equation}
+
+\begin{equation}
 
 $$\frac{dx}{dt} = \alpha_x(1-x) - \beta_x , x \in \{ Na, K, leak \} $$
 
-That is the HH model. Note that in equation 1, HH model introduces three gating variables m, n and h to control the open/close state of ion channels. To be accurate, variables m and h control the state of Na+ ion channel, and variable n control the state of K+ ion channel. Gating variable dynamics can be expressed in Markov-like form, in which $\alpha_x$ refers to the activation rate of gating variable x, and $\beta_x$ refers to the de-activation rate of x. The expressions of $\alpha_x$ and $\beta_x$ (as shown in equations below) are fitted by experimental data.
+\label{eq:2}
+\end{equation}
+
+That is the HH model. Note that in equation 1, HH model introduces three gating variables m, n and h to control the open/close state of ion channels. To be precise, variables m and h control the state of Na+ ion channel, and variable n control the state of K+ ion channel. Gating variable dynamics can be expressed in Markov-like form, in which $$\alpha_x$$ refers to the activation rate of gating variable x, and $$\beta_x$$ refers to the de-activation rate of x. The expressions of $$\alpha_x$$ and $$\beta_x$$ (as shown in equations below) are fitted by experimental data.
+
+\begin{equation}
 
 $$ \alpha_m(V) = \frac{0.1(V+40)}{1 - exp(\frac{-(V+40)}{10})}$$
 
+\label{eq:3}
+\end{equation}
+
+\begin{equation}
+
 $$ \beta_m(V) = 4.0 exp(\frac{-(V+65)}{18})$$
+
+\label{eq:4}
+\end{equation}
+
+\begin{equation}
 
 $$ \alpha_h(V) = 0.07 exp(\frac{-(V+65)}{20})$$
 
+\label{eq:5}
+\end{equation}
+
+\begin{equation}
+
 $$ \beta_h(V) = \frac{1}{1 + exp(\frac{-(V + 35)}{10})}$$
+
+\label{eq:6}
+\end{equation}
+
+\begin{equation}
 
 $$ \alpha_n(V) = \frac{0.01(V+55)}{1 - exp(\frac{-(V+55)}{10})}$$
 
+\label{eq:7}
+\end{equation}
+
+\begin{equation}
+
 $$ \beta_n(V) = 0.125 exp(\frac{-(V+65)}{80})$$
+
+\label{eq:8}
+\end{equation}
 
 How can the users transform these differential equations to code with BrainPy? Take HH model as an example, we may look closely at this process.
 
@@ -80,9 +120,9 @@ Next, we define the differential equation in `derivative` method. Users pass the
     
             return dVdt, dmdt, dhdt, dndt
 
-In the method, we compute the right hand of HH equations (1) – (8), and return $dV/dt$, $dm/dt$, $dn/dt$, $dh/dt$ in order.
+In the method, we compute the right hand of HH equations (1) – (8), and return $$dV/dt$$, $$dm/dt$$, $$dn/dt$$, $$dh/dt$$ in order.
 
-However, if you are familiar with numerical integration, you may find that we have not transform the derivatives $dx/dt$ into update processes from $x(t)$ to $x(t+1)$. Don't worry, BrainPy will automatically complete this step of transformation, the details will soon be explained in the constructor.
+However, if you are familiar with numerical integration, you may find that we have not transform the derivatives $$dx/dt$$ into update processes from $$x(t)$$ to $$x(t+1)$$. Don't worry, BrainPy will automatically complete this step of transformation, the details will soon be explained in the constructor.
 
 The contructor of HH class `__init__` needs three types of incoming parameters:
 
