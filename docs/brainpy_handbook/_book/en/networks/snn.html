@@ -1,0 +1,1302 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>3.1 Spiking neural networks · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-code/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="rate_models.html" />
+    
+    
+    <link rel="prev" href="../networks.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    0. Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../neurons.html">
+            
+                <a href="../neurons.html">
+            
+                    
+                    1. Neuron models
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="../neurons/biophysical_models.html">
+            
+                <a href="../neurons/biophysical_models.html">
+            
+                    
+                    1.1 Biophysical models
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="../neurons/reduced_models.html">
+            
+                <a href="../neurons/reduced_models.html">
+            
+                    
+                    1.2 Reduced models
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="../neurons/firing_rate_models.html">
+            
+                <a href="../neurons/firing_rate_models.html">
+            
+                    
+                    1.3 Firing rate models
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../synapses.html">
+            
+                <a href="../synapses.html">
+            
+                    
+                    2. Synapse models
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="../synapse/dynamics.html">
+            
+                <a href="../synapse/dynamics.html">
+            
+                    
+                    2.1 Synaptic dynamics
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="../synapse/plasticity.html">
+            
+                <a href="../synapse/plasticity.html">
+            
+                    
+                    2.2 Synaptic plasticity
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../networks.html">
+            
+                <a href="../networks.html">
+            
+                    
+                    3. Network models
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="1.4.1" data-path="snn.html">
+            
+                <a href="snn.html">
+            
+                    
+                    3.1 Spiking neural networks
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="rate_models.html">
+            
+                <a href="rate_models.html">
+            
+                    
+                    3.2 Firing rate networks
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >3.1 Spiking neural networks</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <div id="anchor-navigation-ex-navbar"><i class="fa fa-navicon"></i><ul><ul><li><span class="title-icon "></span><a href="#31-spiking-neural-network"><b></b>3.1 Spiking Neural Network</a></li><ul><li><span class="title-icon "></span><a href="#311-ei-balanced-network"><b></b>3.1.1 E/I balanced network</a></li><li><span class="title-icon "></span><a href="#312-decision-making-network"><b></b>3.1.2 Decision Making Network</a></li></ul></ul></ul></div><a href="#" id="anchorNavigationExGoTop"><i class="fa fa-arrow-up"></i></a><h2 id="31-spiking-neural-network"><a name="31-spiking-neural-network" class="anchor-navigation-ex-anchor" href="#31-spiking-neural-network"><i class="fa fa-link" aria-hidden="true"></i></a>3.1 Spiking Neural Network</h2>
+<h3 id="311-ei-balanced-network"><a name="311-ei-balanced-network" class="anchor-navigation-ex-anchor" href="#311-ei-balanced-network"><i class="fa fa-link" aria-hidden="true"></i></a>3.1.1 E/I balanced network</h3>
+<p>In 1990s, biologists found in experiments that neuron activities in brain cortex show a temporal irregular spiking pattern. This pattern exists widely in brain areas, but researchers knew few about the mechanism and function of it.</p>
+<p>Vreeswijk and Sompolinsky (1996) proposed E/I balanced network to explain this irregular spiking pattern. The feature of this network is the strong, random and sparse synapse connections between neurons. Because of this feature and corresponding parameter settings, each neuron in the network will receive great excitatory and inhibitory input from within the network, but these two types of input will cancel each other, and maintain the total internal input at a relatively small order of magnitude, which is only enough to generate action potentials.</p>
+<p>The randomness and noise in E/I balanced network give an internal input which varies with time and space at the order of threshold potential to each neuron in the network. Therefore, the firing of neurons also has randomness,  ensures that E/I balanced network can generate temporal irregular firing pattern spontaneously.</p>
+<p>Vreeswijk and Sompolinsky also suggested a possible function of this irregular firing pattern: E/I balanced network can respond to the changes of external stimulus quickly.</p>
+<p>When there is no external input, the distribution of neurons&#x2019; membrane potentials in E/I balanced network follows a relatively uniform random distribution between resting potential and threshold potential.</p>
+<p>When we give the network a small constant external stimulus, there are always some neurons whose membrane potentials fall near the threshold potential. Turn the stimulus on and these neurons will soon meet the threshold, therefore spike rapidly. On the network scale, the firing rate of neurons in the network can adjust rapidly once the input changes.</p>
+<p>Simulation suggests that the delay of network response to input is the same order of magnitude as synapse delay, and is significantly less than the delay of a single neuron that facing the same stimulus at resting potential generates a spike.</p>
+<p>As a result, we say E/I balanced network may provide a fast response mechanism for neural networks. </p>
+<center><img src="../../figs/snn/3-2.png"></center>
+
+<center><b>Fig.3-2 Structure of E/I balanced network</b></center>
+
+<p>Fig. 3-2 shows the structure of E/I balanced network:</p>
+<p>1)    Neurons: LIF neurons are used in the network. The neurons can be divided into excitatory neurons and inhibitory neurons, the number of two types of neurons are $N_E$: $N_I$ = 4:1.</p>
+<pre><code>neu_E = LIF(N_E, monitors = [&apos;spike&apos;])
+neu_I = LIF(N_I, monitors = [&apos;spike&apos;])
+neu_E.V = V_rest + np.random.random(N_E) * (V_th - V_rest)
+neu_I.V = V_rest + np.random.random(N_I) * (V_th - V_rest)
+</code></pre><p>2)    Synapses: Exponential synapses are used in the network. 4 groups of synapse connections are generated between the two groups of neurons, that is, excitatory-excitatory connection (E2E conn), excitatory-inhibitory connection (E2I conn), inhibitory-excitatory connection (I2E conn) and inhibitory-inhibitory connection (I2I conn). To express the excitatory or inhibitory of the synapse connections, we define synapse weight with different signal.</p>
+<pre><code>syn_E2E = Syn(pre = neu_E, post = neu_E,
+          conn = bp.connect.FixedProb(prob = prob))
+syn_E2I = Syn(pre = neu_E, post = neu_I,
+          conn = bp.connect.FixedProb(prob = prob))
+syn_I2E = Syn(pre = neu_I, post = neu_E,
+          conn = bp.connect.FixedProb(prob = prob))
+syn_I2I = Syn(pre = neu_I, post = neu_I,
+          conn = bp.connect.FixedProb(prob = prob))
+syn_E2E.w = JE
+syn_E2I.w = JE
+syn_I2E.w = -JI
+syn_I2I.w = -JI
+</code></pre><p>3)    Inputs: All neurons in the network receive a constant input current from outside of network.</p>
+<pre><code>net.run(500., inputs = [(neu_E, &apos;input&apos;, 3.), (neu_I, &apos;input&apos;, 3.)], report = True)
+</code></pre><p>See above section 1 and 2 for definition of LIF neuron class and Exponential synapse class. Visualize the simulation result of E/I balanced network, the network firing rate changes from strong synchronization to irregular fluctuation.</p>
+<pre><code class="lang-python"><span class="hljs-keyword">import</span> brainpy <span class="hljs-keyword">as</span> bp
+<span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">from</span> numba <span class="hljs-keyword">import</span> prange
+
+bp.backend.set(<span class="hljs-string">&apos;numba&apos;</span>)
+
+N_E = <span class="hljs-number">500</span>
+N_I = <span class="hljs-number">500</span>
+prob = <span class="hljs-number">0.1</span>
+
+tau = <span class="hljs-number">10.</span>
+V_rest = <span class="hljs-number">-52.</span>
+V_reset = <span class="hljs-number">-60.</span>
+V_th = <span class="hljs-number">-50.</span>
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LIF</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, V_rest = V_rest, V_reset = V_reset,
+                 V_th = V_th, tau = tau, **kwargs)</span>:</span>
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.tau = tau
+
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype = bool)
+
+        super(LIF, self).__init__(size = size, **kwargs)
+
+<span class="hljs-meta">    @staticmethod</span>
+<span class="hljs-meta">    @bp.odeint</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">integral</span><span class="hljs-params">(V, t, I_ext, V_rest, tau)</span>:</span>
+        <span class="hljs-keyword">return</span> (-V + V_rest + I_ext) / tau
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        V = self.integral(self.V, _t, self.input, self.V_rest, self.tau)
+        sp = V &gt; self.V_th
+        V[sp] = self.V_reset
+        self.V = V
+        self.spike = sp
+        self.input[:] = <span class="hljs-number">0.</span>
+
+tau_decay = <span class="hljs-number">2.</span>
+JE = <span class="hljs-number">1</span> / np.sqrt(prob * N_E)
+JI = <span class="hljs-number">1</span> / np.sqrt(prob * N_I)
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Syn</span><span class="hljs-params">(bp.TwoEndConn)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, pre, post, conn,
+                 tau_decay = tau_decay, w = <span class="hljs-number">0.</span>, 
+                 **kwargs)</span>:</span>
+        self.tau_decay = tau_decay
+        self.w = w
+
+        self.conn = conn(pre.size, post.size)
+        self.pre_ids, self.post_ids = conn.requires(<span class="hljs-string">&apos;pre_ids&apos;</span>, <span class="hljs-string">&apos;post_ids&apos;</span>)
+        self.size = len(self.pre_ids)
+
+        self.s = bp.ops.zeros(self.size)
+        self.g = bp.ops.zeros(self.size)
+
+        super(Syn, self).__init__(pre = pre, post = post, **kwargs)
+
+<span class="hljs-meta">    @staticmethod</span>
+<span class="hljs-meta">    @bp.odeint(method = &apos;rk4&apos;)</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">integral</span><span class="hljs-params">(s, t, tau)</span>:</span>
+        <span class="hljs-keyword">return</span> -s / tau
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> prange(self.size):
+            self.s[i] = self.integral(self.s[i], _t, self.tau_decay)
+            pre_id = self.pre_ids[i]
+            self.s[i] += self.pre.spike[pre_id]
+            g = self.w * self.s[i]
+            post_id = self.post_ids[i]
+            self.post.input[post_id] += g
+
+neu_E = LIF(N_E, monitors = [<span class="hljs-string">&apos;spike&apos;</span>])
+neu_I = LIF(N_I, monitors = [<span class="hljs-string">&apos;spike&apos;</span>])
+neu_E.V = V_rest + np.random.random(N_E) * (V_th - V_rest)
+neu_I.V = V_rest + np.random.random(N_I) * (V_th - V_rest)
+
+syn_E2E = Syn(pre = neu_E, post = neu_E,
+              conn = bp.connect.FixedProb(prob = prob))
+syn_E2I = Syn(pre = neu_E, post = neu_I,
+              conn = bp.connect.FixedProb(prob = prob))
+syn_I2E = Syn(pre = neu_I, post = neu_E,
+              conn = bp.connect.FixedProb(prob = prob))
+syn_I2I = Syn(pre = neu_I, post = neu_I,
+              conn = bp.connect.FixedProb(prob = prob))
+syn_E2E.w = JE
+syn_E2I.w = JE
+syn_I2E.w = -JI
+syn_I2I.w = -JI
+
+net = bp.Network(neu_E, neu_I, 
+                 syn_E2E, syn_E2I, 
+                 syn_I2E, syn_I2I)
+net.run(<span class="hljs-number">500.</span>, inputs = [(neu_E, <span class="hljs-string">&apos;input&apos;</span>, <span class="hljs-number">3.</span>), (neu_I, <span class="hljs-string">&apos;input&apos;</span>, <span class="hljs-number">3.</span>)])
+
+
+fig, gs = bp.visualize.get_figure(<span class="hljs-number">4</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">10</span>)
+fig.add_subplot(gs[:<span class="hljs-number">3</span>, <span class="hljs-number">0</span>])
+bp.visualization.raster_plot(net.ts, neu_E.mon.spike)
+
+fig.add_subplot(gs[<span class="hljs-number">3</span>, <span class="hljs-number">0</span>])
+rate = bp.measure.firing_rate(neu_E.mon.spike, <span class="hljs-number">5.</span>)
+plt.plot(net.ts, rate)
+plt.show()
+</code></pre>
+<p><img src="../../figs/snn/out/output_8_0.png" alt="png"></p>
+<center><b>Fig.3-3 E/I balanced net raster plot</b></center>
+
+<h3 id="312-decision-making-network"><a name="312-decision-making-network" class="anchor-navigation-ex-anchor" href="#312-decision-making-network"><i class="fa fa-link" aria-hidden="true"></i></a>3.1.2 Decision Making Network</h3>
+<p>The modeling of computational neuroscience networks can correspond to specific physiological tasks, like the visual motion discrimination task (Roitman and Shadlen, 2002). In this task, rhesus watch a video in which random dots move towards left or right with definite coherence. Rhesus are required to choose the direction that most dots move to and give their answer by saccade. At the meantime, researchers record the activity of their LIF neurons by implanted electrode.</p>
+<center><img src="../../figs/snn/3-4.png"> </center>
+
+<center><b>Fig.3-4 Experimental Disgram</b></center>
+
+<p>Wang (2002) proposed a decision making network to model the activity of rhesus LIF neurons during decision making period. As shown in Fig. 3-5, this network is based on E/I balanced network, with excitatory neuron and inhibitory neuron number in the proportion 4:1, and maintain the balanced state by adjusting parameters.</p>
+<p>Among the excitatory neuron group, two selective subgroup are chosen, both with a size of 0.15 * N_E. These two subgroups are marked as A and B in Fig. 3-5. Other excitatory neuron are non-selective.</p>
+<center><img src="../../figs/snn/3-5.png"></center>
+
+<center><b>Fig.3-5 structure of decision makingnetwork</b></center>
+
+<pre><code># def E neurons/pyramid neurons
+neu_A = LIF(N_A, monitors=[&apos;spike&apos;, &apos;input&apos;, &apos;V&apos;])
+neu_B = LIF(N_B, monitors=[&apos;spike&apos;, &apos;input&apos;, &apos;V&apos;])
+neu_non = LIF(N_non, monitors=[&apos;spike&apos;, &apos;input&apos;, &apos;V&apos;])
+# def I neurons/interneurons
+neu_I = LIF(N_I, monitors=[&apos;input&apos;, &apos;V&apos;])
+</code></pre><p>As it is in E/I balanced network, synapses can be classified into E2E connection, E2I connection, I2E connection and I2I connection. Excitatory connections are realized with AMPA synapse, inhibitory connections are realized with GABAa synapse. In order to force the network to make decisions between group A and group B, E2E connections are structured. As shown in Sheet 3-1, the strength of synapse connections is higher in the same selective subgroup, and lower between two subgroups or between selective and non-selective subgroup.</p>
+<center><b>Sheet 3-1 Weight of synapse connections between E-neurons</b></center>
+<center><img src="../../figs/snn/3-6.png"></center>
+
+<pre><code>syn_A2A_AMPA = AMPA(pre=neu_A, post=neu_A,
+              conn=bp.connect.All2All(),
+              delay=delay_syn)
+syn_A2A_AMPA.g_max = g_max_E2E_AMPA * w_pos
+
+syn_A2B_AMPA = AMPA(pre=neu_A, post=neu_B,
+              conn=bp.connect.All2All(),
+              delay=delay_syn)
+syn_A2B_AMPA.g_max = g_max_E2E_AMPA * w_neg
+
+syn_A2non_AMPA = AMPA(pre=neu_A, post=neu_non,
+                conn=bp.connect.All2All(),
+                delay=delay_syn)
+syn_A2non_AMPA.g_max = g_max_E2E_AMPA * w_neg
+
+# ...
+</code></pre><p>We give two types of external inputs to the decision making network:</p>
+<p>1) Background inputs from other brain areas without specific meaning. Represented as high frequency Poisson input mediated by AMPA synapse; </p>
+<p>2) Stimulus inputs from outside the brain, which are given only to the two selective subgroup A and B. Represented as lower frequency Poisson input mediated by AMPA synapse. To simulate the proportion difference of the dots moving to left and right in physiological experiments, the stimulus frequencies given to A and B group have a certain difference.</p>
+<pre><code>neu_poisson_A = PoissonInput(N_A, freqs=poisson_freq, dt=dt)
+neu_poisson_B = PoissonInput(N_B, freqs=poisson_freq, dt=dt)
+neu_poisson_non = PoissonInput(N_non, freqs=poisson_freq, dt=dt)
+neu_poisson_I = PoissonInput(N_I, freqs=poisson_freq, dt=dt)
+
+syn_back2A_AMPA = AMPA(pre=neu_poisson_A, post=neu_A,
+                conn=bp.connect.One2One())
+syn_back2B_AMPA = AMPA(pre=neu_poisson_B, post=neu_B,
+                conn=bp.connect.One2One())
+syn_back2non_AMPA = AMPA(pre=neu_poisson_non, post=neu_non,
+                 conn=bp.connect.One2One())
+</code></pre><p>During the simulation, group A receive a larger stimulus input than group B (i.e. more random dot move to the direction represented by A), later, considerable differentiation are found between the population activities of the two selective subgroups. In this example, the activity of group A is higher than group B, which means, the network choose the right direction receives higher stimulus.</p>
+<pre><code class="lang-python"><span class="hljs-string">&quot;&quot;&quot;
+Implementation of the paper:
+
+Wang, Xiao-Jing. &quot;Probabilistic decision making by slow 
+reverberation in cortical circuits.&quot; Neuron 36.5 (2002): 955-968.
+&quot;&quot;&quot;</span>
+<span class="hljs-keyword">import</span> brainpy <span class="hljs-keyword">as</span> bp
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt
+
+<span class="hljs-comment"># set params</span>
+<span class="hljs-comment"># set global params</span>
+dt = <span class="hljs-number">0.05</span>  <span class="hljs-comment"># ms</span>
+method = <span class="hljs-string">&apos;exponential&apos;</span>
+bp.backend.set(<span class="hljs-string">&apos;numpy&apos;</span>, dt=dt)
+
+<span class="hljs-comment"># set network params</span>
+base_N_E = <span class="hljs-number">1600</span>
+base_N_I = <span class="hljs-number">400</span>
+net_scale = <span class="hljs-number">5.</span>
+N_E = int(base_N_E // net_scale)
+N_I = int(base_N_I // net_scale)
+
+f = <span class="hljs-number">0.15</span>  <span class="hljs-comment"># Note: proportion of neurons activated by one of the two stimulus</span>
+N_A = int(f * N_E)
+N_B = int(f * N_E)
+N_non = N_E - N_A - N_B  <span class="hljs-comment"># Note: N_E = N_A + N_B + N_non</span>
+print(f<span class="hljs-string">&quot;N_E = {N_E} = {N_A} + {N_B} + {N_non}, N_I = {N_I}&quot;</span>)
+<span class="hljs-comment"># Note: N_E[0:N_A]: A_group</span>
+<span class="hljs-comment">#       N_E[N_A : N_A+N_B]: B_group</span>
+<span class="hljs-comment">#       N_E[N_A + N_B: N_E]: non of A or B</span>
+
+time_scale = <span class="hljs-number">1.</span>
+pre_period = <span class="hljs-number">100.</span> / time_scale
+stim_period = <span class="hljs-number">1000.</span>
+delay_period = <span class="hljs-number">500.</span> / time_scale
+total_period = pre_period + stim_period + delay_period
+
+<span class="hljs-comment"># set LIF neu params</span>
+V_rest_E = <span class="hljs-number">-70.</span>  <span class="hljs-comment"># mV</span>
+V_reset_E = <span class="hljs-number">-55.</span>  <span class="hljs-comment"># mV</span>
+V_th_E = <span class="hljs-number">-50.</span>  <span class="hljs-comment"># mV</span>
+g_E = <span class="hljs-number">25.</span> * <span class="hljs-number">1e-3</span>  <span class="hljs-comment"># uS</span>
+R_E = <span class="hljs-number">1</span> / g_E  <span class="hljs-comment"># MOhm</span>
+C_E = <span class="hljs-number">0.5</span>  <span class="hljs-comment"># nF</span>
+tau_E = <span class="hljs-number">20.</span>  <span class="hljs-comment"># ms</span>
+t_refractory_E = <span class="hljs-number">2.</span>  <span class="hljs-comment"># ms</span>
+print(f<span class="hljs-string">&quot;R_E * C_E = {R_E * C_E} should be equal to tau_E = {tau_E}&quot;</span>)
+
+V_rest_I = <span class="hljs-number">-70.</span>  <span class="hljs-comment"># mV</span>
+V_reset_I = <span class="hljs-number">-55.</span>  <span class="hljs-comment"># mV</span>
+V_th_I = <span class="hljs-number">-50.</span>  <span class="hljs-comment"># mV</span>
+g_I = <span class="hljs-number">20.</span> * <span class="hljs-number">1e-3</span>  <span class="hljs-comment"># uS</span>
+R_I = <span class="hljs-number">1</span> / g_I  <span class="hljs-comment"># Mohm</span>
+C_I = <span class="hljs-number">0.2</span>  <span class="hljs-comment"># nF</span>
+tau_I = <span class="hljs-number">10.</span>  <span class="hljs-comment"># ms</span>
+t_refractory_I = <span class="hljs-number">1.</span>  <span class="hljs-comment"># ms</span>
+print(f<span class="hljs-string">&quot;R_I * C_I = {R_I * C_I} should be equal to tau_I = {tau_I}&quot;</span>)
+
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LIF</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(V, t, I_ext, V_rest, R, tau)</span>:</span>
+        dvdt = (- (V - V_rest) + R * I_ext) / tau
+        <span class="hljs-keyword">return</span> dvdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, V_rest=<span class="hljs-number">0.</span>, V_reset=<span class="hljs-number">0.</span>,
+                 V_th=<span class="hljs-number">0.</span>, R=<span class="hljs-number">0.</span>, tau=<span class="hljs-number">0.</span>, t_refractory=<span class="hljs-number">0.</span>,
+                 **kwargs)</span>:</span>
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.R = R
+        self.tau = tau
+        self.t_refractory = t_refractory
+
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype=bool)
+        self.refractory = bp.ops.zeros(size, dtype=bool)
+        self.t_last_spike = bp.ops.ones(size) * <span class="hljs-number">-1e7</span>
+
+        self.integral = bp.odeint(self.derivative)
+        super(LIF, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        <span class="hljs-comment"># update variables</span>
+        not_ref = (_t - self.t_last_spike &gt; self.t_refractory)
+        self.V[not_ref] = self.integral(
+            self.V[not_ref], _t, self.input[not_ref],
+            self.V_rest, self.R, self.tau)
+        sp = (self.V &gt; self.V_th)
+        self.V[sp] = self.V_reset
+        self.t_last_spike[sp] = _t
+        self.spike = sp
+        self.refractory = ~not_ref
+        self.input[:] = <span class="hljs-number">0.</span>
+
+
+<span class="hljs-comment"># set syn params</span>
+E_AMPA = <span class="hljs-number">0.</span>  <span class="hljs-comment"># mV</span>
+tau_decay_AMPA = <span class="hljs-number">2</span>  <span class="hljs-comment"># ms</span>
+
+E_NMDA = <span class="hljs-number">0.</span>  <span class="hljs-comment"># mV</span>
+alpha_NMDA = <span class="hljs-number">0.062</span>  <span class="hljs-comment"># \</span>
+beta_NMDA = <span class="hljs-number">3.57</span>  <span class="hljs-comment"># \</span>
+cc_Mg_NMDA = <span class="hljs-number">1.</span>  <span class="hljs-comment"># mM</span>
+a_NMDA = <span class="hljs-number">0.5</span>  <span class="hljs-comment"># kHz/ms^-1</span>
+tau_rise_NMDA = <span class="hljs-number">2.</span>  <span class="hljs-comment"># ms</span>
+tau_decay_NMDA = <span class="hljs-number">100.</span>  <span class="hljs-comment"># ms</span>
+
+E_GABAa = <span class="hljs-number">-70.</span>  <span class="hljs-comment"># mV</span>
+tau_decay_GABAa = <span class="hljs-number">5.</span>  <span class="hljs-comment"># ms</span>
+
+delay_syn = <span class="hljs-number">0.5</span>  <span class="hljs-comment"># ms</span>
+
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NMDA</span><span class="hljs-params">(bp.TwoEndConn)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(s, x, t, tau_rise, tau_decay, a)</span>:</span>
+        dxdt = -x / tau_rise
+        dsdt = -s / tau_decay + a * x * (<span class="hljs-number">1</span> - s)
+        <span class="hljs-keyword">return</span> dsdt, dxdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, pre, post, conn, delay=<span class="hljs-number">0.</span>,
+                 g_max=<span class="hljs-number">0.15</span>, E=<span class="hljs-number">0.</span>, cc_Mg=<span class="hljs-number">1.2</span>,
+                 alpha=<span class="hljs-number">0.062</span>, beta=<span class="hljs-number">3.57</span>, tau=<span class="hljs-number">100</span>,
+                 a=<span class="hljs-number">0.5</span>, tau_rise=<span class="hljs-number">2.</span>, **kwargs)</span>:</span>
+        <span class="hljs-comment"># parameters</span>
+        self.g_max = g_max
+        self.E = E
+        self.alpha = alpha
+        self.beta = beta
+        self.cc_Mg = cc_Mg
+        self.tau = tau
+        self.tau_rise = tau_rise
+        self.a = a
+        self.delay = delay
+
+        <span class="hljs-comment"># connections</span>
+        self.conn = conn(pre.size, post.size)
+        self.conn_mat = conn.requires(<span class="hljs-string">&apos;conn_mat&apos;</span>)
+        self.size = bp.ops.shape(self.conn_mat)
+
+        <span class="hljs-comment"># variables</span>
+        self.s = bp.ops.zeros(self.size)
+        self.x = bp.ops.zeros(self.size)
+        self.g = self.register_constant_delay(<span class="hljs-string">&apos;g&apos;</span>, size=self.size,
+                                              delay_time=delay)
+
+        self.integral = bp.odeint(self.derivative)
+        super(NMDA, self).__init__(pre=pre, post=post, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        self.x += bp.ops.unsqueeze(self.pre.spike, <span class="hljs-number">1</span>) * self.conn_mat
+        self.s, self.x = self.integral(self.s, self.x, _t,
+                                       self.tau_rise, self.tau, self.a)
+
+        self.g.push(self.g_max * self.s)
+        g_inf = <span class="hljs-number">1</span> + self.cc_Mg / self.beta * \
+                bp.ops.exp(-self.alpha * self.post.V)
+        g_inf = <span class="hljs-number">1</span> / g_inf
+        self.post.input -= bp.ops.sum(self.g.pull(), axis=<span class="hljs-number">0</span>) * \
+                           (self.post.V - self.E) * g_inf
+
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AMPA</span><span class="hljs-params">(bp.TwoEndConn)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(s, t, tau)</span>:</span>
+        ds = - s / tau
+        <span class="hljs-keyword">return</span> ds
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, pre, post, conn, delay=<span class="hljs-number">0.</span>,
+                 g_max=<span class="hljs-number">0.10</span>, E=<span class="hljs-number">0.</span>, tau=<span class="hljs-number">2.0</span>, **kwargs)</span>:</span>
+        <span class="hljs-comment"># parameters</span>
+        self.g_max = g_max
+        self.E = E
+        self.tau = tau
+        self.delay = delay
+
+        <span class="hljs-comment"># connections</span>
+        self.conn = conn(pre.size, post.size)
+        self.conn_mat = conn.requires(<span class="hljs-string">&apos;conn_mat&apos;</span>)
+        self.size = bp.ops.shape(self.conn_mat)
+
+        <span class="hljs-comment"># data</span>
+        self.s = bp.ops.zeros(self.size)
+        self.g = self.register_constant_delay(<span class="hljs-string">&apos;g&apos;</span>, size=self.size,
+                                              delay_time=delay)
+
+        self.int_s = bp.odeint(f=self.derivative, method=<span class="hljs-string">&apos;euler&apos;</span>)
+        super(AMPA, self).__init__(pre=pre, post=post, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        self.s = self.int_s(self.s, _t, self.tau)
+        self.s += bp.ops.unsqueeze(self.pre.spike, <span class="hljs-number">1</span>) * self.conn_mat
+        self.g.push(self.g_max * self.s)
+        self.post.input -= bp.ops.sum(self.g.pull(), <span class="hljs-number">0</span>) \
+                           * (self.post.V - self.E)
+
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">GABAa</span><span class="hljs-params">(bp.TwoEndConn)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(s, t, tau_decay)</span>:</span>
+        dsdt = - s / tau_decay
+        <span class="hljs-keyword">return</span> dsdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, pre, post, conn, delay=<span class="hljs-number">0.</span>,
+                 g_max=<span class="hljs-number">0.4</span>, E=<span class="hljs-number">-80.</span>, tau_decay=<span class="hljs-number">6.</span>,
+                 **kwargs)</span>:</span>
+        <span class="hljs-comment"># parameters</span>
+        self.g_max = g_max
+        self.E = E
+        self.tau_decay = tau_decay
+        self.delay = delay
+
+        <span class="hljs-comment"># connections</span>
+        self.conn = conn(pre.size, post.size)
+        self.conn_mat = conn.requires(<span class="hljs-string">&apos;conn_mat&apos;</span>)
+        self.size = bp.ops.shape(self.conn_mat)
+
+        <span class="hljs-comment"># data</span>
+        self.s = bp.ops.zeros(self.size)
+        self.g = self.register_constant_delay(<span class="hljs-string">&apos;g&apos;</span>, size=self.size,
+                                              delay_time=delay)
+
+        self.integral = bp.odeint(self.derivative)
+        super(GABAa, self).__init__(pre=pre, post=post, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        self.s = self.integral(self.s, _t, self.tau_decay)
+        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(self.pre.size[<span class="hljs-number">0</span>]):
+            <span class="hljs-keyword">if</span> self.pre.spike[i] &gt; <span class="hljs-number">0</span>:
+                self.s[i] += self.conn_mat[i]
+        self.g.push(self.g_max * self.s)
+        g = self.g.pull()
+        self.post.input -= bp.ops.sum(g, axis=<span class="hljs-number">0</span>) * (self.post.V - self.E)
+
+
+<span class="hljs-comment"># set syn weights (only used in recurrent E connections)</span>
+w_pos = <span class="hljs-number">1.7</span>
+w_neg = <span class="hljs-number">1.</span> - f * (w_pos - <span class="hljs-number">1.</span>) / (<span class="hljs-number">1.</span> - f)
+print(f<span class="hljs-string">&quot;the structured weight is: w_pos = {w_pos}, w_neg = {w_neg}&quot;</span>)
+<span class="hljs-comment"># inside select group: w = w+</span>
+<span class="hljs-comment"># between group / from non-select group to select group: w = w-</span>
+<span class="hljs-comment"># A2A B2B w+, A2B B2A w-, non2A non2B w-</span>
+weight = np.ones((N_E, N_E), dtype=np.float)
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(N_A):
+    weight[i, <span class="hljs-number">0</span>: N_A] = w_pos
+    weight[i, N_A: N_A + N_B] = w_neg
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(N_A, N_A + N_B):
+    weight[i, N_A: N_A + N_B] = w_pos
+    weight[i, <span class="hljs-number">0</span>: N_A] = w_neg
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(N_A + N_B, N_E):
+    weight[i, <span class="hljs-number">0</span>: N_A + N_B] = w_neg
+print(f<span class="hljs-string">&quot;Check contraints: Weight sum {weight.sum(axis=0)[0]} \
+        should be equal to N_E = {N_E}&quot;</span>)
+
+<span class="hljs-comment"># set background params</span>
+poisson_freq = <span class="hljs-number">2400.</span>  <span class="hljs-comment"># Hz</span>
+g_max_ext2E_AMPA = <span class="hljs-number">2.1</span> * <span class="hljs-number">1e-3</span>  <span class="hljs-comment"># uS</span>
+g_max_ext2I_AMPA = <span class="hljs-number">1.62</span> * <span class="hljs-number">1e-3</span>  <span class="hljs-comment"># uS</span>
+
+g_max_E2E_AMPA = <span class="hljs-number">0.05</span> * <span class="hljs-number">1e-3</span> * net_scale
+g_max_E2E_NMDA = <span class="hljs-number">0.165</span> * <span class="hljs-number">1e-3</span> * net_scale
+g_max_E2I_AMPA = <span class="hljs-number">0.04</span> * <span class="hljs-number">1e-3</span> * net_scale
+g_max_E2I_NMDA = <span class="hljs-number">0.13</span> * <span class="hljs-number">1e-3</span> * net_scale
+g_max_I2E_GABAa = <span class="hljs-number">1.3</span> * <span class="hljs-number">1e-3</span> * net_scale
+g_max_I2I_GABAa = <span class="hljs-number">1.0</span> * <span class="hljs-number">1e-3</span> * net_scale
+
+<span class="hljs-comment"># def neurons</span>
+<span class="hljs-comment"># def E neurons/pyramid neurons</span>
+neu_A = LIF(N_A, monitors=[<span class="hljs-string">&apos;spike&apos;</span>, <span class="hljs-string">&apos;input&apos;</span>, <span class="hljs-string">&apos;V&apos;</span>])
+neu_A.V_rest = V_rest_E
+neu_A.V_reset = V_reset_E
+neu_A.V_th = V_th_E
+neu_A.R = R_E
+neu_A.tau = tau_E
+neu_A.t_refractory = t_refractory_E
+neu_A.V = bp.ops.ones(N_A) * V_rest_E
+
+neu_B = LIF(N_B, monitors=[<span class="hljs-string">&apos;spike&apos;</span>, <span class="hljs-string">&apos;input&apos;</span>, <span class="hljs-string">&apos;V&apos;</span>])
+neu_B.V_rest = V_rest_E
+neu_B.V_reset = V_reset_E
+neu_B.V_th = V_th_E
+neu_B.R = R_E
+neu_B.tau = tau_E
+neu_B.t_refractory = t_refractory_E
+neu_B.V = bp.ops.ones(N_B) * V_rest_E
+
+neu_non = LIF(N_non, monitors=[<span class="hljs-string">&apos;spike&apos;</span>, <span class="hljs-string">&apos;input&apos;</span>, <span class="hljs-string">&apos;V&apos;</span>])
+neu_non.V_rest = V_rest_E
+neu_non.V_reset = V_reset_E
+neu_non.V_th = V_th_E
+neu_non.R = R_E
+neu_non.tau = tau_E
+neu_non.t_refractory = t_refractory_E
+neu_non.V = bp.ops.ones(N_non) * V_rest_E
+
+<span class="hljs-comment"># def I neurons/interneurons</span>
+neu_I = LIF(N_I, monitors=[<span class="hljs-string">&apos;input&apos;</span>, <span class="hljs-string">&apos;V&apos;</span>])
+neu_I.V_rest = V_rest_I
+neu_I.V_reset = V_reset_I
+neu_I.V_th = V_th_I
+neu_I.R = R_I
+neu_I.tau = tau_I
+neu_I.t_refractory = t_refractory_I
+neu_I.V = bp.ops.ones(N_I) * V_rest_I
+
+<span class="hljs-comment"># def synapse connections</span>
+<span class="hljs-comment">## define E2E conn</span>
+syn_A2A_AMPA = AMPA(pre=neu_A, post=neu_A,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+syn_A2A_NMDA = NMDA(pre=neu_A, post=neu_A,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+
+syn_A2B_AMPA = AMPA(pre=neu_A, post=neu_B,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+syn_A2B_NMDA = NMDA(pre=neu_A, post=neu_B,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+
+syn_A2non_AMPA = AMPA(pre=neu_A, post=neu_non,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+syn_A2non_NMDA = NMDA(pre=neu_A, post=neu_non,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+
+syn_B2A_AMPA = AMPA(pre=neu_B, post=neu_A,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+syn_B2A_NMDA = NMDA(pre=neu_B, post=neu_A,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+
+syn_B2B_AMPA = AMPA(pre=neu_B, post=neu_B,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+syn_B2B_NMDA = NMDA(pre=neu_B, post=neu_B,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+
+syn_B2non_AMPA = AMPA(pre=neu_B, post=neu_non,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+syn_B2non_NMDA = NMDA(pre=neu_B, post=neu_non,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+
+syn_non2A_AMPA = AMPA(pre=neu_non, post=neu_A,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+syn_non2A_NMDA = NMDA(pre=neu_non, post=neu_A,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+
+syn_non2B_AMPA = AMPA(pre=neu_non, post=neu_B,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+syn_non2B_NMDA = NMDA(pre=neu_non, post=neu_B,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+
+syn_non2non_AMPA = AMPA(pre=neu_non, post=neu_non,
+                        conn=bp.connect.All2All(),
+                        delay=delay_syn)
+syn_non2non_NMDA = NMDA(pre=neu_non, post=neu_non,
+                        conn=bp.connect.All2All(),
+                        delay=delay_syn)
+
+syn_A2A_AMPA.g_max = g_max_E2E_AMPA * w_pos
+syn_A2A_NMDA.g_max = g_max_E2E_NMDA * w_pos
+
+syn_A2B_AMPA.g_max = g_max_E2E_AMPA * w_neg
+syn_A2B_NMDA.g_max = g_max_E2E_NMDA * w_neg
+
+syn_A2non_AMPA.g_max = g_max_E2E_AMPA
+syn_A2non_NMDA.g_max = g_max_E2E_NMDA
+
+syn_B2A_AMPA.g_max = g_max_E2E_AMPA * w_neg
+syn_B2A_NMDA.g_max = g_max_E2E_NMDA * w_neg
+
+syn_B2B_AMPA.g_max = g_max_E2E_AMPA * w_pos
+syn_B2B_NMDA.g_max = g_max_E2E_NMDA * w_pos
+
+syn_B2non_AMPA.g_max = g_max_E2E_AMPA
+syn_B2non_NMDA.g_max = g_max_E2E_NMDA
+
+syn_non2A_AMPA.g_max = g_max_E2E_AMPA * w_neg
+syn_non2A_NMDA.g_max = g_max_E2E_NMDA * w_neg
+
+syn_non2B_AMPA.g_max = g_max_E2E_AMPA * w_neg
+syn_non2B_NMDA.g_max = g_max_E2E_NMDA * w_neg
+
+syn_non2non_AMPA.g_max = g_max_E2E_AMPA
+syn_non2non_NMDA.g_max = g_max_E2E_NMDA
+
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [syn_A2A_AMPA, syn_A2B_AMPA, syn_A2non_AMPA,
+          syn_B2A_AMPA, syn_B2B_AMPA, syn_B2non_AMPA,
+          syn_non2A_AMPA, syn_non2B_AMPA, syn_non2non_AMPA]:
+    i.E = E_AMPA
+    i.tau_decay = tau_decay_AMPA
+    i.E = E_NMDA
+
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [syn_A2A_NMDA, syn_A2B_NMDA, syn_A2non_NMDA,
+          syn_B2A_NMDA, syn_B2B_NMDA, syn_B2non_NMDA,
+          syn_non2A_NMDA, syn_non2B_NMDA, syn_non2non_NMDA]:
+    i.alpha = alpha_NMDA
+    i.beta = beta_NMDA
+    i.cc_Mg = cc_Mg_NMDA
+    i.a = a_NMDA
+    i.tau_decay = tau_decay_NMDA
+    i.tau_rise = tau_rise_NMDA
+
+<span class="hljs-comment">## define E2I conn</span>
+syn_A2I_AMPA = AMPA(pre=neu_A, post=neu_I,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+syn_A2I_NMDA = NMDA(pre=neu_A, post=neu_I,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+
+syn_B2I_AMPA = AMPA(pre=neu_B, post=neu_I,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+syn_B2I_NMDA = NMDA(pre=neu_B, post=neu_I,
+                    conn=bp.connect.All2All(),
+                    delay=delay_syn)
+
+syn_non2I_AMPA = AMPA(pre=neu_non, post=neu_I,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+syn_non2I_NMDA = NMDA(pre=neu_non, post=neu_I,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [syn_A2I_AMPA, syn_B2I_AMPA, syn_non2I_AMPA]:
+    i.g_max = g_max_E2I_AMPA
+    i.E = E_AMPA
+    i.tau_decay = tau_decay_AMPA
+
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [syn_A2I_NMDA, syn_B2I_NMDA, syn_non2I_NMDA]:
+    i.g_max = g_max_E2I_NMDA
+    i.E = E_NMDA
+    i.alpha = alpha_NMDA
+    i.beta = beta_NMDA
+    i.cc_Mg = cc_Mg_NMDA
+    i.a = a_NMDA
+    i.tau_decay = tau_decay_NMDA
+    i.tau_rise = tau_rise_NMDA
+
+<span class="hljs-comment">## define I2E conn</span>
+syn_I2A_GABAa = GABAa(pre=neu_I, post=neu_A,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+syn_I2B_GABAa = GABAa(pre=neu_I, post=neu_B,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+syn_I2non_GABAa = GABAa(pre=neu_I, post=neu_non,
+                        conn=bp.connect.All2All(),
+                        delay=delay_syn)
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [syn_I2A_GABAa, syn_I2B_GABAa, syn_I2non_GABAa]:
+    i.g_max = g_max_I2E_GABAa
+    i.E = E_GABAa
+    i.tau_decay = tau_decay_GABAa
+
+<span class="hljs-comment">## define I2I conn</span>
+syn_I2I_GABAa = GABAa(pre=neu_I, post=neu_I,
+                      conn=bp.connect.All2All(),
+                      delay=delay_syn)
+syn_I2I_GABAa.g_max = g_max_I2I_GABAa
+syn_I2I_GABAa.E = E_GABAa
+syn_I2I_GABAa.tau_decay = tau_decay_GABAa
+
+
+<span class="hljs-comment"># def background poisson input</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PoissonInput</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, freqs, dt, **kwargs)</span>:</span>
+        self.freqs = freqs
+        self.dt = dt
+
+        self.spike = bp.ops.zeros(size, dtype=bool)
+
+        super(PoissonInput, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        self.spike = np.random.random(self.size) \
+                     &lt; self.freqs * self.dt / <span class="hljs-number">1000.</span>
+
+
+neu_poisson_A = PoissonInput(N_A, freqs=poisson_freq, dt=dt)
+neu_poisson_B = PoissonInput(N_B, freqs=poisson_freq, dt=dt)
+neu_poisson_non = PoissonInput(N_non, freqs=poisson_freq, dt=dt)
+neu_poisson_I = PoissonInput(N_I, freqs=poisson_freq, dt=dt)
+
+syn_back2A_AMPA = AMPA(pre=neu_poisson_A, post=neu_A,
+                       conn=bp.connect.One2One())
+syn_back2B_AMPA = AMPA(pre=neu_poisson_B, post=neu_B,
+                       conn=bp.connect.One2One())
+syn_back2non_AMPA = AMPA(pre=neu_poisson_non, post=neu_non,
+                         conn=bp.connect.One2One())
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [syn_back2A_AMPA, syn_back2B_AMPA, syn_back2non_AMPA]:
+    i.g_max = g_max_ext2E_AMPA
+    i.E = E_AMPA
+    i.tau_decay = tau_decay_AMPA
+
+syn_back2I_AMPA = AMPA(pre=neu_poisson_I, post=neu_I,
+                       conn=bp.connect.One2One())
+syn_back2I_AMPA.g_max = g_max_ext2I_AMPA
+syn_back2I_AMPA.E = E_AMPA
+syn_back2I_AMPA.tau_decay = tau_decay_AMPA
+<span class="hljs-comment"># Note: all neurons receive 2400Hz background possion inputs</span>
+
+<span class="hljs-comment">## def stimulus input</span>
+<span class="hljs-comment"># Note: inputs only given to A and B group</span>
+mu_0 = <span class="hljs-number">40.</span>
+coherence = <span class="hljs-number">25.6</span>
+rou_A = mu_0 / <span class="hljs-number">100.</span>
+rou_B = mu_0 / <span class="hljs-number">100.</span>
+mu_A = mu_0 + rou_A * coherence
+mu_B = mu_0 - rou_B * coherence
+print(f<span class="hljs-string">&quot;coherence = {coherence}, mu_A = {mu_A}, mu_B = {mu_B}&quot;</span>)
+
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PoissonStim</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    <span class="hljs-string">&quot;&quot;&quot;
+    from time &lt;t_start&gt; to &lt;t_end&gt; during the simulation, the neuron 
+    generates a possion spike with frequency &lt;self.freq&gt;. however, 
+    the value of &lt;self.freq&gt; changes every &lt;t_interval&gt; ms and obey 
+    a Gaussian distribution defined by &lt;mean_freq&gt; and &lt;var_freq&gt;.
+    &quot;&quot;&quot;</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, dt=<span class="hljs-number">0.</span>, t_start=<span class="hljs-number">0.</span>, t_end=<span class="hljs-number">0.</span>, t_interval=<span class="hljs-number">0.</span>,
+                 mean_freq=<span class="hljs-number">0.</span>, var_freq=<span class="hljs-number">20.</span>, **kwargs)</span>:</span>
+        self.dt = dt
+        self.stim_start_t = t_start
+        self.stim_end_t = t_end
+        self.stim_change_freq_interval = t_interval
+        self.mean_freq = mean_freq
+        self.var_freq = var_freq
+
+        self.freq = <span class="hljs-number">0.</span>
+        self.t_last_change_freq = <span class="hljs-number">-1e7</span>
+        self.spike = bp.ops.zeros(size, dtype=bool)
+
+        super(PoissonStim, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        <span class="hljs-keyword">if</span> _t &gt; self.stim_start_t <span class="hljs-keyword">and</span> _t &lt; self.stim_end_t:
+            <span class="hljs-keyword">if</span> _t - self.t_last_change_freq \
+                    &gt;= self.stim_change_freq_interval:  <span class="hljs-comment"># change freq</span>
+                self.freq = np.random.normal(self.mean_freq, self.var_freq)
+                self.freq = max(self.freq, <span class="hljs-number">0</span>)
+                self.t_last_change_freq = _t
+            self.spike = np.random.random(self.size) \
+                         &lt; (self.freq * self.dt / <span class="hljs-number">1000</span>)
+        <span class="hljs-keyword">else</span>:
+            self.freq = <span class="hljs-number">0.</span>
+            self.spike[:] = <span class="hljs-keyword">False</span>
+
+
+neu_input2A = PoissonStim(N_A, dt=dt, t_start=pre_period,
+                          t_end=pre_period + stim_period,
+                          t_interval=<span class="hljs-number">50.</span>, mean_freq=mu_A, var_freq=<span class="hljs-number">10.</span>,
+                          monitors=[<span class="hljs-string">&apos;freq&apos;</span>])
+neu_input2B = PoissonStim(N_B, dt=dt, t_start=pre_period,
+                          t_end=pre_period + stim_period,
+                          t_interval=<span class="hljs-number">50.</span>, mean_freq=mu_B, var_freq=<span class="hljs-number">10.</span>,
+                          monitors=[<span class="hljs-string">&apos;freq&apos;</span>])
+
+syn_input2A_AMPA = AMPA(pre=neu_input2A, post=neu_A,
+                        conn=bp.connect.One2One())
+syn_input2A_AMPA.g_max = g_max_ext2E_AMPA
+syn_input2A_AMPA.E = E_AMPA
+syn_input2A_AMPA.tau_decay = tau_decay_AMPA
+
+syn_input2B_AMPA = AMPA(pre=neu_input2B, post=neu_B,
+                        conn=bp.connect.One2One())
+syn_input2B_AMPA.g_max = g_max_ext2E_AMPA
+syn_input2B_AMPA.E = E_AMPA
+syn_input2B_AMPA.tau_decay = tau_decay_AMPA
+
+<span class="hljs-comment"># build &amp; simulate network</span>
+net = bp.Network(
+    neu_poisson_A, neu_poisson_B,
+    neu_poisson_non, neu_poisson_I,
+    <span class="hljs-comment"># bg input</span>
+    syn_back2A_AMPA, syn_back2B_AMPA,
+    syn_back2non_AMPA, syn_back2I_AMPA,
+    <span class="hljs-comment"># bg conn</span>
+    neu_input2A, neu_input2B,
+    <span class="hljs-comment"># stim input</span>
+    syn_input2A_AMPA, syn_input2B_AMPA,
+    <span class="hljs-comment"># stim conn</span>
+    neu_A, neu_B, neu_non, neu_I,
+    <span class="hljs-comment"># E(A B non), I neu</span>
+    syn_A2A_AMPA, syn_A2A_NMDA,
+    syn_A2B_AMPA, syn_A2B_NMDA,
+    syn_A2non_AMPA, syn_A2non_NMDA,
+    syn_B2A_AMPA, syn_B2A_NMDA,
+    syn_B2B_AMPA, syn_B2B_NMDA,
+    syn_B2non_AMPA, syn_B2non_NMDA,
+    syn_non2A_AMPA, syn_non2A_NMDA,
+    syn_non2B_AMPA, syn_non2B_NMDA,
+    syn_non2non_AMPA, syn_non2non_NMDA,
+    <span class="hljs-comment"># E2E conn</span>
+    syn_A2I_AMPA, syn_A2I_NMDA,
+    syn_B2I_AMPA, syn_B2I_NMDA,
+    syn_non2I_AMPA, syn_non2I_NMDA,
+    <span class="hljs-comment"># E2I conn</span>
+    syn_I2A_GABAa, syn_I2B_GABAa, syn_I2non_GABAa,
+    <span class="hljs-comment"># I2E conn</span>
+    syn_I2I_GABAa
+    <span class="hljs-comment"># I2I conn</span>
+)
+<span class="hljs-comment"># Note: you may also use .add method of bp.Network to add</span>
+<span class="hljs-comment">#       NeuGroups and SynConns to network</span>
+
+net.run(duration=total_period, report=<span class="hljs-keyword">True</span>)
+
+
+<span class="hljs-comment"># visualize</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">compute_population_fr</span><span class="hljs-params">(data, time_window, time_step)</span>:</span>
+    spike_cnt_group = data.sum(axis=<span class="hljs-number">1</span>)
+    pop_num = data.shape[<span class="hljs-number">1</span>]
+    time_cnt = int(time_step // dt)
+    first_step_sum = spike_cnt_group[<span class="hljs-number">0</span>:time_cnt].sum(axis=<span class="hljs-number">0</span>)
+    pop_fr_group = []
+    <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> range(data.shape[<span class="hljs-number">0</span>]):
+        <span class="hljs-keyword">if</span> t &lt; time_cnt:
+            pop_fr_group.append((first_step_sum / time_step) / pop_num)
+        <span class="hljs-keyword">else</span>:
+            pop_fr_group.append(spike_cnt_group[t - time_cnt:t].sum(axis=<span class="hljs-number">0</span>))
+    <span class="hljs-keyword">return</span> pop_fr_group
+
+
+fig, gs = bp.visualize.get_figure(<span class="hljs-number">4</span>, <span class="hljs-number">1</span>, <span class="hljs-number">4</span>, <span class="hljs-number">8</span>)
+
+fig.add_subplot(gs[<span class="hljs-number">0</span>, <span class="hljs-number">0</span>])
+bp.visualize.raster_plot(net.ts, neu_A.mon.spike,
+                         markersize=<span class="hljs-number">1</span>)
+plt.xlabel(<span class="hljs-string">&quot;time&quot;</span>)
+plt.ylabel(<span class="hljs-string">&quot;spike of group A&quot;</span>)
+fig.add_subplot(gs[<span class="hljs-number">1</span>, <span class="hljs-number">0</span>])
+bp.visualize.raster_plot(net.ts, neu_B.mon.spike,
+                         markersize=<span class="hljs-number">1</span>)
+plt.xlabel(<span class="hljs-string">&quot;time&quot;</span>)
+plt.ylabel(<span class="hljs-string">&quot;spike of group B&quot;</span>)
+
+fig.add_subplot(gs[<span class="hljs-number">2</span>, <span class="hljs-number">0</span>])
+print(<span class="hljs-string">&quot;computing fr...&quot;</span>)
+pop_fr_A = compute_population_fr(neu_A.mon.spike, time_window=<span class="hljs-number">50.</span>, time_step=<span class="hljs-number">5.</span>)
+pop_fr_B = compute_population_fr(neu_B.mon.spike, time_window=<span class="hljs-number">50.</span>, time_step=<span class="hljs-number">5.</span>)
+print(<span class="hljs-string">&quot;get fr&quot;</span>)
+plt.bar(net.ts, pop_fr_A, label=<span class="hljs-string">&quot;group A&quot;</span>)
+plt.bar(net.ts, pop_fr_B, label=<span class="hljs-string">&quot;group B&quot;</span>)
+plt.xlabel(<span class="hljs-string">&quot;time&quot;</span>)
+plt.ylabel(<span class="hljs-string">&quot;population activity&quot;</span>)
+plt.legend()
+
+fig.add_subplot(gs[<span class="hljs-number">3</span>, <span class="hljs-number">0</span>])
+plt.plot(net.ts, neu_input2A.mon.freq, label=<span class="hljs-string">&quot;group A&quot;</span>)
+plt.plot(net.ts, neu_input2B.mon.freq, label=<span class="hljs-string">&quot;group B&quot;</span>)
+plt.xlabel(<span class="hljs-string">&quot;time&quot;</span>)
+plt.ylabel(<span class="hljs-string">&quot;input firing rate&quot;</span>)
+plt.legend()
+
+plt.show()
+</code></pre>
+<pre><code>N_E = 320 = 48 + 48 + 224, N_I = 80
+R_E * C_E = 20.0 should be equal to tau_E = 20.0
+R_I * C_I = 10.0 should be equal to tau_I = 10.0
+the structured weight is: w_pos = 1.7, w_neg = 0.8764705882352941
+Check contraints: Weight sum 319.9999999999997         should be equal to N_E = 320
+coherence = 25.6, mu_A = 50.24, mu_B = 29.759999999999998
+
+computing fr...
+get fr
+</code></pre><p><img src="../../figs/snn/out/output_18_1.png" alt="png"></p>
+<center><b>Fig.3-6 decision making network</b></center>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="../networks.html" class="navigation navigation-prev " aria-label="Previous page: 3. Network models">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="rate_models.html" class="navigation navigation-next " aria-label="Next page: 3.2 Firing rate networks">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"3.1 Spiking neural networks","level":"1.4.1","depth":2,"next":{"title":"3.2 Firing rate networks","level":"1.4.2","depth":2,"path":"networks/rate_models.md","ref":"networks/rate_models.md","articles":[]},"previous":{"title":"3. Network models","level":"1.4","depth":1,"path":"networks.md","ref":"networks.md","articles":[{"title":"3.1 Spiking neural networks","level":"1.4.1","depth":2,"path":"networks/snn.md","ref":"networks/snn.md","articles":[]},{"title":"3.2 Firing rate networks","level":"1.4.2","depth":2,"path":"networks/rate_models.md","ref":"networks/rate_models.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-sharing","katex","code","anchor-navigation-ex","splitter"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"livereload":{},"splitter":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"code":{"copyButtons":true},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"anchor-navigation-ex":{"associatedWithSummary":true,"float":{"floatIcon":"fa fa-navicon","level1Icon":"","level2Icon":"","level3Icon":"","showLevelIcon":false},"mode":"float","multipleH1":true,"pageTop":{"level1Icon":"","level2Icon":"","level3Icon":"","showLevelIcon":false},"printLog":false,"showGoTop":true,"showLevel":false},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"en","gitbook":"*"},"file":{"path":"networks/snn.md","mtime":"2021-04-20T09:38:58.268Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-20T09:39:15.617Z"},"basePath":"..","book":{"language":"en"}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-code/plugin.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

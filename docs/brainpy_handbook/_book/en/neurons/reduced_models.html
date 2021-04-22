@@ -1,0 +1,943 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>1.2 Reduced models · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-code/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="firing_rate_models.html" />
+    
+    
+    <link rel="prev" href="biophysical_models.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    0. Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../neurons.html">
+            
+                <a href="../neurons.html">
+            
+                    
+                    1. Neuron models
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="biophysical_models.html">
+            
+                <a href="biophysical_models.html">
+            
+                    
+                    1.1 Biophysical models
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.2" data-path="reduced_models.html">
+            
+                <a href="reduced_models.html">
+            
+                    
+                    1.2 Reduced models
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="firing_rate_models.html">
+            
+                <a href="firing_rate_models.html">
+            
+                    
+                    1.3 Firing rate models
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../synapses.html">
+            
+                <a href="../synapses.html">
+            
+                    
+                    2. Synapse models
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="../synapse/dynamics.html">
+            
+                <a href="../synapse/dynamics.html">
+            
+                    
+                    2.1 Synaptic dynamics
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="../synapse/plasticity.html">
+            
+                <a href="../synapse/plasticity.html">
+            
+                    
+                    2.2 Synaptic plasticity
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../networks.html">
+            
+                <a href="../networks.html">
+            
+                    
+                    3. Network models
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="../networks/snn.html">
+            
+                <a href="../networks/snn.html">
+            
+                    
+                    3.1 Spiking neural networks
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="../networks/rate_models.html">
+            
+                <a href="../networks/rate_models.html">
+            
+                    
+                    3.2 Firing rate networks
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >1.2 Reduced models</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <div id="anchor-navigation-ex-navbar"><i class="fa fa-navicon"></i><ul><ul><li><span class="title-icon "></span><a href="#12-reduced-models"><b></b>1.2 Reduced models</a></li><ul><li><span class="title-icon "></span><a href="#121-leaky-integrate-and-fire-model"><b></b>1.2.1 Leaky Integrate-and-Fire model</a></li><li><span class="title-icon "></span><a href="#122-quadratic-integrate-and-fire-model"><b></b>1.2.2 Quadratic Integrate-and-Fire model</a></li><li><span class="title-icon "></span><a href="#123-exponential-integrate-and-fire-model"><b></b>1.2.3 Exponential Integrate-and-Fire model</a></li><li><span class="title-icon "></span><a href="#124-adaptive-exponential-integrate-and-fire-model"><b></b>1.2.4 Adaptive Exponential Integrate-and-Fire model</a></li><li><span class="title-icon "></span><a href="#125-resonate-and-fire-model"><b></b>1.2.5 Resonate-and-Fire model</a></li><li><span class="title-icon "></span><a href="#126-hindmarsh-rose-model"><b></b>1.2.6 Hindmarsh-Rose model</a></li><li><span class="title-icon "></span><a href="#127-generalized-integrate-and-fire-model"><b></b>1.2.7 Generalized Integrate-and-Fire model</a></li></ul></ul></ul></div><a href="#" id="anchorNavigationExGoTop"><i class="fa fa-arrow-up"></i></a><h2 id="12-reduced-models"><a name="12-reduced-models" class="anchor-navigation-ex-anchor" href="#12-reduced-models"><i class="fa fa-link" aria-hidden="true"></i></a>1.2 Reduced models</h2>
+<p>Inspired by biophysical experiments, Hodgkin-Huxley model is precise but costful. Researchers proposed the reduced models to reduce the consumption on computing resources and running time in simulation. </p>
+<p>These models are simple and easy to compute, while they can still reproduce the main pattern of neuron behavior. Although their representation capabilities are not as good as biophysical models, such a loss of accuracy is acceptable comparing to their simplicity.</p>
+<h3 id="121-leaky-integrate-and-fire-model"><a name="121-leaky-integrate-and-fire-model" class="anchor-navigation-ex-anchor" href="#121-leaky-integrate-and-fire-model"><i class="fa fa-link" aria-hidden="true"></i></a>1.2.1 Leaky Integrate-and-Fire model</h3>
+<p>The most typical reduced model is the Leaky Integrate-and-Fire model (LIF model) presented by Lapicque (1907).  LIF model can be seen as a combination of integrate process represented by differential equation and spike process represented by conditional judgment:</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>&#x3C4;</mi><mfrac><mrow><mi>d</mi><mi>V</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mo>&#x2212;</mo><mo>(</mo><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>t</mi></mrow></msub><mo>)</mo><mo>+</mo><mi>R</mi><mi>I</mi><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex"> \tau \frac{dV}{dt} = - (V - V_{rest}) + R I(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8801079999999999em;"></span><span class="strut bottom" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.1132em;">&#x3C4;</span><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.394em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord">&#x2212;</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span></span></span></span></p>
+<p>If  <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>V</mi><mo>&gt;</mo><msub><mi>V</mi><mrow><mi>t</mi><mi>h</mi></mrow></msub></mrow><annotation encoding="application/x-tex">V &gt; V_{th}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mrel">&gt;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight">h</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span>, neuron fire, </p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>V</mi><mo>&#x2190;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow></msub></mrow><annotation encoding="application/x-tex"> V \gets V_{reset}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mrel">&#x2190;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span>.</p>
+<p>The <code>derivative</code> method of LIF model is simpler than of HH model. However the <code>update</code> method is more complex because of the conditional judgement.</p>
+<pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LIF</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(V, t, Iext, V_rest, R, tau)</span>:</span>
+        dvdt = (-V + V_rest + R * Iext) / tau
+        <span class="hljs-keyword">return</span> dvdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, t_refractory=<span class="hljs-number">5.</span>, V_rest=<span class="hljs-number">0.</span>,
+                 V_reset=<span class="hljs-number">-5.</span>, V_th=<span class="hljs-number">20.</span>, R=<span class="hljs-number">1.</span>, tau=<span class="hljs-number">10.</span>, **kwargs)</span>:</span>
+        <span class="hljs-comment"># parameters</span>
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.R = R
+        self.tau = tau
+        self.t_refractory = t_refractory
+
+        <span class="hljs-comment"># variables</span>
+        num = bp.size2len(size)
+        self.t_last_spike = bp.ops.ones(num) * <span class="hljs-number">-1e7</span>
+        self.input = bp.ops.zeros(num)
+        self.V = bp.ops.ones(num) * V_rest
+        self.refractory = bp.ops.zeros(num, dtype=bool)
+        self.spike = bp.ops.zeros(num, dtype=bool)
+
+        self.integral = bp.odeint(self.derivative)
+        super(LIF, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        refractory = (_t - self.t_last_spike) &lt;= self.t_refractory
+        <span class="hljs-comment"># if neuron is in refractory period</span>
+        V = self.integral(self.V, _t, self.input, self.V_rest, self.R, self.tau)
+        V = bp.ops.where(refractory, self.V, V)
+        spike = self.V_th &lt;= V  <span class="hljs-comment"># if neuron spikes</span>
+        self.t_last_spike = bp.ops.where(spike, _t, self.t_last_spike)
+        self.V = bp.ops.where(spike, self.V_reset, V)
+        self.refractory = refractory | spike
+        self.input[:] = <span class="hljs-number">0.</span>
+        self.spike = spike
+</code></pre>
+<p>Note that we write <code>update</code> method in vector form here. If the backend is <code>Numba</code>, we can also realize LIF model with <code>prange</code> loop, for <code>Numba</code> provides excellent parallel acceleration on <code>prange</code> loop:</p>
+<pre><code>def update(self, _t):
+    for i in prange(self.size[0]):
+        spike = 0.
+        refractory = (_t - self.t_last_spike[i] &lt;= self.t_refractory)
+        if not refractory:
+            V = self.integral(self.V[i], _t, self.input[i], self.V_rest, self.R, self.tau)
+            spike = (V &gt;= self.V_th)
+            if spike:
+                V = self.V_reset
+                self.t_last_spike[i] = _t
+            self.V[i] = V
+        self.spike[i] = spike
+        self.refractory[i] = refractory or spike
+        self.input[i] = 0.
+</code></pre><pre><code class="lang-python">neu = LIF(<span class="hljs-number">100</span>, monitors=[<span class="hljs-string">&apos;V&apos;</span>, <span class="hljs-string">&apos;refractory&apos;</span>, <span class="hljs-string">&apos;spike&apos;</span>])
+net = bp.Network(neu)
+net.run(duration=<span class="hljs-number">200.</span>, inputs=(neu, <span class="hljs-string">&apos;input&apos;</span>, <span class="hljs-number">21.</span>))
+bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
+                       xlabel=<span class="hljs-string">&quot;t&quot;</span>, ylabel=<span class="hljs-string">&quot;V&quot;</span>, show=<span class="hljs-keyword">True</span>)
+</code></pre>
+<p><img src="../../figs/neurons/out/output_37_0.png" alt="png"></p>
+<p>Compare to the HH model, LIF model does not model the spike period of action potentials, in which the membrane potential bursts.</p>
+<h3 id="122-quadratic-integrate-and-fire-model"><a name="122-quadratic-integrate-and-fire-model" class="anchor-navigation-ex-anchor" href="#122-quadratic-integrate-and-fire-model"><i class="fa fa-link" aria-hidden="true"></i></a>1.2.2 Quadratic Integrate-and-Fire model</h3>
+<p>To persue higher representation capability, Latham et al. (2000) proposed Quadratic Integrate-and-Fire model, in which they add a second order term in differential equation so the neurons can generate spike better.</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>&#x3C4;</mi><mfrac><mrow><mi>d</mi><mi>V</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><msub><mi>a</mi><mn>0</mn></msub><mo>(</mo><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>t</mi></mrow></msub><mo>)</mo><mo>(</mo><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mi>c</mi></msub><mo>)</mo><mo>+</mo><mi>R</mi><mi>I</mi><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\tau\frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) + RI(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8801079999999999em;"></span><span class="strut bottom" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.1132em;">&#x3C4;</span><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.394em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord"><span class="mord mathit">a</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathrm mtight">0</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight">c</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span></span></span></span></p>
+<pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">QuaIF</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(V, t, I_ext, V_rest, V_c, R, tau, a_0)</span>:</span>
+        dVdt = (a_0 * (V - V_rest) * (V - V_c) + R * I_ext) / tau
+        <span class="hljs-keyword">return</span> dVdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, V_rest=<span class="hljs-number">-65.</span>, V_reset=<span class="hljs-number">-68.</span>,
+                 V_th=<span class="hljs-number">-30.</span>, V_c=<span class="hljs-number">-50.0</span>, a_0=<span class="hljs-number">.07</span>,
+                 R=<span class="hljs-number">1.</span>, tau=<span class="hljs-number">10.</span>, t_refractory=<span class="hljs-number">0.</span>, **kwargs)</span>:</span>
+        <span class="hljs-comment"># parameters</span>
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.V_c = V_c
+        self.a_0 = a_0
+        self.R = R
+        self.tau = tau
+        self.t_refractory = t_refractory
+
+        <span class="hljs-comment"># variables</span>
+        num = bp.size2len(size)
+        self.V = bp.ops.ones(num) * V_reset
+        self.input = bp.ops.zeros(num)
+        self.spike = bp.ops.zeros(num, dtype=bool)
+        self.refractory = bp.ops.zeros(num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(num) * <span class="hljs-number">-1e7</span>
+
+        self.integral = bp.odeint(f=self.derivative, method=<span class="hljs-string">&apos;euler&apos;</span>)
+
+        super(QuaIF, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        refractory = (_t - self.t_last_spike) &lt;= self.t_refractory
+        V = self.integral(self.V, _t, self.input, self.V_rest,
+                          self.V_c, self.R, self.tau, self.a_0)
+        V = bp.ops.where(refractory, self.V, V)
+        spike = self.V_th &lt;= V
+        self.t_last_spike = bp.ops.where(spike, _t, self.t_last_spike)
+        self.V = bp.ops.where(spike, self.V_reset, V)
+        self.refractory = refractory | spike
+        self.input[:] = <span class="hljs-number">0.</span>
+        self.spike = spike
+</code></pre>
+<pre><code class="lang-python">neu = QuaIF(<span class="hljs-number">100</span>, monitors=[<span class="hljs-string">&apos;V&apos;</span>, <span class="hljs-string">&apos;refractory&apos;</span>, <span class="hljs-string">&apos;spike&apos;</span>])
+net = bp.Network(neu)
+net.run(duration=<span class="hljs-number">200.</span>, inputs=(neu, <span class="hljs-string">&apos;input&apos;</span>, <span class="hljs-number">21.</span>))
+bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
+                       xlabel=<span class="hljs-string">&quot;t&quot;</span>, ylabel=<span class="hljs-string">&quot;V&quot;</span>, show=<span class="hljs-keyword">True</span>)
+</code></pre>
+<p><img src="../../figs/neurons/out/output_41_0.png" alt="png"></p>
+<h3 id="123-exponential-integrate-and-fire-model"><a name="123-exponential-integrate-and-fire-model" class="anchor-navigation-ex-anchor" href="#123-exponential-integrate-and-fire-model"><i class="fa fa-link" aria-hidden="true"></i></a>1.2.3 Exponential Integrate-and-Fire model</h3>
+<p>Exponential Integrate-and-Fire model (ExpIF model) (Fourcaud-Trocme et al., 2003) is more expressive than QuaIF model.</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>&#x3C4;</mi><mfrac><mrow><mi>d</mi><mi>V</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mo>&#x2212;</mo><mo>(</mo><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>t</mi></mrow></msub><mo>)</mo><mo>+</mo><msub><mi mathvariant="normal">&#x394;</mi><mi>T</mi></msub><msup><mi>e</mi><mrow><mfrac><mrow><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mi>T</mi></msub></mrow><mrow><msub><mi mathvariant="normal">&#x394;</mi><mi>T</mi></msub></mrow></mfrac></mrow></msup><mo>+</mo><mi>R</mi><mi>I</mi><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex"> \tau \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} + R I(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.263745em;"></span><span class="strut bottom" style="height:1.6087449999999999em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.1132em;">&#x3C4;</span><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.394em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord">&#x2212;</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mbin">+</span><span class="mord"><span class="mord mathrm">&#x394;</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mord"><span class="mord mathit">e</span><span class="msupsub"><span class="vlist"><span style="top:-0.5178149999999999em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord reset-scriptstyle scriptstyle uncramped mtight"><span class="mopen sizing reset-size5 size5 reset-scriptstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.344em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptstyle scriptscriptstyle cramped mtight"><span class="mord scriptscriptstyle cramped mtight"><span class="mord mtight"><span class="mord mathrm mtight">&#x394;</span><span class="msupsub"><span class="vlist"><span style="top:0.33853em;margin-right:0.1em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptscriptstyle scriptscriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span><span style="top:-0.22142857142857142em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptstyle textstyle uncramped frac-line"></span></span><span style="top:-0.5775214285714285em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptstyle scriptscriptstyle uncramped mtight"><span class="mord scriptscriptstyle uncramped mtight"><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span><span class="mbin mtight">&#x2212;</span><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.33853em;margin-right:0.1em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptscriptstyle scriptscriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-scriptstyle textstyle uncramped nulldelimiter"></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span></span></span></span></p>
+<pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ExpIF</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(V, t, I_ext, V_rest, delta_T, V_T, R, tau)</span>:</span>
+        dvdt = (- V + V_rest \
+                + delta_T * bp.ops.exp((V - V_T) / delta_T) + R * I_ext) \
+               / tau
+        <span class="hljs-keyword">return</span> dvdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, V_rest=<span class="hljs-number">-65.</span>, V_reset=<span class="hljs-number">-68.</span>,
+                 V_th=<span class="hljs-number">-30.</span>, V_T=<span class="hljs-number">-59.9</span>, delta_T=<span class="hljs-number">3.48</span>,
+                 R=<span class="hljs-number">10.</span>, C=<span class="hljs-number">1.</span>, tau=<span class="hljs-number">10.</span>, t_refractory=<span class="hljs-number">1.7</span>,
+                 **kwargs)</span>:</span>
+        <span class="hljs-comment"># parameters</span>
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.V_T = V_T
+        self.delta_T = delta_T
+        self.R = R
+        self.C = C
+        self.tau = tau
+        self.t_refractory = t_refractory
+
+        <span class="hljs-comment"># variables</span>
+        self.V = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype=bool)
+        self.refractory = bp.ops.zeros(size, dtype=bool)
+        self.t_last_spike = bp.ops.ones(size) * <span class="hljs-number">-1e7</span>
+
+        self.integral = bp.odeint(self.derivative)
+        super(ExpIF, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        refractory = (_t - self.t_last_spike) &lt;= self.t_refractory
+        V = self.integral(self.V, _t, self.input, self.V_rest, self.delta_T, self.V_T, self.R, self.tau)
+        V = bp.ops.where(refractory, self.V, V)
+        spike = self.V_th &lt;= V
+        self.t_last_spike = bp.ops.where(spike, _t, self.t_last_spike)
+        self.V = bp.ops.where(spike, self.V_reset, V)
+        self.refractory = refractory | spike
+        self.input[:] = <span class="hljs-number">0.</span>
+        self.spike = spike
+</code></pre>
+<pre><code class="lang-python">neu = ExpIF(<span class="hljs-number">16</span>, monitors=[<span class="hljs-string">&apos;V&apos;</span>, <span class="hljs-string">&apos;spike&apos;</span>, <span class="hljs-string">&apos;refractory&apos;</span>])
+
+neu.run(duration=<span class="hljs-number">100</span>, inputs=(<span class="hljs-string">&apos;input&apos;</span>, <span class="hljs-number">1.</span>))
+bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
+                       xlabel=<span class="hljs-string">&quot;t&quot;</span>, ylabel=<span class="hljs-string">&quot;V&quot;</span>,
+                       show=<span class="hljs-keyword">True</span>)
+</code></pre>
+<p><img src="../../figs/neurons/out/output_45_0.png" alt="png"></p>
+<p>With the model parameter <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>V</mi><mi>T</mi></msub></mrow><annotation encoding="application/x-tex">V_T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span>, ExpIF model reproduce the burst of membrane potential before action potentials.</p>
+<h3 id="124-adaptive-exponential-integrate-and-fire-model"><a name="124-adaptive-exponential-integrate-and-fire-model" class="anchor-navigation-ex-anchor" href="#124-adaptive-exponential-integrate-and-fire-model"><i class="fa fa-link" aria-hidden="true"></i></a>1.2.4 Adaptive Exponential Integrate-and-Fire model</h3>
+<p>To reproduce the adaptation behavior of neurons, researchers add a weight variable w to existing integrate-and-fire models like LIF, QuaIF and ExpIF models. Here we introduce a typical one: Adaptative Exponential Integrate-and-Fire model (AdExIF model)(Gerstner et al, 2014).</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>&#x3C4;</mi><mi>m</mi></msub><mfrac><mrow><mi>d</mi><mi>V</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mo>&#x2212;</mo><mo>(</mo><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>t</mi></mrow></msub><mo>)</mo><mo>+</mo><msub><mi mathvariant="normal">&#x394;</mi><mi>T</mi></msub><msup><mi>e</mi><mrow><mfrac><mrow><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mi>T</mi></msub></mrow><mrow><msub><mi mathvariant="normal">&#x394;</mi><mi>T</mi></msub></mrow></mfrac></mrow></msup><mo>&#x2212;</mo><mi>R</mi><mi>w</mi><mo>+</mo><mi>R</mi><mi>I</mi><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex"> \tau_m \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} - R w + R I(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.263745em;"></span><span class="strut bottom" style="height:1.6087449999999999em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">&#x3C4;</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.1132em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight">m</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.394em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord">&#x2212;</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mbin">+</span><span class="mord"><span class="mord mathrm">&#x394;</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mord"><span class="mord mathit">e</span><span class="msupsub"><span class="vlist"><span style="top:-0.5178149999999999em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord reset-scriptstyle scriptstyle uncramped mtight"><span class="mopen sizing reset-size5 size5 reset-scriptstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.344em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptstyle scriptscriptstyle cramped mtight"><span class="mord scriptscriptstyle cramped mtight"><span class="mord mtight"><span class="mord mathrm mtight">&#x394;</span><span class="msupsub"><span class="vlist"><span style="top:0.33853em;margin-right:0.1em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptscriptstyle scriptscriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span><span style="top:-0.22142857142857142em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptstyle textstyle uncramped frac-line"></span></span><span style="top:-0.5775214285714285em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptstyle scriptscriptstyle uncramped mtight"><span class="mord scriptscriptstyle uncramped mtight"><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span><span class="mbin mtight">&#x2212;</span><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.33853em;margin-right:0.1em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptscriptstyle scriptscriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.13889em;">T</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-scriptstyle textstyle uncramped nulldelimiter"></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mbin">&#x2212;</span><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span></span></span></span>
+<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>&#x3C4;</mi><mi>w</mi></msub><mfrac><mrow><mi>d</mi><mi>w</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>a</mi><mo>(</mo><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>t</mi></mrow></msub><mo>)</mo><mo>&#x2212;</mo><mi>w</mi><mo>+</mo><mi>b</mi><msub><mi>&#x3C4;</mi><mi>w</mi></msub><mo>&#x2211;</mo><mi>&#x3B4;</mi><mo>(</mo><mi>t</mi><mo>&#x2212;</mo><msup><mi>t</mi><mi>f</mi></msup><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex"> \tau_w \frac{dw}{dt} = a(V - V_{rest})- w + b \tau_w \sum \delta(t - t^f))</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8801079999999999em;"></span><span class="strut bottom" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">&#x3C4;</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.1132em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02691em;">w</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.394em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.02691em;">w</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord mathit">a</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mbin">&#x2212;</span><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="mbin">+</span><span class="mord mathit">b</span><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">&#x3C4;</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.1132em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02691em;">w</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mop op-symbol small-op" style="top:-0.0000050000000000050004em;">&#x2211;</span><span class="mord mathit" style="margin-right:0.03785em;">&#x3B4;</span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit">t</span><span class="msupsub"><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord mathit mtight" style="margin-right:0.10764em;">f</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mclose">)</span></span></span></span></p>
+<p>Facing a constant input, the firing rate of AdExIF neuron decreases over time. These adaptation is controlled by the weight variable w.</p>
+<pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AdExIF</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(V, w, t, I_ext, V_rest, delta_T, V_T, R, tau, tau_w, a)</span>:</span>
+        dwdt = (a * (V - V_rest) - w) / tau_w
+        dVdt = (- (V - V_rest) + delta_T * bp.ops.exp((V - V_T) / delta_T) - R * w + R * I_ext) / tau
+        <span class="hljs-keyword">return</span> dVdt, dwdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, V_rest=<span class="hljs-number">-65.</span>, V_reset=<span class="hljs-number">-68.</span>,
+                 V_th=<span class="hljs-number">-30.</span>, V_T=<span class="hljs-number">-59.9</span>, delta_T=<span class="hljs-number">3.48</span>,
+                 a=<span class="hljs-number">1.</span>, b=<span class="hljs-number">1.</span>, R=<span class="hljs-number">10.</span>, tau=<span class="hljs-number">10.</span>, tau_w=<span class="hljs-number">30.</span>,
+                 t_refractory=<span class="hljs-number">0.</span>, **kwargs)</span>:</span>
+        <span class="hljs-comment"># parameters</span>
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th = V_th
+        self.V_T = V_T
+        self.delta_T = delta_T
+        self.a = a
+        self.b = b
+        self.R = R
+        self.tau = tau
+        self.tau_w = tau_w
+        self.t_refractory = t_refractory
+
+        <span class="hljs-comment"># variables</span>
+        num = bp.size2len(size)
+        self.V = bp.ops.ones(num) * V_reset
+        self.w = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(num)
+        self.spike = bp.ops.zeros(num, dtype=bool)
+        self.refractory = bp.ops.zeros(num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(num) * <span class="hljs-number">-1e7</span>
+
+        self.integral = bp.odeint(f=self.derivative, method=<span class="hljs-string">&apos;euler&apos;</span>)
+
+        super(AdExIF, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        refractory = (_t - self.t_last_spike) &lt;= self.t_refractory
+        V, w = self.integral(self.V, self.w, _t, self.input, self.V_rest,
+                             self.delta_T, self.V_T, self.R, self.tau,
+                             self.tau_w, self.a)
+        V = bp.ops.where(refractory, self.V, V)
+        spike = self.V_th &lt;= V
+        self.t_last_spike = bp.ops.where(spike, _t, self.t_last_spike)
+        self.V = bp.ops.where(spike, self.V_reset, V)
+        self.w = bp.ops.where(spike, w + self.b, w)
+        self.refractory = refractory | spike
+        self.input[:] = <span class="hljs-number">0.</span>
+        self.spike = spike
+</code></pre>
+<pre><code class="lang-python"><span class="hljs-keyword">import</span> brainpy <span class="hljs-keyword">as</span> bp
+
+backend = <span class="hljs-string">&apos;numpy&apos;</span>
+bp.backend.set(backend=backend, dt=<span class="hljs-number">.005</span>)
+
+duration = <span class="hljs-number">200</span>
+I_ext = <span class="hljs-number">65</span>
+neu = AdExIF(size=<span class="hljs-number">1</span>, monitors=[<span class="hljs-string">&apos;V&apos;</span>, <span class="hljs-string">&apos;spike&apos;</span>, <span class="hljs-string">&apos;refractory&apos;</span>],
+             a=<span class="hljs-number">.5</span>, b=<span class="hljs-number">7</span>, R=<span class="hljs-number">.5</span>, tau=<span class="hljs-number">9.9</span>, tau_w=<span class="hljs-number">100</span>,
+             V_reset=<span class="hljs-number">-70</span>, V_rest=<span class="hljs-number">-70</span>, V_th=<span class="hljs-number">-30</span>,
+             V_T=<span class="hljs-number">-50</span>, delta_T=<span class="hljs-number">2.</span>, t_refractory=<span class="hljs-number">5.</span>)
+
+neu.run(duration, inputs=(<span class="hljs-string">&apos;input&apos;</span>, I_ext))
+fig, gs = bp.visualize.get_figure(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">4</span>, <span class="hljs-number">10</span>)
+bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
+                       xlabel=<span class="hljs-string">&quot;t&quot;</span>, ylabel=<span class="hljs-string">&quot;V&quot;</span>)
+</code></pre>
+<p><img src="../../figs/neurons/out/output_51_0.png" alt="png"></p>
+<h3 id="125-resonate-and-fire-model"><a name="125-resonate-and-fire-model" class="anchor-navigation-ex-anchor" href="#125-resonate-and-fire-model"><i class="fa fa-link" aria-hidden="true"></i></a>1.2.5 Resonate-and-Fire model</h3>
+<p>Other than the integrators we introduced above, there is another neuron type called resonator. From Fig.1-12 we may see, resonators&apos; membrane potentials oscillate under the threshold potential when there is no spike, that&apos;s the reason resonators prefer rhythm inputs than high frequency inputs.</p>
+<center><img src="../../figs/neurons/1-12.png"> </center>
+
+<center><b>Fig.1-12 Integrator vs. Resonator</b></center>
+
+<p>This subthreshold oscillations of resonators are caused by the interactions between ion channels. To model the oscillations, Izhikevich and Eugene (2001) proposed Resonate-and-Fire model (RF model) which includes two model variables x, y to represent the current-like and voltage-like variables in neurons.</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mrow><mi>d</mi><mi>x</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>b</mi><mi>x</mi><mo>&#x2212;</mo><mi>w</mi><mi>y</mi></mrow><annotation encoding="application/x-tex">\frac{dx}{dt} = bx - wy</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8801079999999999em;"></span><span class="strut bottom" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.394em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">x</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord mathit">b</span><span class="mord mathit">x</span><span class="mbin">&#x2212;</span><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="mord mathit" style="margin-right:0.03588em;">y</span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mrow><mi>d</mi><mi>y</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>w</mi><mi>x</mi><mo>+</mo><mi>b</mi><mi>y</mi></mrow><annotation encoding="application/x-tex">\frac{dy}{dt} = wx + by</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9322159999999999em;"></span><span class="strut bottom" style="height:1.277216em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.44610799999999995em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.03588em;">y</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord mathit" style="margin-right:0.02691em;">w</span><span class="mord mathit">x</span><span class="mbin">+</span><span class="mord mathit">b</span><span class="mord mathit" style="margin-right:0.03588em;">y</span></span></span></span></p>
+<p>When spike,</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi><mo>&#x2190;</mo><mn>0</mn><mo separator="true">,</mo><mi>y</mi><mo>&#x2190;</mo><mn>1</mn></mrow><annotation encoding="application/x-tex"> x \gets 0, y \gets 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span><span class="strut bottom" style="height:0.8388800000000001em;vertical-align:-0.19444em;"></span><span class="base textstyle uncramped"><span class="mord mathit">x</span><span class="mrel">&#x2190;</span><span class="mord mathrm">0</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mrel">&#x2190;</span><span class="mord mathrm">1</span></span></span></span></p>
+<pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ResonateandFire</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(y, x, t, b, omega)</span>:</span>
+        dydt = omega * x + b * y
+        dxdt = b * x - omega * y
+        <span class="hljs-keyword">return</span> dydt, dxdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, b=<span class="hljs-number">-1.</span>, omega=<span class="hljs-number">10.</span>,
+                 V_th=<span class="hljs-number">1.</span>, V_reset=<span class="hljs-number">1.</span>, x_reset=<span class="hljs-number">0.</span>,
+                 **kwargs)</span>:</span>
+        <span class="hljs-comment"># parameters</span>
+        self.b = b
+        self.omega = omega
+        self.V_th = V_th
+        self.V_reset = V_reset
+        self.x_reset = x_reset
+
+        <span class="hljs-comment"># variables</span>
+        self.y = bp.ops.zeros(size)
+        self.x = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype=bool)
+
+        self.integral = bp.odeint(self.derivative)
+        super(ResonateandFire, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        x = self.x + self.input
+        y, x = self.integral(self.y, x, _t, self.b, self.omega)
+        sp = (y &gt; self.V_th)
+        y[sp] = self.V_reset
+        x[sp] = self.x_reset
+        self.y = y
+        self.x = x
+        self.spike = sp
+        self.input[:] = <span class="hljs-number">0</span>
+</code></pre>
+<pre><code class="lang-python">bp.backend.set(<span class="hljs-string">&apos;numpy&apos;</span>, dt=<span class="hljs-number">0.002</span>)
+group = ResonateandFire(<span class="hljs-number">1</span>, monitors=[<span class="hljs-string">&apos;x&apos;</span>, <span class="hljs-string">&apos;y&apos;</span>], show_code=<span class="hljs-keyword">False</span>)
+current = bp.inputs.spike_current(points=[<span class="hljs-number">0.0</span>], lengths=<span class="hljs-number">0.002</span>,
+                                  sizes=<span class="hljs-number">-2.</span>, duration=<span class="hljs-number">20.</span>)
+group.run(duration=<span class="hljs-number">20.</span>, inputs=(<span class="hljs-string">&apos;input&apos;</span>, current))
+bp.visualize.line_plot(
+    group.mon.x, group.mon.y, 
+    xlabel = <span class="hljs-string">&apos;x&apos;</span>, ylabel = <span class="hljs-string">&apos;y&apos;</span>,
+    show=<span class="hljs-keyword">True</span>)
+bp.visualize.line_plot(
+    group.mon.ts, group.mon.y, 
+    xlabel = <span class="hljs-string">&apos;time&apos;</span>, ylabel = <span class="hljs-string">&apos;y&apos;</span>,
+    show=<span class="hljs-keyword">True</span>)
+</code></pre>
+<p><img src="../../figs/neurons/out/output_54_0.png" alt="png"></p>
+<p><img src="../../figs/neurons/out/output_54_1.png" alt="png"></p>
+<p>After a short stimulus is given, paint the trajectory of x and y on complex field, we can see the both variables decaying to zero in a nearly circle trajectory. The voltage-like variable y acts like a resonator here.</p>
+<h3 id="126-hindmarsh-rose-model"><a name="126-hindmarsh-rose-model" class="anchor-navigation-ex-anchor" href="#126-hindmarsh-rose-model"><i class="fa fa-link" aria-hidden="true"></i></a>1.2.6 Hindmarsh-Rose model</h3>
+<p>To simulate the bursting spike pattern in neurons (i.e. continuously firing in a short time period), Hindmarsh and Rose (1984) proposed Hindmarsh-Rose neuron model, import a third model variable as slow variable to control the bursting of neuron.</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mrow><mi>d</mi><mi>V</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>y</mi><mo>&#x2212;</mo><mi>a</mi><msup><mi>V</mi><mn>3</mn></msup><mo>+</mo><mi>b</mi><msup><mi>V</mi><mn>2</mn></msup><mo>&#x2212;</mo><mi>z</mi><mo>+</mo><mi>I</mi></mrow><annotation encoding="application/x-tex">\frac{d V}{d t} = y - a V^3 + b V^2 - z + I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8801079999999999em;"></span><span class="strut bottom" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.394em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mbin">&#x2212;</span><span class="mord mathit">a</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord mathrm mtight">3</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mbin">+</span><span class="mord mathit">b</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord mathrm mtight">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mbin">&#x2212;</span><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.07847em;">I</span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mrow><mi>d</mi><mi>y</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>c</mi><mo>&#x2212;</mo><mi>d</mi><msup><mi>V</mi><mn>2</mn></msup><mo>&#x2212;</mo><mi>y</mi></mrow><annotation encoding="application/x-tex">\frac{d y}{d t} = c - d V^2 - y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9322159999999999em;"></span><span class="strut bottom" style="height:1.277216em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.44610799999999995em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.03588em;">y</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord mathit">c</span><span class="mbin">&#x2212;</span><span class="mord mathit">d</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:-0.363em;margin-right:0.05em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord mathrm mtight">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mbin">&#x2212;</span><span class="mord mathit" style="margin-right:0.03588em;">y</span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mrow><mi>d</mi><mi>z</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>r</mi><mo>(</mo><mi>s</mi><mo>(</mo><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>t</mi></mrow></msub><mo>)</mo><mo>&#x2212;</mo><mi>z</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\frac{d z}{d t} = r (s (V - V_{rest}) - z)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8801079999999999em;"></span><span class="strut bottom" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.394em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.04398em;">z</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mopen">(</span><span class="mord mathit">s</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mbin">&#x2212;</span><span class="mord mathit" style="margin-right:0.04398em;">z</span><span class="mclose">)</span></span></span></span></p>
+<pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HindmarshRose</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(V, y, z, t, a, b, I_ext, c, d, r, s, V_rest)</span>:</span>
+        dVdt = y - a * V * V * V + b * V * V - z + I_ext
+        dydt = c - d * V * V - y
+        dzdt = r * (s * (V - V_rest) - z)
+        <span class="hljs-keyword">return</span> dVdt, dydt, dzdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, a=<span class="hljs-number">1.</span>, b=<span class="hljs-number">3.</span>,
+                 c=<span class="hljs-number">1.</span>, d=<span class="hljs-number">5.</span>, r=<span class="hljs-number">0.01</span>, s=<span class="hljs-number">4.</span>,
+                 V_rest=<span class="hljs-number">-1.6</span>, **kwargs)</span>:</span>
+        <span class="hljs-comment"># parameters</span>
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+        self.r = r
+        self.s = s
+        self.V_rest = V_rest
+
+        <span class="hljs-comment"># variables</span>
+        self.z = bp.ops.zeros(size)
+        self.input = bp.ops.zeros(size)
+        self.V = bp.ops.ones(size) * <span class="hljs-number">-1.6</span>
+        self.y = bp.ops.ones(size) * <span class="hljs-number">-10.</span>
+
+        self.integral = bp.odeint(self.derivative)
+        super(HindmarshRose, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        self.V, self.y, self.z = self.integral(self.V, self.y, self.z, _t,
+                                               self.a, self.b, self.input,
+                                               self.c, self.d, self.r, self.s,
+                                               self.V_rest)
+        self.input[:] = <span class="hljs-number">0.</span>
+</code></pre>
+<pre><code class="lang-python"><span class="hljs-keyword">import</span> brainpy <span class="hljs-keyword">as</span> bp
+
+bp.backend.set(<span class="hljs-string">&apos;numba&apos;</span>, dt=<span class="hljs-number">0.02</span>)
+mode = <span class="hljs-string">&apos;irregular_bursting&apos;</span>
+param = {<span class="hljs-string">&apos;quiescence&apos;</span>: [<span class="hljs-number">1.0</span>, <span class="hljs-number">2.0</span>],  <span class="hljs-comment"># a</span>
+         <span class="hljs-string">&apos;spiking&apos;</span>: [<span class="hljs-number">3.5</span>, <span class="hljs-number">5.0</span>],  <span class="hljs-comment"># c</span>
+         <span class="hljs-string">&apos;bursting&apos;</span>: [<span class="hljs-number">2.5</span>, <span class="hljs-number">3.0</span>],  <span class="hljs-comment"># d</span>
+         <span class="hljs-string">&apos;irregular_spiking&apos;</span>: [<span class="hljs-number">2.95</span>, <span class="hljs-number">3.3</span>],  <span class="hljs-comment"># h</span>
+         <span class="hljs-string">&apos;irregular_bursting&apos;</span>: [<span class="hljs-number">2.8</span>, <span class="hljs-number">3.7</span>],  <span class="hljs-comment"># g</span>
+         }
+<span class="hljs-comment"># set params of b and I_ext corresponding to different firing mode</span>
+print(f<span class="hljs-string">&quot;parameters is set to firing mode &lt;{mode}&gt;&quot;</span>)
+
+group = HindmarshRose(size=<span class="hljs-number">10</span>, b=param[mode][<span class="hljs-number">0</span>],
+                                          monitors=[<span class="hljs-string">&apos;V&apos;</span>, <span class="hljs-string">&apos;y&apos;</span>, <span class="hljs-string">&apos;z&apos;</span>])
+
+group.run(<span class="hljs-number">500.</span>, inputs=(<span class="hljs-string">&apos;input&apos;</span>, param[mode][<span class="hljs-number">1</span>]))
+bp.visualize.line_plot(group.mon.ts, group.mon.V, show=<span class="hljs-keyword">True</span>)
+</code></pre>
+<pre><code>parameters is set to firing mode &lt;irregular_bursting&gt;
+</code></pre><p><img src="../../figs/neurons/out/output_58_1.png" alt="png"></p>
+<p>In the variable-t plot below, the three model variables x, y, z change on time. Variable z changes much slower than x and y, so it is the slow variable.</p>
+<p>We should mention that x and y are changing periodically during the simulation. Can BrainPy help us analysis the reason of this periodicity?</p>
+<pre><code class="lang-python">mode = <span class="hljs-string">&apos;spiking&apos;</span>
+print(f<span class="hljs-string">&quot;parameters is set to firing mode &lt;{mode}&gt;&quot;</span>)
+group = HindmarshRose(size=<span class="hljs-number">10</span>, b=param[mode][<span class="hljs-number">0</span>],
+                      monitors=[<span class="hljs-string">&apos;V&apos;</span>, <span class="hljs-string">&apos;y&apos;</span>, <span class="hljs-string">&apos;z&apos;</span>])
+group.run(<span class="hljs-number">100.</span>, inputs=(<span class="hljs-string">&apos;input&apos;</span>, param[mode][<span class="hljs-number">1</span>]))
+fig, gs = bp.visualize.get_figure(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">4</span>, <span class="hljs-number">10</span>)
+fig.add_subplot(gs[<span class="hljs-number">0</span>, <span class="hljs-number">0</span>])
+bp.visualize.line_plot(group.mon.ts, group.mon.V, legend = <span class="hljs-string">&apos;V&apos;</span>)
+bp.visualize.line_plot(group.mon.ts, group.mon.y, legend = <span class="hljs-string">&apos;y&apos;</span>)
+bp.visualize.line_plot(group.mon.ts, group.mon.z, legend = <span class="hljs-string">&apos;z&apos;</span>, show=<span class="hljs-keyword">True</span>)
+</code></pre>
+<pre><code>parameters is set to firing mode &lt;spiking&gt;
+</code></pre><p><img src="../../figs/neurons/out/output_60_1.png" alt="png"></p>
+<p>Yes. With the module <code>analysis</code> of BrainPy, users can do simple dynamic analysis, including 1D/2D bifurcation analysis, fast-slow variable bifurcation analysis and 2D/3D phase plane drawing.</p>
+<p>Here we take 2D phase plane drawing as an example. Passing the differential eqution, target variables, fixed variables and parameters to <code>PhasePlane</code> class in <code>analysis</code> module, we can instantiate a PhasePlane analyzer object based on differential equation.</p>
+<pre><code class="lang-python"><span class="hljs-comment"># Phase plane analysis</span>
+ppanalyzer = bp.analysis.PhasePlane(
+    neu.integral,
+    target_vars = {<span class="hljs-string">&apos;V&apos;</span>: [<span class="hljs-number">-3.</span>, <span class="hljs-number">3.</span>], <span class="hljs-string">&apos;y&apos;</span>: [<span class="hljs-number">-20.</span>, <span class="hljs-number">5.</span>]},
+    fixed_vars = {<span class="hljs-string">&apos;z&apos;</span>: <span class="hljs-number">0.</span>},
+    pars_update = {<span class="hljs-string">&apos;I_ext&apos;</span>:param[mode][<span class="hljs-number">1</span>], <span class="hljs-string">&apos;a&apos;</span>: <span class="hljs-number">1.</span>, <span class="hljs-string">&apos;b&apos;</span>: <span class="hljs-number">3.</span>, 
+                   <span class="hljs-string">&apos;c&apos;</span>: <span class="hljs-number">1.</span>, <span class="hljs-string">&apos;d&apos;</span>: <span class="hljs-number">5.</span>, <span class="hljs-string">&apos;r&apos;</span>: <span class="hljs-number">0.01</span>, <span class="hljs-string">&apos;s&apos;</span>: <span class="hljs-number">4.</span>,
+                   <span class="hljs-string">&apos;V_rest&apos;</span>: <span class="hljs-number">-1.6</span>}
+)
+ppanalyzer.plot_nullcline()
+ppanalyzer.plot_fixed_point()
+ppanalyzer.plot_vector_field()
+ppanalyzer.plot_trajectory(
+    [{<span class="hljs-string">&apos;V&apos;</span>: <span class="hljs-number">1.</span>, <span class="hljs-string">&apos;y&apos;</span>: <span class="hljs-number">0.</span>, <span class="hljs-string">&apos;z&apos;</span>: <span class="hljs-number">-0.</span>}],
+    duration=<span class="hljs-number">100.</span>, 
+    show=<span class="hljs-keyword">True</span>
+)
+</code></pre>
+<center><img src="../../figs/neurons/1-16.png"></center>
+
+<p>Call the <code>plot_nullcline</code>, <code>plot_vector_field</code>, <code>plot_fixed_point</code>, <code>plot_trajectory</code> method of phase plane analyzer, users can paint nullcline, vector filed, fixed points and trajectory of the dynamic system.</p>
+<p>In HR model, the trajectory of x and y approaches a limit cycle, that&#x2019;s why these two variables change periodically.</p>
+<h3 id="127-generalized-integrate-and-fire-model"><a name="127-generalized-integrate-and-fire-model" class="anchor-navigation-ex-anchor" href="#127-generalized-integrate-and-fire-model"><i class="fa fa-link" aria-hidden="true"></i></a>1.2.7 Generalized Integrate-and-Fire model</h3>
+<p>Generalized Integrate-and-Fire model (GIF model)(Mihala&#x15F; et al., 2009) integrates several firing patterns in one model. With 4 model variables, it can generate more than 20 types of firing patterns, and is able to alternate between patterns by fitting parameters.</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mrow><mi>d</mi><msub><mi>I</mi><mi>j</mi></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mo>&#x2212;</mo><msub><mi>k</mi><mi>j</mi></msub><msub><mi>I</mi><mi>j</mi></msub><mo separator="true">,</mo><mi>j</mi><mo>=</mo><mrow><mn>1</mn><mo separator="true">,</mo><mn>2</mn></mrow></mrow><annotation encoding="application/x-tex">\frac{d I_j}{d t} = - k_j I_j, j = {1, 2}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.993428em;"></span><span class="strut bottom" style="height:1.338428em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.50732em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.07847em;">I</span><span class="msupsub"><span class="vlist"><span style="top:0.14300000000000002em;margin-right:0.07142857142857144em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptstyle scriptscriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.03148em;">k</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.03148em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.05724em;">j</span><span class="mrel">=</span><span class="mord textstyle uncramped"><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">2</span></span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>&#x3C4;</mi><mfrac><mrow><mi>d</mi><mi>V</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mo>(</mo><mo>&#x2212;</mo><mo>(</mo><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>t</mi></mrow></msub><mo>)</mo><mo>+</mo><mi>R</mi><msub><mo>&#x2211;</mo><mrow><mi>j</mi></mrow></msub><msub><mi>I</mi><mi>j</mi></msub><mo>+</mo><mi>R</mi><mi>I</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\tau \frac{d V}{d t} = ( - (V - V_{rest}) + R\sum_{j}I_j + RI)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8801079999999999em;"></span><span class="strut bottom" style="height:1.316226em;vertical-align:-0.436118em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.1132em;">&#x3C4;</span><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.394em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mopen">(</span><span class="mord">&#x2212;</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="mop"><span class="mop op-symbol small-op" style="top:-0.0000050000000000050004em;">&#x2211;</span><span class="msupsub"><span class="vlist"><span style="top:0.30001em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="mclose">)</span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mrow><mi>d</mi><msub><mi>V</mi><mrow><mi>t</mi><mi>h</mi></mrow></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>a</mi><mo>(</mo><mi>V</mi><mo>&#x2212;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>t</mi></mrow></msub><mo>)</mo><mo>&#x2212;</mo><mi>b</mi><mo>(</mo><msub><mi>V</mi><mrow><mi>t</mi><mi>h</mi></mrow></msub><mo>&#x2212;</mo><msub><mi>V</mi><mrow><mi>t</mi><mi>h</mi><mi mathvariant="normal">&#x221E;</mi></mrow></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">\frac{d V_{th}}{d t} = a(V - V_{rest}) - b(V_{th} - V_{th\infty})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9019679999999999em;"></span><span class="strut bottom" style="height:1.2469679999999999em;vertical-align:-0.345em;"></span><span class="base textstyle uncramped"><span class="mord reset-textstyle textstyle uncramped"><span class="mopen sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span><span class="mfrac"><span class="vlist"><span style="top:0.345em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">d</span><span class="mord mathit mtight">t</span></span></span></span><span style="top:-0.22999999999999998em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle textstyle uncramped frac-line"></span></span><span style="top:-0.41585999999999995em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle uncramped mtight"><span class="mord scriptstyle uncramped mtight"><span class="mord mathit mtight">d</span><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15122857142857138em;margin-right:0.07142857142857144em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptstyle scriptscriptstyle cramped mtight"><span class="mord scriptscriptstyle cramped mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight">h</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span><span class="mclose sizing reset-size5 size5 reset-textstyle textstyle uncramped nulldelimiter"></span></span><span class="mrel">=</span><span class="mord mathit">a</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span><span class="mbin">&#x2212;</span><span class="mord mathit">b</span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight">h</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mbin">&#x2212;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight">h</span><span class="mord mathrm mtight">&#x221E;</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span></span></span></span></p>
+<p>When V meet Vth, Generalized IF neuron fire:</p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>I</mi><mi>j</mi></msub><mo>&#x2190;</mo><msub><mi>R</mi><mi>j</mi></msub><msub><mi>I</mi><mi>j</mi></msub><mo>+</mo><msub><mi>A</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">I_j \leftarrow R_j I_j + A_j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mrel">&#x2190;</span><span class="mord"><span class="mord mathit" style="margin-right:0.00773em;">R</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.00773em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mord"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.07847em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mbin">+</span><span class="mord"><span class="mord mathit">A</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>V</mi><mo>&#x2190;</mo><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow></msub></mrow><annotation encoding="application/x-tex">V \leftarrow V_{reset}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="mrel">&#x2190;</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>V</mi><mrow><mi>t</mi><mi>h</mi></mrow></msub><mo>&#x2190;</mo><mi>m</mi><mi>a</mi><mi>x</mi><mo>(</mo><msub><mi>V</mi><mrow><mi>t</mi><msub><mi>h</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow></msub></mrow></msub><mo separator="true">,</mo><msub><mi>V</mi><mrow><mi>t</mi><mi>h</mi></mrow></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">V_{th} \leftarrow max(V_{th_{reset}}, V_{th})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.0001em;vertical-align:-0.2501em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight">h</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mrel">&#x2190;</span><span class="mord mathit">m</span><span class="mord mathit">a</span><span class="mord mathit">x</span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15000000000000002em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">t</span><span class="mord mtight"><span class="mord mathit mtight">h</span><span class="msupsub"><span class="vlist"><span style="top:0.143em;margin-right:0.07142857142857144em;margin-left:0em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-scriptstyle scriptscriptstyle cramped mtight"><span class="mord scriptscriptstyle cramped mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">s</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight">t</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.22222em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord scriptstyle cramped mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight">h</span></span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span><span class="mclose">)</span></span></span></span></p>
+<pre><code class="lang-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">GeneralizedIF</span><span class="hljs-params">(bp.NeuGroup)</span>:</span>
+    target_backend = <span class="hljs-string">&apos;general&apos;</span>
+
+<span class="hljs-meta">    @staticmethod</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">derivative</span><span class="hljs-params">(I1, I2, V_th, V, t,
+                   k1, k2, a, V_rest, b, V_th_inf,
+                   R, I_ext, tau)</span>:</span>
+        dI1dt = - k1 * I1
+        dI2dt = - k2 * I2
+        dVthdt = a * (V - V_rest) - b * (V_th - V_th_inf)
+        dVdt = (- (V - V_rest) + R * I_ext + R * I1 + R * I2) / tau
+        <span class="hljs-keyword">return</span> dI1dt, dI2dt, dVthdt, dVdt
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, size, V_rest=<span class="hljs-number">-70.</span>, V_reset=<span class="hljs-number">-70.</span>,
+                 V_th_inf=<span class="hljs-number">-50.</span>, V_th_reset=<span class="hljs-number">-60.</span>, R=<span class="hljs-number">20.</span>, tau=<span class="hljs-number">20.</span>,
+                 a=<span class="hljs-number">0.</span>, b=<span class="hljs-number">0.01</span>, k1=<span class="hljs-number">0.2</span>, k2=<span class="hljs-number">0.02</span>,
+                 R1=<span class="hljs-number">0.</span>, R2=<span class="hljs-number">1.</span>, A1=<span class="hljs-number">0.</span>, A2=<span class="hljs-number">0.</span>,
+                 **kwargs)</span>:</span>
+        <span class="hljs-comment"># params</span>
+        self.V_rest = V_rest
+        self.V_reset = V_reset
+        self.V_th_inf = V_th_inf
+        self.V_th_reset = V_th_reset
+        self.R = R
+        self.tau = tau
+        self.a = a
+        self.b = b
+        self.k1 = k1
+        self.k2 = k2
+        self.R1 = R1
+        self.R2 = R2
+        self.A1 = A1
+        self.A2 = A2
+
+        <span class="hljs-comment"># vars</span>
+        self.input = bp.ops.zeros(size)
+        self.spike = bp.ops.zeros(size, dtype=bool)
+        self.I1 = bp.ops.zeros(size)
+        self.I2 = bp.ops.zeros(size)
+        self.V = bp.ops.ones(size) * <span class="hljs-number">-70.</span>
+        self.V_th = bp.ops.ones(size) * <span class="hljs-number">-50.</span>
+
+        self.integral = bp.odeint(self.derivative)
+        super(GeneralizedIF, self).__init__(size=size, **kwargs)
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span><span class="hljs-params">(self, _t)</span>:</span>
+        I1, I2, V_th, V = self.integral(
+            self.I1, self.I2, self.V_th, self.V, _t,
+            self.k1, self.k2, self.a, self.V_rest,
+            self.b, self.V_th_inf,
+            self.R, self.input, self.tau)
+        sp = (self.V_th &lt; V)
+        V[sp] = self.V_reset
+        I1[sp] = self.R1 * I1[sp] + self.A1
+        I2[sp] = self.R2 * I2[sp] + self.A2
+        reset_th = np.logical_and(V_th &lt; self.V_th_reset, sp)
+        V_th[reset_th] = self.V_th_reset
+        self.spike = sp
+        self.I1 = I1
+        self.I2 = I2
+        self.V_th = V_th
+        self.V = V
+        self.input[:] = <span class="hljs-number">0.</span>
+</code></pre>
+<pre><code class="lang-python"><span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+
+size=<span class="hljs-number">10</span>
+mode = <span class="hljs-string">&quot;hyperpolarization_induced_bursting&quot;</span>
+neu = GeneralizedIF(size, monitors=[<span class="hljs-string">&apos;V&apos;</span>, <span class="hljs-string">&apos;V_th&apos;</span>, <span class="hljs-string">&apos;I1&apos;</span>, <span class="hljs-string">&apos;I2&apos;</span>, <span class="hljs-string">&apos;input&apos;</span>])
+neu.V_th_reset = <span class="hljs-number">-60.</span>
+neu.V_th_inf = <span class="hljs-number">-120.</span>
+neu.A1 = <span class="hljs-number">10.</span>
+neu.A2 = <span class="hljs-number">-0.6</span>
+neu.V_th = bp.ops.ones(size) * <span class="hljs-number">-50.</span>
+I_ext, dur = bp.inputs.constant_current([(<span class="hljs-number">-1.</span>, <span class="hljs-number">400.</span>)])
+neu.run(duration = dur, inputs=(<span class="hljs-string">&apos;input&apos;</span>, I_ext), report=<span class="hljs-keyword">False</span>)
+
+ts = neu.mon.ts
+fig, gs = bp.visualize.get_figure(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">4</span>, <span class="hljs-number">8</span>)
+ax1 = fig.add_subplot(gs[<span class="hljs-number">0</span>, <span class="hljs-number">0</span>])
+ax1.title.set_text(f<span class="hljs-string">&apos;{mode}&apos;</span>)
+
+ax1.plot(ts, neu.mon.V[:, <span class="hljs-number">0</span>], label=<span class="hljs-string">&apos;V&apos;</span>)
+ax1.plot(ts, neu.mon.V_th[:, <span class="hljs-number">0</span>], label=<span class="hljs-string">&apos;V_th&apos;</span>)
+ax1.set_xlabel(<span class="hljs-string">&apos;Time (ms)&apos;</span>)
+ax1.set_ylabel(<span class="hljs-string">&apos;Membrane potential&apos;</span>)
+ax1.set_xlim(<span class="hljs-number">-0.1</span>, ts[<span class="hljs-number">-1</span>] + <span class="hljs-number">0.1</span>)
+plt.legend()
+
+ax2 = ax1.twinx()
+ax2.plot(ts, I_ext, color=<span class="hljs-string">&apos;turquoise&apos;</span>, label=<span class="hljs-string">&apos;input&apos;</span>)
+ax2.set_xlabel(<span class="hljs-string">&apos;Time (ms)&apos;</span>)
+ax2.set_ylabel(<span class="hljs-string">&apos;External input&apos;</span>)
+ax2.set_xlim(<span class="hljs-number">-0.1</span>, ts[<span class="hljs-number">-1</span>] + <span class="hljs-number">0.1</span>)
+ax2.set_ylim(<span class="hljs-number">-5.</span>, <span class="hljs-number">20.</span>)
+plt.legend(loc=<span class="hljs-string">&apos;lower left&apos;</span>)
+
+plt.show()
+</code></pre>
+<p><img src="../../figs/neurons/out/output_67_0.png" alt="png"></p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="biophysical_models.html" class="navigation navigation-prev " aria-label="Previous page: 1.1 Biophysical models">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="firing_rate_models.html" class="navigation navigation-next " aria-label="Next page: 1.3 Firing rate models">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"1.2 Reduced models","level":"1.2.2","depth":2,"next":{"title":"1.3 Firing rate models","level":"1.2.3","depth":2,"path":"neurons/firing_rate_models.md","ref":"neurons/firing_rate_models.md","articles":[]},"previous":{"title":"1.1 Biophysical models","level":"1.2.1","depth":2,"path":"neurons/biophysical_models.md","ref":"neurons/biophysical_models.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-sharing","katex","code","anchor-navigation-ex","splitter"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"livereload":{},"splitter":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"code":{"copyButtons":true},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"anchor-navigation-ex":{"associatedWithSummary":true,"float":{"floatIcon":"fa fa-navicon","level1Icon":"","level2Icon":"","level3Icon":"","showLevelIcon":false},"mode":"float","multipleH1":true,"pageTop":{"level1Icon":"","level2Icon":"","level3Icon":"","showLevelIcon":false},"printLog":false,"showGoTop":true,"showLevel":false},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"en","gitbook":"*"},"file":{"path":"neurons/reduced_models.md","mtime":"2021-04-20T09:37:20.363Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-20T09:39:15.617Z"},"basePath":"..","book":{"language":"en"}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-code/plugin.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
