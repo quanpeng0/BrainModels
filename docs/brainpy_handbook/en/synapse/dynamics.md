@@ -1,4 +1,4 @@
-## 2.1 Synaptic Dynamics
+## 2.1 Synaptic Models
 
 When we model the firing of neurons, we need to connect them. Synapse is very important for the communication between neurons, and it is an essential component of the formation of the network. Therefore, we need to model the synapse.
 
@@ -6,17 +6,30 @@ In this section, we will introduce how to implement synaptic dynamics with Brain
 
 ### 2.1.1 Chemical Synapses
 
+#### Biological Background
+
+Fig. 2-1 shows the biological process of information transmission between neurons. Neurotransmitters released by presynaptic neurons bind with receptors on postsynaptic neurons, thus opening ion channels on the cell membrane of postsynaptic neurons and causing changes in membrane potential. Here we first introduce a typical synapse with AMPA receptor, and then introduce how to implement it with BrainPy.
+
+<div align="center">
+  <img src="../../figs/bio_syn.png" width="450">
+  <br>
+  <strong> Fig. 2-1 Biological Synapse </strong> (adaptive from [1])
+</div>
+
+
 #### AMPA Synapse
-
-The picture shows the biological process of information transmission between neurons. Neurotransmitters released by presynaptic neurons bind with receptors on postsynaptic neurons, thus opening ion channels on the cell membrane of postsynaptic neurons and causing changes in membrane potential. Here we first introduce a typical synapse with AMPA receptor, and then introduce how to implement it with BrainPy.
-
-<img src="../../figs/bio_syn.png">
 
 AMPA receptor is an ionotropic receptor, which is an ion channel. When it is bound by neurotransmitters, it will immediately open the ion channel, causing the change of membrane potential of postsynaptic neurons.
 
-A classical model is to use the Markov process to model ion channel switch. Here $$s$$ represents the probability of channel opening, $$1-s$$ represents the probability of ion channel closing, and $$\alpha$$ and $$\beta$$ are the transition probability. Because neurotransmitters can open ion channels, the transfer probability from $$1-s$$ to $$s$$ is affected by the concentration of neurotransmitters. We denote the concentration of neurotransmitters as [T] and get the following Markov process.
+A classical model is to use the Markov process to model ion channel switch (Fig. 2-2). Here $$s$$ represents the probability of channel opening, $$1-s$$ represents the probability of ion channel closing, and $$\alpha$$ and $$\beta$$ are the transition probability. Because neurotransmitters can open ion channels, the transfer probability from $$1-s$$ to $$s$$ is affected by the concentration of neurotransmitters. We denote the concentration of neurotransmitters as [T] and get the following Msarkov process.
 
-<img src="../../figs/markov.png" style="zoom: 25%;" >
+<div align="center">
+  <img src="../../figs/markov.png" width="170"> 
+  <br>	
+  <strong> Fig. 2-2 Markov process of channel dynamics </strong>
+</div>
+
+
 
 We obtained the following formula when describing the process by a differential equation.
 
@@ -422,11 +435,15 @@ def update(self, _t):
 
 In addition to the chemical synapses described earlier, electrical synapses are also common in our neural system.
 
-<img src="../../figs/bio_gap.png">
+<div align="center">
+  (A)<img src="../../figs/bio_gap.png", width="200">
+  (B)<img src="../../figs/gap_model.jpg", width="200">
+<br>
+<strong> Fig. 2-3 Electrical Synapse </strong> (adaptive from [1])
+</div>
 
-As shown in the figure above, two neurons are connected by junction channels and can conduct electricity directly. Therefore, it can be seen that two neurons are connected by a constant resistance, as shown in the figure below.
 
-<img src="../../figs/gap_model.jpg">
+As shown in the Fig. 2-3(A), two neurons are connected by junction channels and can conduct electricity directly. Therefore, it can be seen that two neurons are connected by a constant resistance, as shown in the Fig. 2-3(B).
 
 According to Ohm's law, we can get the following equation,
 

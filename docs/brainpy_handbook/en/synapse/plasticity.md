@@ -1,4 +1,4 @@
-## 2.2 Synaptic Plasticity
+## 2.2 Plasticity Models
 
 We just talked about synaptic dynamics, but we haven't talked about synaptic plasticity. Next, let's see how to use BrainPy to implement synaptic plasticity.
 
@@ -18,13 +18,18 @@ The introduction is as follows:
 
 ### 2.2.1 STP
 
-Let's first look at short-term plasticity. We will start with the results of the experiment. The figure shows the changes of the membrane potential of postsynaptic neurons as the firing of presynaptic neurons. We can see that when the presynaptic neurons repeatedly firing with short intervals, the response of the postsynaptic neurons becomes weaker and weaker, showing a short term depression. But the response recovers after a short period of time, so this plasticity is short-term.
+Let's first look at short-term plasticity. We will start with the results of the experiment. Fig. 2-1 shows the changes of the membrane potential of postsynaptic neurons as the firing of presynaptic neurons. We can see that when the presynaptic neurons repeatedly firing with short intervals, the response of the postsynaptic neurons becomes weaker and weaker, showing a short term depression. But the response recovers after a short period of time, so this plasticity is short-term.
 
-<img src="../../figs/stp.png">
+<div align="center">
+  <img src="../../figs/stp.png" width="500">
+  <br>
+  <strong>Fig. 2-1 Short-term depression after repeatedly spikes.</strong> (adative from [1])
+</div>
+
+
 
 
 The formula of the model is as follows. Here, the short term plasticity is described mainly by variables $$u$$ and $$x$$. Where $$u$$ represents the probability of neurotransmitter release, the initial value is 0, and increase with the firing of presynaptic neurons, contributing to the short-term facilitation (STF); while $$x$$ represents the residual amount of neurotransmitters, the initial value is 1, and some of them will be used every time when presynaptic neurons fire, which means that it will decrease, contributing to the short-term depression (STD). Therefore the two directions of facilitation and depression occur simultaneously. $$\tau_f$$ and $$\tau_d$$ controls the recovery speed of $$u$$ and $$x$$, respectively, and the relationship between them determines which direction of plasticity plays a dominant role.
-
 $$
 \frac {dI} {dt} = - \frac I {\tau}
 $$
@@ -170,9 +175,13 @@ When $$\tau_f > \tau_d$$, on the contrary, every time $$x$$ is used, it will be 
 
 #### STDP
 
-Let's start with the figure from experiments. The x-axis is the time difference between the spike of the presynaptic neuron and the postsynaptic neuron. The left part of the zero represents the spike timing of the presynaptic neuron earlier than that of the postsynaptic neuron, which shows long term potentiation (LTP); and the right side of the zero represents the postsynaptic neuron fires before the presynaptic neuron does, showing long term depression（LTD）。
+Fig. 2-2 shows the spiking timing dependent plasticity (STDP) of experimental results. The x-axis is the time difference between the spike of the presynaptic neuron and the postsynaptic neuron. The left part of the zero represents the spike timing of the presynaptic neuron earlier than that of the postsynaptic neuron, which shows long term potentiation (LTP); and the right side of the zero represents the postsynaptic neuron fires before the presynaptic neuron does, showing long term depression（LTD）。
 
-<img src="../../figs/stdp.png">
+<div align="center">
+  <img src="../../figs/stdp.png" width="500">
+  <br>
+  <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (adative from [1])
+</div>
 
 
 The model formula is as follows, where variables $$A_{source}$$ and $$A_{target}$$ control the LTD and LTP respectively. When the presynaptic neuron fire before the postsynaptic neuron, $$A_t$$ is always 0 until the postsynaptic neuron fire, so $$w$$ will not change for the time being, but $$A_s$$ keep increases; when there is a spike in the postsynaptic neuron, $$w$$ increase with an amount of $$A_s - A_t$$, so it is LTP, and vice verse.
@@ -422,9 +431,14 @@ class Oja(bp.TwoEndConn):
         self.w = self.integral(w, _t, self.gamma, r_pre, r_post)
 ```
 
-We aim to implement the connection as shown in the figure. The purple neuron group receives inputs from the blue and red neuron groups. The external input to the post group is exactly the same as the red one, while the blue one is the same at first, but not later.
+We aim to implement the connection as shown in Fig. 2-3. The purple neuron group receives inputs from the blue and red neuron groups. The external input to the post group is exactly the same as the red one, while the blue one is the same at first, but not later.
 
-<img src="../../figs/conn.png">
+<div align="center">
+  <img src="../../figs/conn.png" width="200">
+  <br>
+  <strong>Fig. 2-3 Connection of neuron groups.</strong>
+</div>
+
 
 Since Oja's rule is a rate-based model, we need a rate-based neuron model to see this learning rule of two groups of neurons.
 
