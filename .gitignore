@@ -13,6 +13,11 @@ docs/images/logo1.tif
 docs/images/logo2.tif
 docs/images/logo3.tif
 
+docs/brainpy_handbook/_book
+docs/brainpy_handbook/node_modules
+docs/brainpy_handbook/book.json
+
+
 */__pycache__
 docs/c4_examples/
 
