@@ -4,15 +4,11 @@
 
 Hodgkin and Huxley (1952) recorded the generation of action potential on squid giant axons with voltage clamp technique, and proposed the canonical neuron model called Hudgin-Huxley model (HH model). 
 
-<center><img src="../../figs/neurons/1-1.png">	</center>
-
-<center><b> Fig. 1-1 Neuron membrane | NeuroDynamics </b></center>
-
-Fig. 1-1 is a general diagram of neuron membrane with phospholipid bilayer and ion channels. The Na+ ion concentration is higher out of the neuron, and K+ ion concentration is higher in the neuron. Intracellular potential is lower than extracellular potential.
+In last section we have introduced a general template for neuron membrane. Computational neuroscientists always model neuron membrane as equivalent circuit like the following figure.
 
 <center><img src="../../figs/neurons/1-2.png">	</center>
 
-<center><b>Fig. 1-2 Equivalent circuit diagram | NeuroDynamics </b></center>
+<center><b>Fig. 1-4 Equivalent circuit diagram | NeuroDynamics </b></center>
 
 The equivalent circuit diagram of Fig.1-1 is shown in Fig. 1-2, in which the battery $E_L$ refers to the potential difference across membrane, electric current $$I$$ refers to the external stimulus, capacitance $$C$$ refers to the hydrophobic phospholipid bilayer with low conductance, resistance $$R$$ refers to the resistance correspond to leaky current, i.e. the resistance of all non-specific ion channels. 
 
