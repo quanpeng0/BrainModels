@@ -20,14 +20,15 @@ The introduction is as follows:
 
 Let's first look at short-term plasticity. We will start with the results of the experiment. Fig. 2-1 shows the changes of the membrane potential of postsynaptic neurons as the firing of presynaptic neurons. We can see that when the presynaptic neurons repeatedly firing with short intervals, the response of the postsynaptic neurons becomes weaker and weaker, showing a short term depression. But the response recovers after a short period of time, so this plasticity is short-term.
 
-<div align="center">
+<div style="text-align:center">
   <img src="../../figs/stp.png" width="500">
   <br>
-  <strong>Fig. 2-1 Short-term depression after repeatedly spikes.</strong> (adative from [1])
+  <strong>Fig. 2-1 Short-term plasticity.</strong> (Adaptive from <cite>Gerstner et al., 2014 <sup>[1]</sup></cite>)
 </div>
 
 
 
+<div><br></div>
 
 The formula of the model is as follows. Here, the short term plasticity is described mainly by variables $$u$$ and $$x$$. Where $$u$$ represents the probability of neurotransmitter release, the initial value is 0, and increase with the firing of presynaptic neurons, contributing to the short-term facilitation (STF); while $$x$$ represents the residual amount of neurotransmitters, the initial value is 1, and some of them will be used every time when presynaptic neurons fire, which means that it will decrease, contributing to the short-term depression (STD). Therefore the two directions of facilitation and depression occur simultaneously. $$\tau_f$$ and $$\tau_d$$ controls the recovery speed of $$u$$ and $$x$$, respectively, and the relationship between them determines which direction of plasticity plays a dominant role.
 $$
@@ -43,7 +44,7 @@ $$
 $$
 
 $$
-\text{if (pre \ fire), then}
+\text{if (pre fire), then}
 \begin{cases} 
 u^+ = u^- + U(1-u^-) \\ 
 I^+ = I^- + Au^+x^- \\
@@ -177,12 +178,15 @@ When $$\tau_f > \tau_d$$, on the contrary, every time $$x$$ is used, it will be 
 
 Fig. 2-2 shows the spiking timing dependent plasticity (STDP) of experimental results. The x-axis is the time difference between the spike of the presynaptic neuron and the postsynaptic neuron. The left part of the zero represents the spike timing of the presynaptic neuron earlier than that of the postsynaptic neuron, which shows long term potentiation (LTP); and the right side of the zero represents the postsynaptic neuron fires before the presynaptic neuron does, showing long term depression（LTD）。
 
-<div align="center">
-  <img src="../../figs/stdp.png" width="500">
+<div style="text-align:center">
+  <img src="../../figs/stdp.png" width="350" height="380">
   <br>
-  <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (adative from [1])
+  <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (Adative from <cite>Bi & Poo, 2001 <sup>[2]</sup></cite>)
 </div>
 
+
+
+<div><br></div>
 
 The model formula is as follows, where variables $$A_{source}$$ and $$A_{target}$$ control the LTD and LTP respectively. When the presynaptic neuron fire before the postsynaptic neuron, $$A_t$$ is always 0 until the postsynaptic neuron fire, so $$w$$ will not change for the time being, but $$A_s$$ keep increases; when there is a spike in the postsynaptic neuron, $$w$$ increase with an amount of $$A_s - A_t$$, so it is LTP, and vice verse.
 
@@ -195,7 +199,7 @@ $$
 $$
 
 $$
-\text{if (pre \ fire), then}
+\text{if (pre fire), then}
 \begin{cases} 
 s \leftarrow s + w \\
 A_s \leftarrow A_s + \Delta A_s \\ 
@@ -204,7 +208,7 @@ w \leftarrow w - A_t
 $$
 
 $$
-\text{if (post \ fire), then}
+\text{if (post fire), then}
 \begin{cases} 
 A_t \leftarrow A_t + \Delta A_t \\ 
 w \leftarrow w + A_s 
@@ -433,12 +437,14 @@ class Oja(bp.TwoEndConn):
 
 We aim to implement the connection as shown in Fig. 2-3. The purple neuron group receives inputs from the blue and red neuron groups. The external input to the post group is exactly the same as the red one, while the blue one is the same at first, but not later.
 
-<div align="center">
-  <img src="../../figs/conn.png" width="200">
+<div style="text-align:center">
+  <img src="../../figs/conn.png" width="300">
   <br>
   <strong>Fig. 2-3 Connection of neuron groups.</strong>
 </div>
 
+
+<div><br></div>
 
 Since Oja's rule is a rate-based model, we need a rate-based neuron model to see this learning rule of two groups of neurons.
 
@@ -537,10 +543,16 @@ $$
 \frac d{dt} w_{ij} =  \eta v_i(v_i - v_\theta) v_j
 $$
 
-The right side of the formula is plotted as shown in the figure below. When the firing rate is greater than the threshold, there is LTP, and when the firing rate is lower than the threshold, there is LTD. Therefore, the selectivity can be achieved by adjusting the threshold.
+The right side of the formula is plotted as shown in Fig. 2-4. When the firing rate is greater than the threshold, there is LTP, and when the firing rate is lower than the threshold, there is LTD. Therefore, the selectivity can be achieved by adjusting the threshold.
 
-<img src="../../figs/bcm.png">
 
+
+<div style="text-align:center">
+  <img src="../../figs/bcm.png" width="300">
+  <br>
+    <strong> Fig. 2-4 BCM rule </strong> (Adaptive from <cite>Gerstner et al., 2014 <sup>[1]</sup></cite>)
+</div>
+<div><br></div>
 
 Here we implement the same connections as the previous Oja's rule, except that the two groups of neurons are alternately firing. Among them, the blue group is always stronger than the red one. We dynamically adjust the threshold by setting it as the time average of $$v_i$$, that is $$v_\theta = f(v_i)$$. The code implemented by BrainPy is as follows: the threshold is updating in the ``update`` function.
 
@@ -652,3 +664,13 @@ plt.show()
 
 
 The results show that the blue group with stronger input demonstrating LTP, while the red group with weaker input showing LTD, so the blue group is being chosen.
+
+
+
+
+
+### References
+
+> <span><sup>[1]</sup></span>. Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
+
+> <span><sup>[2]</sup></span>. Bi, Guo-qiang, and Mu-ming Poo. "Synaptic modification by correlated activity: Hebb's postulate revisited." Annual review of neuroscience 24.1 (2001): 139-166.

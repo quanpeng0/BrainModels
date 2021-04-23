@@ -10,12 +10,14 @@ In this section, we will introduce how to implement synaptic dynamics with Brain
 
 Fig. 2-1 shows the biological process of information transmission between neurons. Neurotransmitters released by presynaptic neurons bind with receptors on postsynaptic neurons, thus opening ion channels on the cell membrane of postsynaptic neurons and causing changes in membrane potential. Here we first introduce a typical synapse with AMPA receptor, and then introduce how to implement it with BrainPy.
 
-<div align="center">
+<div style="text-align:center">
   <img src="../../figs/bio_syn.png" width="450">
   <br>
-  <strong> Fig. 2-1 Biological Synapse </strong> (adaptive from [1])
+    <strong> Fig. 2-1 Biological Synapse </strong> (Adaptive from <cite>Gerstner et al., 2014 <sup>[1]</sup></cite>)
 </div>
 
+
+<div><br></div>
 
 #### AMPA Synapse
 
@@ -23,13 +25,13 @@ AMPA receptor is an ionotropic receptor, which is an ion channel. When it is bou
 
 A classical model is to use the Markov process to model ion channel switch (Fig. 2-2). Here $$s$$ represents the probability of channel opening, $$1-s$$ represents the probability of ion channel closing, and $$\alpha$$ and $$\beta$$ are the transition probability. Because neurotransmitters can open ion channels, the transfer probability from $$1-s$$ to $$s$$ is affected by the concentration of neurotransmitters. We denote the concentration of neurotransmitters as [T] and get the following Msarkov process.
 
-<div align="center">
+<div style="text-align:center">
   <img src="../../figs/markov.png" width="170"> 
   <br>	
   <strong> Fig. 2-2 Markov process of channel dynamics </strong>
 </div>
 
-
+<div><br></div>
 
 We obtained the following formula when describing the process by a differential equation.
 
@@ -125,9 +127,9 @@ s = \frac {\tau_1 \tau_2}{\tau_1 - \tau_2} (\exp(-\frac{t - t_s}{\tau_1})
 - \exp(-\frac{t - t_s}{\tau_2}))
 $$
 
+Where $$t_s$$ denotes the spike timing, with two time constants $$\tau_1$$ and $$\tau_2$$ .
 
 While implementing with BrainPy, we use the following differential equation form,
-
 $$
 		\frac {ds} {dt} = x
 $$
@@ -195,8 +197,13 @@ bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
 
 ##### (2) Alpha synapse
 
-``Alpha synapse`` is similar to the above model, except here $$\tau_1 = \tau_2$$. Therefore, the formula is more simplified:
+Dynamics of ``Alpha synapse`` is given by, 
+$$
+s = \frac{t - t_s}{\tau} \exp(-\frac{t - t_s}{\tau})
+$$
+As the dual exponential synapse we mentioned above,  $$t_s$$ denotes the spike timing, with a time constant $$\tau$$.
 
+The differential equation form of alpha synapse is also very similar with the dual exponential synapses, with $$\tau = \tau_1 = \tau_2$$, as shown below:
 $$
 \frac {ds} {dt} = x
 $$
@@ -435,15 +442,29 @@ def update(self, _t):
 
 In addition to the chemical synapses described earlier, electrical synapses are also common in our neural system.
 
-<div align="center">
-  (A)<img src="../../figs/bio_gap.png", width="200">
-  (B)<img src="../../figs/gap_model.jpg", width="200">
-<br>
-<strong> Fig. 2-3 Electrical Synapse </strong> (adaptive from [1])
+<div style="text-align:center">
+    <table>
+        <tr style="text-align:left; border-top:0">
+            <td style="border:0"><strong>(a)</strong></td>
+            <td style="border:0"><strong>(b)</strong></td>
+        </tr>
+        <tr style="border-top:0; background-color:white">
+            <td style="border:0">
+                <img src="../../figs/bio_gap.png", width="200">
+            </td>
+            <td style="border:0">
+                <img src="../../figs/gap_model.jpg", width="200">
+            </td>
+        </tr>
+    </table>
+    <strong> Fig. 2-3 (a)</strong> Gap junction connection between two cells. <strong>(b)</strong> An equivalent diagram. <br>(Adaptive from <cite>Sterratt et al., 2011 <sup>[2]</sup></cite>)
 </div>
 
 
-As shown in the Fig. 2-3(A), two neurons are connected by junction channels and can conduct electricity directly. Therefore, it can be seen that two neurons are connected by a constant resistance, as shown in the Fig. 2-3(B).
+
+<div><br></div>
+
+As shown in the Fig. 2-3a, two neurons are connected by junction channels and can conduct electricity directly. Therefore, it can be seen that two neurons are connected by a constant resistance, as shown in the Fig. 2-3b.
 
 According to Ohm's law, we can get the following equation,
 
@@ -521,4 +542,14 @@ plt.show()
 
 
 ![png](../../figs/out/output_37_0.png)
+
+
+
+
+
+### References
+
+> <span><sup>[1]</sup></span>. Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
+
+> <span><sup>[2]</sup></span>. Sterratt, David, et al. Principles of computational modeling in neuroscience. Cambridge University Press, 2011.
 

@@ -2,15 +2,15 @@
 
 ### 3.2.1 Decision model
 
-In addition to spiking models, BrainPy can also implement Firing rate models. Let's first look at the implementation of a simplified version of the decision model. The model was simplified by the researcher (Wong & Wang, 2006)[^1] through a series of means such as mean field approach. In the end, there are only two variables, $$S_1$$ and $$S_2$$, which respectively represent the state of two neuron groups and correspond to two options.
+In addition to spiking models, BrainPy can also implement Firing rate models. Let's first look at the implementation of a simplified version of the decision model. The model was simplified by the researcher (Wong & Wang, 2006)[^[1]] through a series of means such as mean field approach. In the end, there are only two variables, $$S_1$$ and $$S_2$$, which respectively represent the state of two neuron groups and correspond to two options.
 
 <div align="center">
   <img src="../../figs/decision.png" width="400">
   <br>
-  <strong>Fig. 3-1 Reduced decision model.</strong> (adaptive from [1])
+  <strong>Fig. 3-1 Reduced decision model.</strong> (Adaptive from <cite>Wong & Wang, 2006 <sup>[1]</sup></cite>)
 </div>
 
-
+<div><br></div>
 
 The formula is as follows:
 
@@ -257,18 +257,19 @@ phase.plot_vector_field(show=True)
 
 ### 3.2.2 CANN
 
-Let's see another example of firing rate model, a continuous attractor neural network (CANN)[^2]
-
-. Fig. 3-2 demonstrates the structure of one-dimensional CANN.
+Let's see another example of firing rate model, a continuous attractor neural network (CANN)[^[2]]. Fig. 3-2 demonstrates the structure of one-dimensional CANN.
 
 <div align="center">
   <img src="../../figs/cann.png" width="400">
   <br>
-  <strong>Fig. 3-2 Structure of CANN.</strong> (adaptive from [2])
+  <strong>Fig. 3-2 Structure of CANN.</strong> (Adaptive from <cite>Wu et al., 2008 <sup>[2]</sup></cite>)
 </div>
 
-We denote (x) as the parameter space site of the neuron group, and the dynamics of the total synaptic input of neuron group (x) $$u(x)$$ is given by:
 
+
+<div><br></div>
+
+We denote (x) as the parameter space site of the neuron group, and the dynamics of the total synaptic input of neuron group (x) $$u(x)$$ is given by:
 $$
 \tau \frac{du(x,t)}{dt} = -u(x,t) + \rho \int dx' J(x,x') r(x',t)+I_{ext}
 $$
@@ -450,5 +451,6 @@ bp.visualize.animate_1D(
 
 ### Reference
 
-[^1]: Wong, K.-F. & Wang, X.-J. A Recurrent Network Mechanism of Time Integration in Perceptual Decisions.  J. Neurosci. 26, 1314–1328 (2006).
-[^2]: Si Wu, Kosuke Hamaguchi, and Shun-ichi Amari. "Dynamics and computation of continuous attractors." Neural computation 20.4 (2008): 994-1025.
+[^[1]]: Wong, K.-F. & Wang, X.-J. A Recurrent Network Mechanism of Time Integration in Perceptual Decisions.  J. Neurosci. 26, 1314–1328 (2006).
+
+[^[2]]: Si Wu, Kosuke Hamaguchi, and Shun-ichi Amari. "Dynamics and computation of continuous attractors." Neural computation 20.4 (2008): 994-1025.
