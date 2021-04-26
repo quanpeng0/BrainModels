@@ -1,8 +1,8 @@
-1.2 Reduced models
+## 1.2 Reduced models
 
 Inspired by biophysical experiments, Hodgkin-Huxley model is precise but costful. Researchers proposed the reduced models to reduce the consumption on computing resources and running time in simulation. 
 
-These models are simple and easy to compute, while they can still reproduce the main pattern of neuron behavior. Although their representation capabilities are not as good as biophysical models, such a loss of accuracy is acceptable comparing to their simplicity.
+These models are simple and easy to compute, while they can still reproduce the main pattern of neuron behavior. Although their representation capabilities are not as good as biophysical models, such a loss of accuracy is sometimes acceptable comparing to their simplicity.
 
 ### 1.2.1 Leaky Integrate-and-Fire model
 
@@ -11,12 +11,39 @@ The most typical reduced model is the Leaky Integrate-and-Fire model (LIF model)
 $$
 \tau \frac{dV}{dt} = - (V - V_{rest}) + R I(t)
 $$
-If  $$V > V_{th}$$, neuron fire, 
-
+```python
+    @staticmethod
+    def derivative(V, t, Iext, V_rest, R, tau):
+        dvdt = (-V + V_rest + R * Iext) / tau
+        return dvdt
+```
+If  $$V > V_{th}$$, neuron fires, 
 $$
 V \gets V_{reset}
 $$
-The `derivative` method of LIF model is simpler than of HH model. However the `update` method is more complex because of the conditional judgement.
+```python
+    def update(self, _t):
+        for i in prange(self.size[0]):
+            spike = 0.
+            V = self.integral(self.V[i], _t, self.input[i], self.V_rest, self.R, self.tau)
+            spike = (V >= self.V_th)
+            if spike:
+                V = self.V_reset
+            self.V[i] = V
+            self.spike[i] = spike
+            self.input[i] = 0.
+```
+$$\tau = RC$$ is the time  constant of LIF model. The equations of LIF model are corresponding to a simpler equivalent circuit than HH model, for it does not model the Na+ and K+ ion channels any more. Actually, in LIF model, only the consistence $$R$$, capacitance $$C$$, battery $$E_L$$ and external input $$I$$ is modeled.
+
+<放图>
+
+**Fig LIF等效电路图**
+
+
+
+
+
+The `derivative` method of LIF model is simpler than of HH model. However the `update` method is more complex because of the conditional judgment.
 
 
 ```python
@@ -30,7 +57,7 @@ class LIF(bp.NeuGroup):
 
     def __init__(self, size, t_refractory=5., V_rest=0.,
                  V_reset=-5., V_th=20., R=1., tau=10., **kwargs):
-        # parameters
+        # save model parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
         self.V_th = V_th
@@ -38,7 +65,7 @@ class LIF(bp.NeuGroup):
         self.tau = tau
         self.t_refractory = t_refractory
 
-        # variables
+        # save model variables
         num = bp.size2len(size)
         self.t_last_spike = bp.ops.ones(num) * -1e7
         self.input = bp.ops.zeros(num)
@@ -46,38 +73,23 @@ class LIF(bp.NeuGroup):
         self.refractory = bp.ops.zeros(num, dtype=bool)
         self.spike = bp.ops.zeros(num, dtype=bool)
 
+        #def numerical solver
         self.integral = bp.odeint(self.derivative)
         super(LIF, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
-        refractory = (_t - self.t_last_spike) <= self.t_refractory
-        # if neuron is in refractory period
-        V = self.integral(self.V, _t, self.input, self.V_rest, self.R, self.tau)
-        V = bp.ops.where(refractory, self.V, V)
-        spike = self.V_th <= V  # if neuron spikes
-        self.t_last_spike = bp.ops.where(spike, _t, self.t_last_spike)
-        self.V = bp.ops.where(spike, self.V_reset, V)
-        self.refractory = refractory | spike
-        self.input[:] = 0.
-        self.spike = spike
+	def update(self, _t):
+        # for each neuron in the neu group
+	    for i in prange(self.size[0]):
+            # diff eqs
+        	V = self.integral(self.V[i], _t, self.input[i], self.V_rest, self.R, self.tau)
+            # cond judge
+        	spike = (V >= self.V_th)
+        	if spike:
+        	    V = self.V_reset
+        	self.V[i] = V
+        	self.spike[i] = spike
+        	self.input[i] = 0.
 ```
-
-Note that we write `update` method in vector form here. If the backend is `Numba`, we can also realize LIF model with `prange` loop, for `Numba` provides excellent parallel acceleration on `prange` loop:
-
-    def update(self, _t):
-        for i in prange(self.size[0]):
-            spike = 0.
-            refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
-            if not refractory:
-                V = self.integral(self.V[i], _t, self.input[i], self.V_rest, self.R, self.tau)
-                spike = (V >= self.V_th)
-                if spike:
-                    V = self.V_reset
-                    self.t_last_spike[i] = _t
-                self.V[i] = V
-            self.spike[i] = spike
-            self.refractory[i] = refractory or spike
-            self.input[i] = 0.
 
 
 ```python
@@ -91,8 +103,30 @@ bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
 
 ![png](../../figs/neurons/out/output_37_0.png)
 
+换图：去掉refractory period here
 
-Compare to the HH model, LIF model does not model the spike period of action potentials, in which the membrane potential bursts.
+Compare to the HH model, LIF model does not model the shape of action potentials, which means, the membrane potential does not burst before a spike. Also the refractory period is overlooked in the original model, and if we add it to the model, we will have to add another conditional judgment to the `update` function:
+
+```python
+	def update(self, _t):
+    	# for each neuron in the neu group
+    	for i in prange(self.size[0]):
+        	spike = 0.
+        	refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
+        	if not refractory:
+        	    V = self.integral(self.V[i], _t, self.input[i], self.V_rest, self.R, self.tau)
+        	    spike = (V >= self.V_th)
+        	    if spike:
+        	        V = self.V_reset
+        	        self.t_last_spike[i] = _t
+        	    self.V[i] = V
+        	self.spike[i] = spike
+        	self.refractory[i] = refractory or spike
+        	self.input[i] = 0.
+```
+In the new V-t plot generated by code with refractory period, we may see the time period after a spike, in which the neuron membrane remains constant.
+
+放图：with refractory
 
 ### 1.2.2 Quadratic Integrate-and-Fire model
 
@@ -101,6 +135,14 @@ To persue higher representation capability, Latham et al. (2000) proposed Quadra
 $$
 \tau\frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) + RI(t)
 $$
+
+```python
+@staticmethod
+def derivative(V, t, I_ext, V_rest, V_c, R, tau, a_0):
+    dVdt = (a_0 * (V - V_rest) * (V - V_c) + R * I_ext) / tau
+    return dVdt
+```
+In the equation above, $$a_0$$ is a special parameter controls the slope of membrane potential before a spike, and the $$V_c$$ is a critical potential for action potential initialization. The membrane potential `V` increases slowly below $$V_c$$, and once it grows beyond $$V_c$$, it will increase rapidly.
 
 
 ```python
@@ -133,6 +175,7 @@ class QuaIF(bp.NeuGroup):
         self.refractory = bp.ops.zeros(num, dtype=bool)
         self.t_last_spike = bp.ops.ones(num) * -1e7
 
+        #def numerical solver
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
         super(QuaIF, self).__init__(size=size, **kwargs)
@@ -164,11 +207,20 @@ bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
 
 
 ### 1.2.3 Exponential Integrate-and-Fire model
-Exponential Integrate-and-Fire model (ExpIF model) (Fourcaud-Trocme et al., 2003) is more expressive than QuaIF model.
+Exponential Integrate-and-Fire model (ExpIF model) (Fourcaud-Trocme et al., 2003) is more expressive than QuaIF model. With the exponential term added to the right hand of differential equations, the dynamics of ExpIF model can now generates a more realistic action potential.
 
 $$
 \tau \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} + R I(t)
 $$
+
+```python
+@staticmethod
+def derivative(V, t, I_ext, V_rest, delta_T, V_T, R, tau):
+    exp_term = delta_T * bp.ops.exp((V - V_T) / delta_T)
+    dvdt = (- V + V_rest + exp_term + R * I_ext) / tau
+    return dvdt
+```
+$$V_T$$, like the parameter $$V_C$$ in QuaIF model, is the threshold potential of generating action potential. $$\Delta_T$$ is the slope of action potentials in ExpIF model, and the higher $$\Delta_T$$ is, the faster `V` raises to the hard threshold $$V_th$$.【TODO: check here】
 
 
 ```python
@@ -177,9 +229,8 @@ class ExpIF(bp.NeuGroup):
 
     @staticmethod
     def derivative(V, t, I_ext, V_rest, delta_T, V_T, R, tau):
-        dvdt = (- V + V_rest \
-                + delta_T * bp.ops.exp((V - V_T) / delta_T) + R * I_ext) \
-               / tau
+        exp_term = delta_T * bp.ops.exp((V - V_T) / delta_T)
+        dvdt = (- V + V_rest + exp_term + R * I_ext) / tau
         return dvdt
 
     def __init__(self, size, V_rest=-65., V_reset=-68.,
@@ -232,9 +283,6 @@ bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
 
 ![png](../../figs/neurons/out/output_45_0.png)
 
-
-With the model parameter $$V_T$$, ExpIF model reproduce the burst of membrane potential before action potentials.
-
 ### 1.2.4 Adaptive Exponential Integrate-and-Fire model
 
 To reproduce the adaptation behavior of neurons, researchers add a weight variable w to existing integrate-and-fire models like LIF, QuaIF and ExpIF models. Here we introduce a typical one: Adaptative Exponential Integrate-and-Fire model (AdExIF model)(Gerstner et al, 2014).
@@ -246,6 +294,10 @@ $$
 $$
 \tau_w \frac{dw}{dt} = a(V - V_{rest})- w + b \tau_w \sum \delta(t - t^f))
 $$
+
+The first differential equation of AdExIF model, as the model name shows, is similar to ExpIF model we introduced above, except for the term of adaptation, which is shown as $$-Rw$$ in the equation.
+
+The weight term `w`
 
 Facing a constant input, the firing rate of AdExIF neuron decreases over time. These adaptation is controlled by the weight variable w.
 
