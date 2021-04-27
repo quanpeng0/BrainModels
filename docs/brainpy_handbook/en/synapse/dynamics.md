@@ -63,29 +63,7 @@ After the implementation, we can plot the graph of $$s$$ changing with time. We 
 
 <img src="../../figs/codes/ampa_run.png" style="text-align:center;width:170">
 
-``` python
-import brainmodels as bm
-bp.backend.set(backend='numba', dt=0.1)
-
-def run_syn(syn_model, **kwargs):
-    neu1 = bm.neurons.LIF(2, monitors=['V'])
-    neu2 = bm.neurons.LIF(3, monitors=['V'])
-    
-    syn = syn_model(pre=neu1, post=neu2, conn=bp.connect.All2All(),
-                    monitors=['s'], **kwargs)
-
-    net = bp.Network(neu1, syn, neu2)
-    net.run(30., inputs=(neu1, 'input', 35.))
-    bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
-```
-
-Then we can run the AMPA synapse and specify the ``T_duration`` parameter.
-
-
-```python
-run_syn(AMPA, T_duration=3.)
-```
-
+Then we would expect to see the following result:
 
 ![png](../../figs/out/output_9_0.png)
 
