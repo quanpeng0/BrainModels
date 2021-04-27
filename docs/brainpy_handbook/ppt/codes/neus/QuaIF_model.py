@@ -1,4 +1,5 @@
 import brainpy as bp
+from numba import prange
 
 class QuaIF(bp.NeuGroup):
   target_backend = 'general'
@@ -48,3 +49,15 @@ class QuaIF(bp.NeuGroup):
       self.spike[i] = spike
       self.refractory[i] = refractory or spike
       self.input[i] = 0.
+      
+ 
+dt = 0.1
+bp.backend.set('numpy', dt=dt)
+neu = QuaIF(100, monitors=['V', 'refractory', 'spike'])
+neu.t_refractory = 5.
+net = bp.Network(neu)
+net.run(duration=200., inputs=(neu, 'input', 21.), report=True)
+fig, gs = bp.visualize.get_figure(1, 1, 4, 10)
+fig.add_subplot(gs[0, 0])
+bp.visualize.line_plot(neu.mon.ts, neu.mon.V,
+                       xlabel="t", ylabel="V", show=True)

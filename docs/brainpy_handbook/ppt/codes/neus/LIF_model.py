@@ -1,4 +1,5 @@
 import brainpy as bp
+from numba import prange
 
 class LIF(bp.NeuGroup):
   target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']

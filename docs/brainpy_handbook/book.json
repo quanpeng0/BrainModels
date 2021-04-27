@@ -1,14 +1,6 @@
 {
     "plugins": [
         "-sharing",
-        "katex",
-        "code",
-        "anchor-navigation-ex",
-        "splitter"
-    ], 
-    "pluginsConfig":{
-        "anchor-navigation-ex": {
-            "showLevel" : false
-        }
-    }
+        "katex"
+    ]
 }

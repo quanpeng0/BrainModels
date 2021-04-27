@@ -1,4 +1,5 @@
 import brainpy as bp
+from numba import prange
 
 class HH(bp.NeuGroup):
   target_backend = 'general'
@@ -63,7 +64,7 @@ import brainpy as bp
 
 dt = 0.1
 bp.backend.set('numpy', dt=dt)
-neu = LIF(100, monitors=['V', 'refractory', 'spike'])
+neu = HH(100, monitors=['V', 'spike'])
 neu.t_refractory = 5.
 net = bp.Network(neu)
 net.run(duration=200., inputs=(neu, 'input', 21.), report=True)
