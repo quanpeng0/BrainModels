@@ -51,57 +51,17 @@ $$
 
 Where $$\alpha [T]$$ denotes the transition probability from state $$(1-s)$$ to state $$(s)$$; and $$\beta$$ represents the transition probability of the other direction.
 
-Now let's see how to implement such a model with BrainPy. First of all, we need to define a class that inherits from`` bp.TwoEndConn ``, because synapses connect two neurons. 
+Now let's see how to implement such a model with BrainPy. First of all, we need to define a class that inherits from`` bp.TwoEndConn ``, because synapses connect two neurons. Within the class, we can define the differential equation with ``derivative`` function, this is the same as the definition of neuron models. Then we use the``__ init__ ``Function to initialize the required parameters and variables.
 
-Within the class, we can define the differential equation with ``derivative`` function, this is the same as the definition of neuron models.
+<img src="../../figs/codes/ampa_init.png" style="text-align:center;width:170">
 
-``` python
-import brainpy as bp
+We update $$s$$ by a ``update`` function.
 
-class AMPA(bp.TwoEndConn):
-    target_backend = ['numpy', 'numba']
-
-    @staticmethod
-    def derivative(s, t, TT, alpha, beta):
-        ds = alpha * TT * (1 - s) - beta * s
-        return ds
-
-    def __init__(self, pre, post, conn,
-                 alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, **kwargs):
-        # parameters
-        self.alpha = alpha
-        self.beta = beta
-        self.T = T
-        self.T_duration = T_duration
-
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
-        self.size = len(self.pre_ids)
-
-        # variables
-        self.s = bp.ops.zeros(self.size)
-        self.t_last_pre_spike = -1e7 * bp.ops.ones(self.size)
-
-        self.int_s = bp.odeint(f=self.derivative, method='exponential_euler')
-        super(AMPA, self).__init__(pre=pre, post=post, **kwargs)
-        
-    def update(self, _t):
-        for i in range(self.size):
-            pre_id = self.pre_ids[i]
-            post_id = self.post_ids[i]
-
-            if self.pre.spike[pre_id]:
-                self.t_last_pre_spike[pre_id] = _t
-            TT = ((_t - self.t_last_pre_spike[pre_id]) < self.T_duration) * self.T
-            self.s[i] = self.int_s(self.s[i], _t, TT, self.alpha, self.beta)
-```
-
-We use the``__ init__ ``Function to initialize the required parameters and variables. First, in a synapse, we need ``pre`` and ``post`` to specify the presynaptic neurons and postsynaptic neurons connected by the synapse, respectively. It should be noted that both ``pre`` and ``post`` are vectors, representing two groups of neurons. Therefore, we also need to specify the connections between the two neuron groups. There are several connections methods provided by BrainPy, in ``numba`` backend, we can get ``pre_ids`` and ``post_ids`` from ``conn.requires``. 
-
-For parameters and variables of the AMPA synapse, we would see that there is a concentration of neurotransmitter [T] in the formula. In order to simplify the calculation, [T] can be regarded as a constant, which is determined by ``T_duration`` controls how long it lasts. Therefore, our simplified implementation is that every time the presynaptic neuron fires, it will release neurotransmitters that maintain ``T_duration`` until being cleared. So we just need to judge if it's at ``T_duration``, then [T] = T, otherwise [T] = 0. Then the judgment process needs to use a variable ``t_last_pre_spike`` to record the last firing time of presynaptic neurons.
+<img src="../../figs/codes/ampa_update.png" style="text-align:center;width:170">
 
 After the implementation, we can plot the graph of $$s$$ changing with time. We would first write a ``run_syn`` function to run and plot the graph. To run a synapse, we need neuron groups, so we use the LIF neuron provided by ``brainmodels`` package.
+
+<img src="../../figs/codes/ampa_run.png" style="text-align:center;width:170">
 
 ``` python
 import brainmodels as bm
@@ -111,7 +71,8 @@ def run_syn(syn_model, **kwargs):
     neu1 = bm.neurons.LIF(2, monitors=['V'])
     neu2 = bm.neurons.LIF(3, monitors=['V'])
     
-    syn = syn_model(pre=neu1, post=neu2, conn=bp.connect.All2All(), monitors=['s'], **kwargs)
+    syn = syn_model(pre=neu1, post=neu2, conn=bp.connect.All2All(),
+                    monitors=['s'], **kwargs)
 
     net = bp.Network(neu1, syn, neu2)
     net.run(30., inputs=(neu1, 'input', 35.))
