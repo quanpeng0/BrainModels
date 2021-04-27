@@ -6,13 +6,15 @@ In the previous section, we learned how to model neurons and their action potent
 
 #### Biological Background
 
-Fig. 2-1 shows the biological process of information transmission between neurons. The action potential of the presynaptic neuron makes the axon terminal release **neurotransmitters** (also called transmitter) into the synapse, and then the membrane potential of the postsynaptic cell changes after a brief delay. These changes are called postsynaptic potentials (PSP), and they can be either excitatory or inhibitory depending on the type of transmitter. **Glutamate** is one of the important excitatory neurotransmitters, and Gamma-aminobutyric acid (**GABA**) is one of the important inhibitory neurotransmitters.
+Fig. 2-1 shows the biological process of information transmission between neurons. The action potential of the presynaptic neuron makes the axon terminal release **neurotransmitters** (also called transmitter) into the synaptic cleft, and then the membrane potential of the postsynaptic cell changes after a brief delay. These changes are called postsynaptic potentials (PSP), and they can be either excitatory or inhibitory depending on the type of transmitter. **Glutamate** is one of the important excitatory neurotransmitters, and Gamma-aminobutyric acid (**GABA**) is one of the important inhibitory neurotransmitters.
 
 Neurotransmitters affect their targets by interacting with receptors in the postsynaptic membrane. When the transmitter binds to the receptor, it would either open an ion channel (**ionotropic** receptors) or alter chemical reactions within the target cell (**metabotropic** receptors).
 
-**AMPA** and **NMDA** receptors are both ionotropic receptors of Glutamate, but the NMDA receptor are typically blocked by magnesium ions (Mg$$^{2+}$$) and cannot respond to the glutamate. With repeated activation of AMPA receptors, the change in postynaptic potential drives Mg$$^{2+}$$ out of NMDA channel, then the NMDA receptors are able to respond to glutamate. Therefore, NMDA is must slower than AMPA.
+In this section, we will introduce how to model some common synapses and their implementations with ``BrainPy``:
 
-**GABA<sub>A</sub>** and **GABA<sub>B</sub>** are two classes of GABA receptors. GABA<sub>A</sub> receptors are ionotropic, typically producing fast inhibitory postsynaptic potential; while GABA<sub>B</sub> receptors are metabotropic receptors, typically producing a slow-occurring inhibitory postsynaptic potential.
+- **AMPA** and **NMDA** receptors are both ionotropic receptors of Glutamate, but the NMDA receptor are typically blocked by magnesium ions (Mg$$^{2+}$$) and cannot respond to the glutamate. With repeated activation of AMPA receptors, the change in postsynaptic potential drives Mg$$^{2+}$$ out of NMDA channel, then the NMDA receptors are able to respond to glutamate. Therefore, NMDA is must slower than AMPA.
+
+- **GABA<sub>A</sub>** and **GABA<sub>B</sub>** are two classes of GABA receptors. GABA<sub>A</sub> receptors are ionotropic, typically producing fast inhibitory postsynaptic potential; while GABA<sub>B</sub> receptors are metabotropic receptors, typically producing a slow-occurring inhibitory postsynaptic potential.
 
 
 
@@ -21,17 +23,17 @@ Neurotransmitters affect their targets by interacting with receptors in the post
   <br>
     <strong> Fig. 2-1 Biological Synapse </strong> (Adaptive from <cite>Gerstner et al., 2014 <sup>[1]</sup></cite>)
 </div>
-
-
 <div><br></div>
+
+In order to keep things simple, we use gating variable ``s`` to describe how many portion of ion channels will open whenever a presynaptic spike arrives while modeling. We will first introduce AMPA receptor as an example to show how to develop synapse models and implement with ``BrainPy``.
+
+
 
 #### AMPA Synapse
 
-Here we first introduce a typical synapse with AMPA receptor, and then introduce how to implement it with BrainPy.
+As we mentioned before, the AMPA receptor is an ionotropic receptor, that is, when a neurotransmitter binds to it, the ion channel will be opened immediately to allow Na$$^+$$ and K$$^+$$ ions flux.
 
-As we mentioned before, the AMPA receptor is an ionotropic receptor, which is an ion channel. When it is bound by neurotransmitters, it will immediately open the ion channel, causing the change of membrane potential of postsynaptic neurons.
-
-A classical model is to use the Markov process to model ion channel switch (Fig. 2-2). Here $$s$$ represents the probability of channel opening, $$1-s$$ represents the probability of ion channel closing, and $$\alpha$$ and $$\beta$$ are the transition probability. Because neurotransmitters can open ion channels, the transfer probability from $$1-s$$ to $$s$$ is affected by the concentration of neurotransmitters. We denote the concentration of neurotransmitters as [T] and get the following Msarkov process.
+We can use Markov process to describe the opening and closing process of ion channels. As shown in Fig. 2-2,  $$s$$ represents the probability of channel opening, $$1-s$$ represents the probability of ion channel closing, and $$\alpha$$ and $$\beta$$ are the transition probability. Because neurotransmitters can open ion channels, the transfer probability from $$1-s$$ to $$s$$ is affected by the concentration of neurotransmitters. We denote the concentration of neurotransmitters as [T].
 
 <div style="text-align:center">
   <img src="../../figs/markov.png" width="170"> 
@@ -49,35 +51,24 @@ $$
 
 Where $$\alpha [T]$$ denotes the transition probability from state $$(1-s)$$ to state $$(s)$$; and $$\beta$$ represents the transition probability of the other direction.
 
-Now let's see how to implement such a model with BrainPy. First of all, we need to define a class that inherits from`` bp.TwoEndConn ``, because synapses connect two neurons. Here we will use ``numba`` backend to show the codes.
+Now let's see how to implement such a model with BrainPy. First of all, we need to define a class that inherits from`` bp.TwoEndConn ``, because synapses connect two neurons. 
+
+Within the class, we can define the differential equation with ``derivative`` function, this is the same as the definition of neuron models.
 
 ``` python
 import brainpy as bp
-from numba import prange
-bp.backend.set(backend='numba', dt=0.1)
 
 class AMPA(bp.TwoEndConn):
     target_backend = ['numpy', 'numba']
-```
 
-Within the class, we can define the differential equation, this is the same as the definition of neuron models.
-
-``` python
     @staticmethod
     def derivative(s, t, TT, alpha, beta):
         ds = alpha * TT * (1 - s) - beta * s
         return ds
-```
 
-Let's use the``__ init__ ``Function to initialize the required parameters and variables. First, in a synapse, we need ``pre`` and ``post`` to specify the presynaptic neurons and postsynaptic neurons connected by the synapse, respectively. It should be noted that both ``pre`` and ``post`` are vectors, representing two groups of neurons. Therefore, we also need to specify the connections between the two neuron groups. There are several connections methods provided by BrainPy, in ``numba`` backend, we can get ``pre_ids`` and ``post_ids`` from ``conn.requires``. The ``__init__`` function of the AMPA synapse is as follows:
-
-``` python
-    def __init__(self, pre, post, conn, delay=0., g_max=0.42, E=0.,
+    def __init__(self, pre, post, conn,
                  alpha=0.98, beta=0.18, T=0.5, T_duration=0.5, **kwargs):
         # parameters
-        self.delay = delay
-        self.g_max = g_max
-        self.E = E
         self.alpha = alpha
         self.beta = beta
         self.T = T
@@ -90,21 +81,13 @@ Let's use the``__ init__ ``Function to initialize the required parameters and va
 
         # variables
         self.s = bp.ops.zeros(self.size)
-        self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
         self.t_last_pre_spike = -1e7 * bp.ops.ones(self.size)
 
         self.int_s = bp.odeint(f=self.derivative, method='exponential_euler')
         super(AMPA, self).__init__(pre=pre, post=post, **kwargs)
-```
-
-For parameters and variables of the AMPA synapse, we would see that there is a concentration of neurotransmitter [T] in the formula. In order to simplify the calculation, [T] can be regarded as a constant, which is determined by ``T_duration`` controls how long it lasts. Therefore, our simplified implementation is that every time the presynaptic neuron fires, it will release neurotransmitters that maintain ``T_duration`` until being cleared. So we just need to judge if it's at ``T_duration``, then [T] = T, otherwise [T] = 0. Then the judgment process needs to use a variable ``t_last_pre_spike`` to record the last firing time of presynaptic neurons.
-
-After initialization, we specify how to update [T] and $$s$$ in the ``update`` function.
-
-
-```python
+        
     def update(self, _t):
-        for i in prange(self.size):
+        for i in range(self.size):
             pre_id = self.pre_ids[i]
             post_id = self.post_ids[i]
 
@@ -112,14 +95,17 @@ After initialization, we specify how to update [T] and $$s$$ in the ``update`` f
                 self.t_last_pre_spike[pre_id] = _t
             TT = ((_t - self.t_last_pre_spike[pre_id]) < self.T_duration) * self.T
             self.s[i] = self.int_s(self.s[i], _t, TT, self.alpha, self.beta)
-            self.g.push(i, self.g_max * self.s[i])
-            self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
 ```
+
+We use the``__ init__ ``Function to initialize the required parameters and variables. First, in a synapse, we need ``pre`` and ``post`` to specify the presynaptic neurons and postsynaptic neurons connected by the synapse, respectively. It should be noted that both ``pre`` and ``post`` are vectors, representing two groups of neurons. Therefore, we also need to specify the connections between the two neuron groups. There are several connections methods provided by BrainPy, in ``numba`` backend, we can get ``pre_ids`` and ``post_ids`` from ``conn.requires``. 
+
+For parameters and variables of the AMPA synapse, we would see that there is a concentration of neurotransmitter [T] in the formula. In order to simplify the calculation, [T] can be regarded as a constant, which is determined by ``T_duration`` controls how long it lasts. Therefore, our simplified implementation is that every time the presynaptic neuron fires, it will release neurotransmitters that maintain ``T_duration`` until being cleared. So we just need to judge if it's at ``T_duration``, then [T] = T, otherwise [T] = 0. Then the judgment process needs to use a variable ``t_last_pre_spike`` to record the last firing time of presynaptic neurons.
 
 After the implementation, we can plot the graph of $$s$$ changing with time. We would first write a ``run_syn`` function to run and plot the graph. To run a synapse, we need neuron groups, so we use the LIF neuron provided by ``brainmodels`` package.
 
 ``` python
 import brainmodels as bm
+bp.backend.set(backend='numba', dt=0.1)
 
 def run_syn(syn_model, **kwargs):
     neu1 = bm.neurons.LIF(2, monitors=['V'])
@@ -180,7 +166,7 @@ Here we specify the logic of increment of $$x$$ in the ``Update`` function when 
 
 ```python
 class Two_exponentials(bp.TwoEndConn):
-    target_backend = 'general'
+    target_backend = ['numpy', 'numba']
 
     @staticmethod
     def derivative(s, x, t, tau1, tau2):
@@ -195,8 +181,8 @@ class Two_exponentials(bp.TwoEndConn):
 
         # connections
         self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
+        self.pre_ids, self.post_ids = conn.requires('pre_ids', 'post_ids')
+        self.size = len(self.pre_ids)
 
         # variables
         self.s = bp.ops.zeros(self.size)
@@ -207,8 +193,12 @@ class Two_exponentials(bp.TwoEndConn):
         super(Two_exponentials, self).__init__(pre=pre, post=post, **kwargs)
     
     def update(self, _t):
-        self.s, self.x = self.integral(self.s, self.x, _t, self.tau1, self.tau2)
-        self.x += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
+        for i in prange(self.size):
+            pre_id = self.pre_ids[i]
+
+            self.s[i], self.x[i] = self.integral(self.s[i], self.x[i], _t, 
+                                                 self.tau1, self.tau2)
+            self.x[i] += self.pre.spike[pre_id]
 ```
 
 
@@ -414,9 +404,13 @@ bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
 ![png](../../figs/out/output_28_0.png)
 
 
-#### Current-based and Conductance-based synapse
+#### Current-based and Conductance-based synapses
 
-Previously, we have modeled the gating variable $$s$$. There are two different methods to model the relationships of $$s$$ and $$I$$ (the input current of postsynaptic neurons): **current-based** and **conductance-based**. The main difference between them is whether the synaptic current is influenced by the membrane potential of postsynaptic neurons.
+Previously, we have modeled the gating variable $$s$$. 
+
+> The current that passes through a synaptic channel is denoted as $$I$$.
+
+There are two different methods to model the relationships of $$s$$ and $$I$$ (the input current of postsynaptic neurons): **current-based** and **conductance-based**. The main difference between them is whether the synaptic current is influenced by the membrane potential of postsynaptic neurons.
 
 The formula of the current-based model is as follow:
 
