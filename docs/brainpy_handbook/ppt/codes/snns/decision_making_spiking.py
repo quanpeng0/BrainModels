@@ -7,7 +7,6 @@ reverberation in cortical circuits." Neuron 36.5 (2002): 955-968.
 """
 import brainpy as bp
 import numpy as np
-import brainmodels
 import matplotlib.pyplot as plt
 
 # set params
@@ -61,44 +60,44 @@ print(f"R_I * C_I = {R_I * C_I} should be equal to tau_I = {tau_I}")
 
 
 class LIF(bp.NeuGroup):
-    target_backend = 'general'
+  target_backend = 'general'
 
-    @staticmethod
-    def derivative(V, t, I_ext, V_rest, R, tau):
-        dvdt = (- (V - V_rest) + R * I_ext) / tau
-        return dvdt
+  @staticmethod
+  def derivative(V, t, I_ext, V_rest, R, tau):
+    dvdt = (- (V - V_rest) + R * I_ext) / tau
+    return dvdt
 
-    def __init__(self, size, V_rest=0., V_reset=0.,
-                 V_th=0., R=0., tau=0., t_refractory=0.,
-                 **kwargs):
-        self.V_rest = V_rest
-        self.V_reset = V_reset
-        self.V_th = V_th
-        self.R = R
-        self.tau = tau
-        self.t_refractory = t_refractory
+  def __init__(self, size, V_rest=0., V_reset=0.,
+               V_th=0., R=0., tau=0., t_refractory=0.,
+               **kwargs):
+    self.V_rest = V_rest
+    self.V_reset = V_reset
+    self.V_th = V_th
+    self.R = R
+    self.tau = tau
+    self.t_refractory = t_refractory
 
-        self.V = bp.ops.zeros(size)
-        self.input = bp.ops.zeros(size)
-        self.spike = bp.ops.zeros(size, dtype=bool)
-        self.refractory = bp.ops.zeros(size, dtype=bool)
-        self.t_last_spike = bp.ops.ones(size) * -1e7
+    self.V = bp.ops.zeros(size)
+    self.input = bp.ops.zeros(size)
+    self.spike = bp.ops.zeros(size, dtype=bool)
+    self.refractory = bp.ops.zeros(size, dtype=bool)
+    self.t_last_spike = bp.ops.ones(size) * -1e7
 
-        self.integral = bp.odeint(self.derivative)
-        super(LIF, self).__init__(size=size, **kwargs)
+    self.integral = bp.odeint(self.derivative)
+    super(LIF, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
-        # update variables
-        not_ref = (_t - self.t_last_spike > self.t_refractory)
-        self.V[not_ref] = self.integral(
-            self.V[not_ref], _t, self.input[not_ref],
-            self.V_rest, self.R, self.tau)
-        sp = (self.V > self.V_th)
-        self.V[sp] = self.V_reset
-        self.t_last_spike[sp] = _t
-        self.spike = sp
-        self.refractory = ~not_ref
-        self.input[:] = 0.
+  def update(self, _t):
+    # update variables
+    not_ref = (_t - self.t_last_spike > self.t_refractory)
+    self.V[not_ref] = self.integral(
+      self.V[not_ref], _t, self.input[not_ref],
+      self.V_rest, self.R, self.tau)
+    sp = (self.V > self.V_th)
+    self.V[sp] = self.V_reset
+    self.t_last_spike[sp] = _t
+    self.spike = sp
+    self.refractory = ~not_ref
+    self.input[:] = 0.
 
 
 # set syn params
@@ -120,131 +119,130 @@ delay_syn = 0.5  # ms
 
 
 class NMDA(bp.TwoEndConn):
-    target_backend = 'general'
+  target_backend = 'general'
 
-    @staticmethod
-    def derivative(s, x, t, tau_rise, tau_decay, a):
-        dxdt = -x / tau_rise
-        dsdt = -s / tau_decay + a * x * (1 - s)
-        return dsdt, dxdt
+  @staticmethod
+  def derivative(s, x, t, tau_rise, tau_decay, a):
+    dxdt = -x / tau_rise
+    dsdt = -s / tau_decay + a * x * (1 - s)
+    return dsdt, dxdt
 
-    def __init__(self, pre, post, conn, delay=0.,
-                 g_max=0.15, E=0., cc_Mg=1.2,
-                 alpha=0.062, beta=3.57, tau=100,
-                 a=0.5, tau_rise=2., **kwargs):
-        # parameters
-        self.g_max = g_max
-        self.E = E
-        self.alpha = alpha
-        self.beta = beta
-        self.cc_Mg = cc_Mg
-        self.tau = tau
-        self.tau_rise = tau_rise
-        self.a = a
-        self.delay = delay
+  def __init__(self, pre, post, conn, delay=0.,
+               g_max=0.15, E=0., cc_Mg=1.2,
+               alpha=0.062, beta=3.57, tau=100,
+               a=0.5, tau_rise=2., **kwargs):
+    # parameters
+    self.g_max = g_max
+    self.E = E
+    self.alpha = alpha
+    self.beta = beta
+    self.cc_Mg = cc_Mg
+    self.tau = tau
+    self.tau_rise = tau_rise
+    self.a = a
+    self.delay = delay
 
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
+    # connections
+    self.conn = conn(pre.size, post.size)
+    self.conn_mat = conn.requires('conn_mat')
+    self.size = bp.ops.shape(self.conn_mat)
 
-        # variables
-        self.s = bp.ops.zeros(self.size)
-        self.x = bp.ops.zeros(self.size)
-        self.g = self.register_constant_delay('g', size=self.size,
-                                              delay_time=delay)
+    # variables
+    self.s = bp.ops.zeros(self.size)
+    self.x = bp.ops.zeros(self.size)
+    self.g = self.register_constant_delay('g', size=self.size,
+                                          delay_time=delay)
 
-        self.integral = bp.odeint(self.derivative)
-        super(NMDA, self).__init__(pre=pre, post=post, **kwargs)
+    self.integral = bp.odeint(self.derivative)
+    super(NMDA, self).__init__(pre=pre, post=post, **kwargs)
 
-    def update(self, _t):
-        self.x += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        self.s, self.x = self.integral(self.s, self.x, _t,
-                                       self.tau_rise, self.tau, self.a)
+  def update(self, _t):
+    self.x += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
+    self.s, self.x = self.integral(self.s, self.x, _t,
+                                   self.tau_rise, self.tau, self.a)
 
-        self.g.push(self.g_max * self.s)
-        g_inf = 1 + self.cc_Mg / self.beta * \
-                bp.ops.exp(-self.alpha * self.post.V)
-        g_inf = 1 / g_inf
-        self.post.input -= bp.ops.sum(self.g.pull(), axis=0) * \
-                           (self.post.V - self.E) * g_inf
+    self.g.push(self.g_max * self.s)
+    g_inf = 1 + self.cc_Mg / self.beta * \
+            bp.ops.exp(-self.alpha * self.post.V)
+    g_inf = 1 / g_inf
+    self.post.input -= bp.ops.sum(self.g.pull(), axis=0) * \
+                       (self.post.V - self.E) * g_inf
 
 
 class AMPA(bp.TwoEndConn):
-    target_backend = 'general'
+  target_backend = 'general'
 
-    @staticmethod
-    def derivative(s, t, tau):
-        ds = - s / tau
-        return ds
+  @staticmethod
+  def derivative(s, t, tau):
+    ds = - s / tau
+    return ds
 
-    def __init__(self, pre, post, conn, delay=0.,
-                 g_max=0.10, E=0., tau=2.0, **kwargs):
-        # parameters
-        self.g_max = g_max
-        self.E = E
-        self.tau = tau
-        self.delay = delay
+  def __init__(self, pre, post, conn, delay=0.,
+               g_max=0.10, E=0., tau=2.0, **kwargs):
+    # parameters
+    self.g_max = g_max
+    self.E = E
+    self.tau = tau
+    self.delay = delay
 
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
+    # connections
+    self.conn = conn(pre.size, post.size)
+    self.conn_mat = conn.requires('conn_mat')
+    self.size = bp.ops.shape(self.conn_mat)
 
-        # data
-        self.s = bp.ops.zeros(self.size)
-        self.g = self.register_constant_delay('g', size=self.size,
-                                              delay_time=delay)
+    # data
+    self.s = bp.ops.zeros(self.size)
+    self.g = self.register_constant_delay('g', size=self.size,
+                                          delay_time=delay)
 
-        self.int_s = bp.odeint(f=self.derivative, method='euler')
-        super(AMPA, self).__init__(pre=pre, post=post, **kwargs)
+    self.int_s = bp.odeint(f=self.derivative, method='euler')
+    super(AMPA, self).__init__(pre=pre, post=post, **kwargs)
 
-    def update(self, _t):
-        self.s = self.int_s(self.s, _t, self.tau)
-        self.s += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        self.g.push(self.g_max * self.s)
-        self.post.input -= bp.ops.sum(self.g.pull(), 0) \
-                           * (self.post.V - self.E)
+  def update(self, _t):
+    self.s = self.int_s(self.s, _t, self.tau)
+    self.s += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
+    self.g.push(self.g_max * self.s)
+    self.post.input -= bp.ops.sum(self.g.pull(), 0) * (self.post.V - self.E)
 
 
 class GABAa(bp.TwoEndConn):
-    target_backend = 'general'
+  target_backend = 'general'
 
-    @staticmethod
-    def derivative(s, t, tau_decay):
-        dsdt = - s / tau_decay
-        return dsdt
+  @staticmethod
+  def derivative(s, t, tau_decay):
+    dsdt = - s / tau_decay
+    return dsdt
 
-    def __init__(self, pre, post, conn, delay=0.,
-                 g_max=0.4, E=-80., tau_decay=6.,
-                 **kwargs):
-        # parameters
-        self.g_max = g_max
-        self.E = E
-        self.tau_decay = tau_decay
-        self.delay = delay
+  def __init__(self, pre, post, conn, delay=0.,
+               g_max=0.4, E=-80., tau_decay=6.,
+               **kwargs):
+    # parameters
+    self.g_max = g_max
+    self.E = E
+    self.tau_decay = tau_decay
+    self.delay = delay
 
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
+    # connections
+    self.conn = conn(pre.size, post.size)
+    self.conn_mat = conn.requires('conn_mat')
+    self.size = bp.ops.shape(self.conn_mat)
 
-        # data
-        self.s = bp.ops.zeros(self.size)
-        self.g = self.register_constant_delay('g', size=self.size,
-                                              delay_time=delay)
+    # data
+    self.s = bp.ops.zeros(self.size)
+    self.g = self.register_constant_delay('g', size=self.size,
+                                          delay_time=delay)
 
-        self.integral = bp.odeint(self.derivative)
-        super(GABAa, self).__init__(pre=pre, post=post, **kwargs)
+    self.integral = bp.odeint(self.derivative)
+    super(GABAa, self).__init__(pre=pre, post=post, **kwargs)
 
-    def update(self, _t):
-        self.s = self.integral(self.s, _t, self.tau_decay)
-        for i in range(self.pre.size[0]):
-            if self.pre.spike[i] > 0:
-                self.s[i] += self.conn_mat[i]
-        self.g.push(self.g_max * self.s)
-        g = self.g.pull()
-        self.post.input -= bp.ops.sum(g, axis=0) * (self.post.V - self.E)
+  def update(self, _t):
+    self.s = self.integral(self.s, _t, self.tau_decay)
+    for i in range(self.pre.size[0]):
+      if self.pre.spike[i] > 0:
+        self.s[i] += self.conn_mat[i]
+    self.g.push(self.g_max * self.s)
+    g = self.g.pull()
+    self.post.input -= bp.ops.sum(g, axis=0) * (self.post.V - self.E)
 
 
 # set syn weights (only used in recurrent E connections)
@@ -256,14 +254,14 @@ print(f"the structured weight is: w_pos = {w_pos}, w_neg = {w_neg}")
 # A2A B2B w+, A2B B2A w-, non2A non2B w-
 weight = np.ones((N_E, N_E), dtype=np.float)
 for i in range(N_A):
-    weight[i, 0: N_A] = w_pos
-    weight[i, N_A: N_A + N_B] = w_neg
+  weight[i, 0: N_A] = w_pos
+  weight[i, N_A: N_A + N_B] = w_neg
 for i in range(N_A, N_A + N_B):
-    weight[i, N_A: N_A + N_B] = w_pos
-    weight[i, 0: N_A] = w_neg
+  weight[i, N_A: N_A + N_B] = w_pos
+  weight[i, 0: N_A] = w_neg
 for i in range(N_A + N_B, N_E):
-    weight[i, 0: N_A + N_B] = w_neg
-print(f"Check contraints: Weight sum {weight.sum(axis=0)[0]} \
+  weight[i, 0: N_A + N_B] = w_neg
+print(f"Check constraints: Weight sum {weight.sum(axis=0)[0]} \
         should be equal to N_E = {N_E}")
 
 # set background params
@@ -412,19 +410,19 @@ syn_non2non_NMDA.g_max = g_max_E2E_NMDA
 for i in [syn_A2A_AMPA, syn_A2B_AMPA, syn_A2non_AMPA,
           syn_B2A_AMPA, syn_B2B_AMPA, syn_B2non_AMPA,
           syn_non2A_AMPA, syn_non2B_AMPA, syn_non2non_AMPA]:
-    i.E = E_AMPA
-    i.tau_decay = tau_decay_AMPA
-    i.E = E_NMDA
+  i.E = E_AMPA
+  i.tau_decay = tau_decay_AMPA
+  i.E = E_NMDA
 
 for i in [syn_A2A_NMDA, syn_A2B_NMDA, syn_A2non_NMDA,
           syn_B2A_NMDA, syn_B2B_NMDA, syn_B2non_NMDA,
           syn_non2A_NMDA, syn_non2B_NMDA, syn_non2non_NMDA]:
-    i.alpha = alpha_NMDA
-    i.beta = beta_NMDA
-    i.cc_Mg = cc_Mg_NMDA
-    i.a = a_NMDA
-    i.tau_decay = tau_decay_NMDA
-    i.tau_rise = tau_rise_NMDA
+  i.alpha = alpha_NMDA
+  i.beta = beta_NMDA
+  i.cc_Mg = cc_Mg_NMDA
+  i.a = a_NMDA
+  i.tau_decay = tau_decay_NMDA
+  i.tau_rise = tau_rise_NMDA
 
 ## define E2I conn
 syn_A2I_AMPA = AMPA(pre=neu_A, post=neu_I,
@@ -449,19 +447,19 @@ syn_non2I_NMDA = NMDA(pre=neu_non, post=neu_I,
                       delay=delay_syn)
 
 for i in [syn_A2I_AMPA, syn_B2I_AMPA, syn_non2I_AMPA]:
-    i.g_max = g_max_E2I_AMPA
-    i.E = E_AMPA
-    i.tau_decay = tau_decay_AMPA
+  i.g_max = g_max_E2I_AMPA
+  i.E = E_AMPA
+  i.tau_decay = tau_decay_AMPA
 
 for i in [syn_A2I_NMDA, syn_B2I_NMDA, syn_non2I_NMDA]:
-    i.g_max = g_max_E2I_NMDA
-    i.E = E_NMDA
-    i.alpha = alpha_NMDA
-    i.beta = beta_NMDA
-    i.cc_Mg = cc_Mg_NMDA
-    i.a = a_NMDA
-    i.tau_decay = tau_decay_NMDA
-    i.tau_rise = tau_rise_NMDA
+  i.g_max = g_max_E2I_NMDA
+  i.E = E_NMDA
+  i.alpha = alpha_NMDA
+  i.beta = beta_NMDA
+  i.cc_Mg = cc_Mg_NMDA
+  i.a = a_NMDA
+  i.tau_decay = tau_decay_NMDA
+  i.tau_rise = tau_rise_NMDA
 
 ## define I2E conn
 syn_I2A_GABAa = GABAa(pre=neu_I, post=neu_A,
@@ -474,9 +472,9 @@ syn_I2non_GABAa = GABAa(pre=neu_I, post=neu_non,
                         conn=bp.connect.All2All(),
                         delay=delay_syn)
 for i in [syn_I2A_GABAa, syn_I2B_GABAa, syn_I2non_GABAa]:
-    i.g_max = g_max_I2E_GABAa
-    i.E = E_GABAa
-    i.tau_decay = tau_decay_GABAa
+  i.g_max = g_max_I2E_GABAa
+  i.E = E_GABAa
+  i.tau_decay = tau_decay_GABAa
 
 ## define I2I conn
 syn_I2I_GABAa = GABAa(pre=neu_I, post=neu_I,
@@ -489,19 +487,19 @@ syn_I2I_GABAa.tau_decay = tau_decay_GABAa
 
 # def background poisson input
 class PoissonInput(bp.NeuGroup):
-    target_backend = 'general'
+  target_backend = 'general'
 
-    def __init__(self, size, freqs, dt, **kwargs):
-        self.freqs = freqs
-        self.dt = dt
+  def __init__(self, size, freqs, dt, **kwargs):
+    self.freqs = freqs
+    self.dt = dt
 
-        self.spike = bp.ops.zeros(size, dtype=bool)
+    self.spike = bp.ops.zeros(size, dtype=bool)
 
-        super(PoissonInput, self).__init__(size=size, **kwargs)
+    super(PoissonInput, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
-        self.spike = np.random.random(self.size) \
-                     < self.freqs * self.dt / 1000.
+  def update(self, _t):
+    self.spike = np.random.random(self.size) \
+                 < self.freqs * self.dt / 1000.
 
 
 neu_poisson_A = PoissonInput(N_A, freqs=poisson_freq, dt=dt)
@@ -516,9 +514,9 @@ syn_back2B_AMPA = AMPA(pre=neu_poisson_B, post=neu_B,
 syn_back2non_AMPA = AMPA(pre=neu_poisson_non, post=neu_non,
                          conn=bp.connect.One2One())
 for i in [syn_back2A_AMPA, syn_back2B_AMPA, syn_back2non_AMPA]:
-    i.g_max = g_max_ext2E_AMPA
-    i.E = E_AMPA
-    i.tau_decay = tau_decay_AMPA
+  i.g_max = g_max_ext2E_AMPA
+  i.E = E_AMPA
+  i.tau_decay = tau_decay_AMPA
 
 syn_back2I_AMPA = AMPA(pre=neu_poisson_I, post=neu_I,
                        conn=bp.connect.One2One())
@@ -539,41 +537,41 @@ print(f"coherence = {coherence}, mu_A = {mu_A}, mu_B = {mu_B}")
 
 
 class PoissonStim(bp.NeuGroup):
-    """
-    from time <t_start> to <t_end> during the simulation, the neuron 
-    generates a possion spike with frequency <self.freq>. however, 
-    the value of <self.freq> changes every <t_interval> ms and obey 
-    a Gaussian distribution defined by <mean_freq> and <var_freq>.
-    """
-    target_backend = 'general'
+  """
+  from time <t_start> to <t_end> during the simulation, the neuron
+  generates a poisson spike with frequency <self.freq>. however,
+  the value of <self.freq> changes every <t_interval> ms and obey
+  a Gaussian distribution defined by <mean_freq> and <var_freq>.
+  """
+  target_backend = 'general'
 
-    def __init__(self, size, dt=0., t_start=0., t_end=0., t_interval=0.,
-                 mean_freq=0., var_freq=20., **kwargs):
-        self.dt = dt
-        self.stim_start_t = t_start
-        self.stim_end_t = t_end
-        self.stim_change_freq_interval = t_interval
-        self.mean_freq = mean_freq
-        self.var_freq = var_freq
+  def __init__(self, size, dt=0., t_start=0., t_end=0., t_interval=0.,
+               mean_freq=0., var_freq=20., **kwargs):
+    self.dt = dt
+    self.stim_start_t = t_start
+    self.stim_end_t = t_end
+    self.stim_change_freq_interval = t_interval
+    self.mean_freq = mean_freq
+    self.var_freq = var_freq
 
-        self.freq = 0.
-        self.t_last_change_freq = -1e7
-        self.spike = bp.ops.zeros(size, dtype=bool)
+    self.freq = 0.
+    self.t_last_change_freq = -1e7
+    self.spike = bp.ops.zeros(size, dtype=bool)
 
-        super(PoissonStim, self).__init__(size=size, **kwargs)
+    super(PoissonStim, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
-        if _t > self.stim_start_t and _t < self.stim_end_t:
-            if _t - self.t_last_change_freq \
-                    >= self.stim_change_freq_interval:  # change freq
-                self.freq = np.random.normal(self.mean_freq, self.var_freq)
-                self.freq = max(self.freq, 0)
-                self.t_last_change_freq = _t
-            self.spike = np.random.random(self.size) \
-                         < (self.freq * self.dt / 1000)
-        else:
-            self.freq = 0.
-            self.spike[:] = False
+  def update(self, _t):
+    if self.stim_start_t < _t < self.stim_end_t:
+      if _t - self.t_last_change_freq \
+          >= self.stim_change_freq_interval:  # change freq
+        self.freq = np.random.normal(self.mean_freq, self.var_freq)
+        self.freq = max(self.freq, 0)
+        self.t_last_change_freq = _t
+      self.spike = np.random.random(self.size) \
+                   < (self.freq * self.dt / 1000)
+    else:
+      self.freq = 0.
+      self.spike[:] = False
 
 
 neu_input2A = PoissonStim(N_A, dt=dt, t_start=pre_period,
@@ -599,36 +597,36 @@ syn_input2B_AMPA.tau_decay = tau_decay_AMPA
 
 # build & simulate network
 net = bp.Network(
-    neu_poisson_A, neu_poisson_B,
-    neu_poisson_non, neu_poisson_I,
-    # bg input
-    syn_back2A_AMPA, syn_back2B_AMPA,
-    syn_back2non_AMPA, syn_back2I_AMPA,
-    # bg conn
-    neu_input2A, neu_input2B,
-    # stim input
-    syn_input2A_AMPA, syn_input2B_AMPA,
-    # stim conn
-    neu_A, neu_B, neu_non, neu_I,
-    # E(A B non), I neu
-    syn_A2A_AMPA, syn_A2A_NMDA,
-    syn_A2B_AMPA, syn_A2B_NMDA,
-    syn_A2non_AMPA, syn_A2non_NMDA,
-    syn_B2A_AMPA, syn_B2A_NMDA,
-    syn_B2B_AMPA, syn_B2B_NMDA,
-    syn_B2non_AMPA, syn_B2non_NMDA,
-    syn_non2A_AMPA, syn_non2A_NMDA,
-    syn_non2B_AMPA, syn_non2B_NMDA,
-    syn_non2non_AMPA, syn_non2non_NMDA,
-    # E2E conn
-    syn_A2I_AMPA, syn_A2I_NMDA,
-    syn_B2I_AMPA, syn_B2I_NMDA,
-    syn_non2I_AMPA, syn_non2I_NMDA,
-    # E2I conn
-    syn_I2A_GABAa, syn_I2B_GABAa, syn_I2non_GABAa,
-    # I2E conn
-    syn_I2I_GABAa
-    # I2I conn
+  neu_poisson_A, neu_poisson_B,
+  neu_poisson_non, neu_poisson_I,
+  # bg input
+  syn_back2A_AMPA, syn_back2B_AMPA,
+  syn_back2non_AMPA, syn_back2I_AMPA,
+  # bg conn
+  neu_input2A, neu_input2B,
+  # stim input
+  syn_input2A_AMPA, syn_input2B_AMPA,
+  # stim conn
+  neu_A, neu_B, neu_non, neu_I,
+  # E(A B non), I neu
+  syn_A2A_AMPA, syn_A2A_NMDA,
+  syn_A2B_AMPA, syn_A2B_NMDA,
+  syn_A2non_AMPA, syn_A2non_NMDA,
+  syn_B2A_AMPA, syn_B2A_NMDA,
+  syn_B2B_AMPA, syn_B2B_NMDA,
+  syn_B2non_AMPA, syn_B2non_NMDA,
+  syn_non2A_AMPA, syn_non2A_NMDA,
+  syn_non2B_AMPA, syn_non2B_NMDA,
+  syn_non2non_AMPA, syn_non2non_NMDA,
+  # E2E conn
+  syn_A2I_AMPA, syn_A2I_NMDA,
+  syn_B2I_AMPA, syn_B2I_NMDA,
+  syn_non2I_AMPA, syn_non2I_NMDA,
+  # E2I conn
+  syn_I2A_GABAa, syn_I2B_GABAa, syn_I2non_GABAa,
+  # I2E conn
+  syn_I2I_GABAa
+  # I2I conn
 )
 # Note: you may also use .add method of bp.Network to add
 #       NeuGroups and SynConns to network
@@ -638,17 +636,17 @@ net.run(duration=total_period, inputs=[], report=True)
 
 # visualize
 def compute_population_fr(data, time_window, time_step):
-    spike_cnt_group = data.sum(axis=1)
-    pop_num = data.shape[1]
-    time_cnt = int(time_step // dt)
-    first_step_sum = spike_cnt_group[0:time_cnt].sum(axis=0)
-    pop_fr_group = []
-    for t in range(data.shape[0]):
-        if t < time_cnt:
-            pop_fr_group.append((first_step_sum / time_step) / pop_num)
-        else:
-            pop_fr_group.append(spike_cnt_group[t - time_cnt:t].sum(axis=0))
-    return pop_fr_group
+  spike_cnt_group = data.sum(axis=1)
+  pop_num = data.shape[1]
+  time_cnt = int(time_step // dt)
+  first_step_sum = spike_cnt_group[0:time_cnt].sum(axis=0)
+  pop_fr_group = []
+  for t in range(data.shape[0]):
+    if t < time_cnt:
+      pop_fr_group.append((first_step_sum / time_step) / pop_num)
+    else:
+      pop_fr_group.append(spike_cnt_group[t - time_cnt:t].sum(axis=0))
+  return pop_fr_group
 
 
 fig, gs = bp.visualize.get_figure(4, 1, 4, 8)
