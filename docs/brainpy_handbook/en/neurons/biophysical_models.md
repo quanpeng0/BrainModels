@@ -2,7 +2,7 @@
 
 ### 1.2.1 Hodgkin-Huxley model
 
-Hodgkin and Huxley (1952) recorded the generation of action potential on squid giant axons with voltage clamp technique, and proposed the canonical neuron model called Hudgin-Huxley model (HH model). 
+Hodgkin and Huxley (1952) recorded the generation of action potential on squid giant axons with voltage clamp technique, and proposed the canonical neuron model called **Hudgin-Huxley model** (**HH model**). 
 
 In last section we have introduced a general template for neuron membrane. Computational neuroscientists always model neuron membrane as equivalent circuit like the following figure.
 
@@ -25,7 +25,7 @@ $$
 
 That is the HH model. Note that in the first equation above, the first three terms on the right hand are the current go through Na+ ion channels, K+ ion channels and other non-specific ion channels, respectively, while $$I(t)$$ is an external input. On the left hand, $$C\frac{dV}{dt} = \frac{dQ}{dt} = I$$ is the current go through the capacitance. 
 
-In the computing of ion channel currents, other than the Ohm's law $$I = U/R = gR$$, HH model introduces three gating variables m, n and h to control the open/close state of ion channels. To be precise, variables m and h control the state of Na+ ion channel, variable n controls the state of K+ ion channel, and the real conductance of an ion channel is the product of maximal conductance $$\bar{g}$$ and the state of gating variables. Gating variables' dynamics can be expressed in a Markov-like form, in which $$\alpha_x$$ refers to the activation rate of gating variable x, and $$\beta_x$$ refers to the de-activation rate of x. The expressions of $$\alpha_x$$ and $$\beta_x$$ (as shown in equations below) are fitted by experimental data.
+In the computing of ion channel currents, other than the Ohm's law $$I = U/R = gU$$, HH model introduces three **gating variables** m, n and h to control the open/close state of ion channels. To be precise, variables m and h control the state of Na+ ion channel, variable n controls the state of K+ ion channel, and the real conductance of an ion channel is the product of maximal conductance $$\bar{g}$$ and the state of gating variables. Gating variables' dynamics can be expressed in a Markov-like form, in which $$\alpha_x$$ refers to the activation rate of gating variable x, and $$\beta_x$$ refers to the de-activation rate of x. The expressions of $$\alpha_x$$ and $$\beta_x$$ (as shown in equations below) are fitted by experimental data.
 $$
 \alpha_m(V) = \frac{0.1(V+40)}{1 - exp(\frac{-(V+40)}{10})}
 $$

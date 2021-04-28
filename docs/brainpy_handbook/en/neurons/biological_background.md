@@ -26,6 +26,6 @@ An action potential can be mainly divide into three periods: **depolarization**,
 
 A single action potential is complex enough, but in our neural system, a neuron can generate several action potentials in less than one second, not to mention there are numerous neurons in our brain. How, exactly, do the neurons fire? Different kinds of neurons may spike when facing different inputs, and the pattern of their spiking can be classified into several firing patterns, some of which are shown in the following figure.
 
-[Figure shows firing patterns]
+[Figure 1-3 shows firing patterns]
 
-Those firing patterns, together with the shape of action potentials, are the target computational neuronscience wants to model at the cellular level.
+Those firing patterns, together with the shape of action potentials, are the target computational neuroscience wants to model at the cellular level.
