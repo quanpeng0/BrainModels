@@ -1,5 +1,6 @@
 import brainpy as bp
 from numba import prange
+
 class ExpIF(bp.NeuGroup):
   target_backend = 'general'
 

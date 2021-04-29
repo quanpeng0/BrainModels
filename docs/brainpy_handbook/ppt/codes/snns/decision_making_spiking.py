@@ -498,10 +498,9 @@ class PoissonInput(bp.NeuGroup):
     super(PoissonInput, self).__init__(size=size, **kwargs)
 
   def update(self, _t):
-    self.spike = np.random.random(self.size) \
-                 < self.freqs * self.dt / 1000.
+    self.spike = np.random.random(self.size) < self.freqs * self.dt / 1000.
 
-
+# poisson_freq = 2400Hz
 neu_poisson_A = PoissonInput(N_A, freqs=poisson_freq, dt=dt)
 neu_poisson_B = PoissonInput(N_B, freqs=poisson_freq, dt=dt)
 neu_poisson_non = PoissonInput(N_non, freqs=poisson_freq, dt=dt)
@@ -513,17 +512,19 @@ syn_back2B_AMPA = AMPA(pre=neu_poisson_B, post=neu_B,
                        conn=bp.connect.One2One())
 syn_back2non_AMPA = AMPA(pre=neu_poisson_non, post=neu_non,
                          conn=bp.connect.One2One())
+
+syn_back2I_AMPA = AMPA(pre=neu_poisson_I, post=neu_I,
+                       conn=bp.connect.One2One())
+
 for i in [syn_back2A_AMPA, syn_back2B_AMPA, syn_back2non_AMPA]:
   i.g_max = g_max_ext2E_AMPA
   i.E = E_AMPA
   i.tau_decay = tau_decay_AMPA
 
-syn_back2I_AMPA = AMPA(pre=neu_poisson_I, post=neu_I,
-                       conn=bp.connect.One2One())
 syn_back2I_AMPA.g_max = g_max_ext2I_AMPA
 syn_back2I_AMPA.E = E_AMPA
 syn_back2I_AMPA.tau_decay = tau_decay_AMPA
-# Note: all neurons receive 2400Hz background possion inputs
+# Note: all neurons receive 2400Hz background poisson inputs
 
 ## def stimulus input
 # Note: inputs only given to A and B group
@@ -534,7 +535,6 @@ rou_B = mu_0 / 100.
 mu_A = mu_0 + rou_A * coherence
 mu_B = mu_0 - rou_B * coherence
 print(f"coherence = {coherence}, mu_A = {mu_A}, mu_B = {mu_B}")
-
 
 class PoissonStim(bp.NeuGroup):
   """
@@ -562,13 +562,11 @@ class PoissonStim(bp.NeuGroup):
 
   def update(self, _t):
     if self.stim_start_t < _t < self.stim_end_t:
-      if _t - self.t_last_change_freq \
-          >= self.stim_change_freq_interval:  # change freq
+      if self.stim_change_freq_interval <= _t - self.t_last_change_freq:
         self.freq = np.random.normal(self.mean_freq, self.var_freq)
         self.freq = max(self.freq, 0)
         self.t_last_change_freq = _t
-      self.spike = np.random.random(self.size) \
-                   < (self.freq * self.dt / 1000)
+      self.spike = np.random.random(self.size) < (self.freq * self.dt / 1000)
     else:
       self.freq = 0.
       self.spike[:] = False
@@ -585,12 +583,14 @@ neu_input2B = PoissonStim(N_B, dt=dt, t_start=pre_period,
 
 syn_input2A_AMPA = AMPA(pre=neu_input2A, post=neu_A,
                         conn=bp.connect.One2One())
+
+syn_input2B_AMPA = AMPA(pre=neu_input2B, post=neu_B,
+                        conn=bp.connect.One2One())
+
 syn_input2A_AMPA.g_max = g_max_ext2E_AMPA
 syn_input2A_AMPA.E = E_AMPA
 syn_input2A_AMPA.tau_decay = tau_decay_AMPA
 
-syn_input2B_AMPA = AMPA(pre=neu_input2B, post=neu_B,
-                        conn=bp.connect.One2One())
 syn_input2B_AMPA.g_max = g_max_ext2E_AMPA
 syn_input2B_AMPA.E = E_AMPA
 syn_input2B_AMPA.tau_decay = tau_decay_AMPA

@@ -4,9 +4,9 @@ As the basic unit of neural systems, neurons maintain mystique to researchers fo
 
 To achieve our final goal of modeling neurons with computational neuroscience methods, we may start with a diagram of real neuron membrane.
 
-<center><img src="../../figs/neurons/1-1.png">	</center>
+<center><img src="../../figs/neurons/neuron_membrane.png">	</center>
 
-<center><b> Fig. 1-1 换个图 </b></center>
+<center><b> Fig. 1-1 Neuron membrane diagram | what-when-how.com </b></center>
 
 The figure above is a general diagram of neuron membrane with phospholipid bilayer and ion channels. The membrane divides the ions and fluid into intracellular and extracellular, partially prevent them from exchanging, thus generates **membrane potential**---- the difference in electric potential across the membrane.
 
@@ -26,6 +26,8 @@ An action potential can be mainly divide into three periods: **depolarization**,
 
 A single action potential is complex enough, but in our neural system, a neuron can generate several action potentials in less than one second, not to mention there are numerous neurons in our brain. How, exactly, do the neurons fire? Different kinds of neurons may spike when facing different inputs, and the pattern of their spiking can be classified into several firing patterns, some of which are shown in the following figure.
 
-[Figure 1-3 shows firing patterns]
+<center><img src="../../figs/neurons/multiple_firing_pattern.png">	</center>
+
+<center><b>Figure 1-3 Some firing patterns</b></center>
 
 Those firing patterns, together with the shape of action potentials, are the target computational neuroscience wants to model at the cellular level.
