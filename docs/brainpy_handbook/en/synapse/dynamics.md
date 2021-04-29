@@ -242,13 +242,13 @@ In addition to the chemical synapses described earlier, electrical synapses are 
 
 As shown in the Fig. 2-3a, two neurons are connected by junction channels and can conduct electricity directly. Therefore, it can be seen that two neurons are connected by a constant resistance, as shown in the Fig. 2-3b.
 
-According to Ohm's law, we can get the following equation,
+According to Ohm's law, the current of one neuron is given by,
 
 $$
 I_{1} = w (V_{0} - V_{1})
 $$
 
-Here the conductance is expressed as $$w$$, which represents the weight of the connection.
+where $$V_0$$ and $$V_1$$ are the membrane potentials of the two neurons, and the synaptic weight $$w$$ is equivalent with the conductance.
 
 While implementing with BrainPy, you only need to specify the equation in the ``update`` function.
 
