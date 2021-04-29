@@ -23,13 +23,11 @@ Let's first look at short-term plasticity. We will start with the results of the
 <div style="text-align:center">
   <img src="../../figs/stp.png" width="500">
   <br>
-  <strong>Fig. 2-1 Short-term plasticity.</strong> (Aaptive from <cite>Gerstner et al., 2014 <sup>[1]</sup></cite>)
+  <strong>Fig. 2-1 Short-term plasticity.</strong> (Aaptive from <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
 </div>
-
-
 <div><br></div>
 
-The formula of the model is as follows. Here, the short term plasticity is described mainly by variables $$u$$ and $$x$$. Where $$u$$ represents the probability of neurotransmitter release, the initial value is 0, and increase with the firing of presynaptic neurons, contributing to the short-term facilitation (STF); while $$x$$ represents the residual amount of neurotransmitters, the initial value is 1, and some of them will be used every time when presynaptic neurons fire, which means that it will decrease, contributing to the short-term depression (STD). Therefore the two directions of facilitation and depression occur simultaneously. $$\tau_f$$ and $$\tau_d$$ controls the recovery speed of $$u$$ and $$x$$, respectively, and the relationship between them determines which direction of plasticity plays a dominant role.
+Now let's turn to the model. The short term plasticity can be described by two variables, $$u$$ and $$x$$. Where $$u$$ represents the probability of neurotransmitter release, and  $$x$$ represents the residual amount of neurotransmitters. The dynamic of a synapse with short term plasticity is given by,
 $$
 \frac {dI} {dt} = - \frac I {\tau}
 $$
@@ -50,6 +48,10 @@ I^+ = I^- + Au^+x^- \\
 x^+ = x^- - u^+x^- 
 \end{cases}
 $$
+
+where the dynamics of the synaptic current $$I$$ can be one of the dynamics we introduced in the previous section (i.e., the dynamic of gating variable $$s$$ under current-based condition). $$U$$ and $$A$$ are two constants representing the increments of $$u$$ and $$I$$ after a presynaptic spike, respectively.  $$\tau_f$$ and $$\tau_d$$ are time constants of $$u$$ and $$x$$, respectively.
+
+In this model, $$u$$ contributes the short-term facilitation (STF) by increasing from 0 whenever there is a spike on the presynaptic neuron; while $$x$$ contributes to the short-term depression (STD) by decreasing from 1 after presynaptic spike. The two directions of facilitation and depression occur simultaneously, and the value of $$\tau_f$$ and $$\tau_d$$ determines which direction of plasticity plays a dominant role.
 
 The code implemented with BrainPy is as follows:
 
@@ -87,8 +89,6 @@ def run_stp(**kwargs):
     plt.show()
 ```
 
-
-
 Let's first set ``tau_d`` > ``tau_f``.
 
 
@@ -123,8 +123,9 @@ Fig. 2-2 shows the spiking timing dependent plasticity (STDP) of experimental re
 <div style="text-align:center">
   <img src="../../figs/stdp.png" width="350" height="380">
   <br>
-  <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (Adative from <cite>Bi & Poo, 2001 <sup>[2]</sup></cite>)
+  <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (Adative from <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
 </div>
+
 
 <div><br></div>
 
@@ -157,7 +158,7 @@ $$
 
 
 
-As STP model, $$w$$ is the synaptic weight, and $$s$$ is the gating variable. Variables $$A_{s}$$ and $$A_{t}$$ control the LTD and LTP respectively. $$\Delta A_s$$ and $$\Delta A_t$$ are the increments of $$A_{s}$$ and $$A_{t}$$, respectively.
+As STP model, $$w$$ is the synaptic weight, and $$s$$ is the gating variable. Variables $$A_{s}$$ and $$A_{t}$$ control the LTD and LTP respectively. $$\Delta A_s$$ and $$\Delta A_t$$ are the increments of $$A_{s}$$ and $$A_{t}$$, respectively. $$\tau_s$$ and $$\tau_t$$ are time constants.
 
 When the presynaptic neuron fire before the postsynaptic neuron, $$A_t$$ is always 0 until the postsynaptic neuron fire, so $$w$$ will not change for the time being, but $$A_s$$ keep increases; when there is a spike in the postsynaptic neuron, $$w$$ increase with an amount of $$A_s - A_t$$, so it is LTP, and vice verse.
 
@@ -247,23 +248,25 @@ The simulation result shows that weights $$w$$ increase when the presynaptic neu
 
 #### Oja's rule
 
-Next, let's look at the rate model based on Hebbian learning. Because Hebbian learning is "fire together, wire together", regardless of the order before and after, spiking time can be ignored, so it can be simplified as a rate-based model. Let's first look at the general form of Hebbian learning. For the $$j$$ to $$i$$ connection as shown in the figure, $$v_j, v_i$$ denotes the firing rate of pre- and post-neuron groups, respectively. According to the locality characteristic of Hebbian learning, The change of $$w_{ij}$$ is affected by $$w$$ itself and $$v_j, v_i$$, we get the following differential equation.
+Next, let's look at the rate model based on Hebbian learning. Because Hebbian learning is "fire together, wire together", regardless of the order before and after, spiking time can be ignored, so it can be simplified as a rate-based model. Let's first look at the general form of Hebbian learning. For the $$j$$ to $$i$$ connection as shown in the figure, $$r_j, r_i$$ denotes the firing rate of pre- and post-neuron groups, respectively. According to the locality characteristic of Hebbian learning, The change of $$w_{ij}$$ is affected by $$w$$ itself and $$r_j, r_i$$, we get the following differential equation.
 
 $$
-\frac d {dt} w_{ij} = F(w_{ij}; v_{i},v_j)
+\frac d {dt} w_{ij} = F(w_{ij}; r_{i},r_j)
 $$
 
 The following formula is obtained by Taylor expansion on the right side of the above formula.
 
 $$
-\frac d {dt} w_{ij} = c_{00} w_{ij} + c_{10} w_{ij} v_j + c_{01} w_{ij} v_i + c_{20} w_{ij} v_j ^2 + c_{02} w_{ij} v_i ^2 + c_{11} w_{ij} v_i v_j + O(v^3)
+\frac d {dt} w_{ij} = c_{00} w_{ij} + c_{10} w_{ij} r_j + c_{01} w_{ij} r_i + c_{20} w_{ij} r_j ^2 + c_{02} w_{ij} r_i ^2 + c_{11} w_{ij} r_i r_j + O(r^3)
 $$
 
-The 6th term contains $$v_i v_j$$，only if $$c_{11}$$ is not zero can the "fire together" of Hebbian learning be satisfied. For example, the formula of ``Oja's rule`` is as follows, which corresponds to 5th and 6th terms of the above formula.
+The 6th term contains $$r_i r_j$$，only if $$c_{11}$$ is not zero can the "fire together" of Hebbian learning be satisfied. For example, the formula of ``Oja's rule`` is as follows, which corresponds to 5th and 6th terms of the above formula.
 
 $$
-\frac d {dt} w_{ij} = \gamma [v_i v_j - w_{ij} v_i ^2 ]
+\frac d {dt} w_{ij} = \gamma [r_i r_j - w_{ij} r_i ^2 ]
 $$
+
+$$\gamma$$ represents the learning rate.
 
 Now let's see how to use BrainPy to implement ``Oja's rule``.
 
@@ -299,13 +302,13 @@ It can be seen from the results that at the beginning, when the two groups of ne
 
 #### BCM rule
 
-The formula of the BCM rule is as follows.
+The BCM rule is given by,
 
 $$
-\frac d{dt} w_{ij} =  \eta v_i(v_i - v_\theta) v_j
+\frac d{dt} w_{ij} =  \eta r_i(r_i - r_\theta) r_j
 $$
 
-The right side of the formula is plotted as shown in Fig. 2-4. When the firing rate is greater than the threshold, there is LTP, and when the firing rate is lower than the threshold, there is LTD. Therefore, the selectivity can be achieved by adjusting the threshold.
+where $$\eta$$ represents the learning rate, and $$r_\theta$$ represents the threshold of learning (see Fig. 2-4). Fig. 2-4 shows the right side of the formula. When the firing rate is greater than the threshold, there is LTP, and when the firing rate is lower than the threshold, there is LTD. Therefore, the selectivity can be achieved by adjusting the threshold $$r_\theta$$.
 
 
 
@@ -316,11 +319,11 @@ The right side of the formula is plotted as shown in Fig. 2-4. When the firing r
 </div>
 <div><br></div>
 
-Here we implement the same connections as the previous Oja's rule, except that the two groups of neurons are alternately firing. Among them, the blue group is always stronger than the red one. We dynamically adjust the threshold by setting it as the time average of $$v_i$$, that is $$v_\theta = f(v_i)$$. The code implemented by BrainPy is as follows: the threshold is updating in the ``update`` function.
+Here we implement the same connections as the previous Oja's rule (Fig. 2-3), with different firing rates. Here the two groups of neurons are alternately firing. Among them, the blue group is always stronger than the red one. We adjust the threshold by setting it as the time average of $$r_i$$, that is $$r_\theta = f(r_i)$$. The code implemented by BrainPy is as follows.
 
 ![bcm_def](../../figs/codes/bcm_def.png)
 
-Then we can run the simulation with the following code:
+Then we can run the simulation with the following code.
 
 
 ```python
@@ -380,6 +383,6 @@ The results show that the blue group with stronger input demonstrating LTP, whil
 
 ### References
 
-> <span><sup>[1]</sup></span>. Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
+> <span name="Gerstner2014"><sup>[1]</sup></span>. Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
 
-> <span><sup>[2]</sup></span>. Bi, Guo-qiang, and Mu-ming Poo. "Synaptic modification by correlated activity: Hebb's postulate revisited." Annual review of neuroscience 24.1 (2001): 139-166.
+> <span name="Bi2001"><sup>[2]</sup></span>. Bi, Guo-qiang, and Mu-ming Poo. "Synaptic modification by correlated activity: Hebb's postulate revisited." Annual review of neuroscience 24.1 (2001): 139-166.
