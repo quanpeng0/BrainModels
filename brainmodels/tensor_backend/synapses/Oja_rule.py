@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import brainpy as bp
-import matplotlib.pyplot as plt
 import numpy as np
-from numba import prange
 
 
 class Oja(bp.TwoEndConn):
