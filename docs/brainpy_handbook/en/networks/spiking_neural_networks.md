@@ -10,7 +10,7 @@ The randomness and noise in E/I balanced network give  each neuron in the networ
 
 <center><img src="../../figs/snns/3-2.png" width="616" height="300"></center>
 
-<center><b>Fig.3-2 Structure of E/I balanced network | Vreeswijk and Sompolinsky, 1996</b></center>
+<center><b>Fig.3-1 Structure of E/I balanced network | Vreeswijk and Sompolinsky, 1996</b></center>
 
 Vreeswijk and Sompolinsky also suggested a possible function of this irregular firing pattern: E/I balanced network can respond to the changes of external stimulus quickly.
 
@@ -18,14 +18,14 @@ As shown in Fig. 3-3, when there is no external input, the distribution of neuro
 
 <center><img src="../../figs/snns/EI_neuron_distribution.jpg" width="352" hight="300"></center>
 
-<center><b>Fig.3-3 Distribution of neuorn membrane potentials in E/I balanced network 
-    | Tian et al., 2020</b></center>
+<center><b>Fig.3-2 Distribution of neuron membrane potentials in E/I balanced network | Tian et al., 2020</b></center>
+
 
 When we give the network a small constant external stimulus, those neurons whose membrane potentials fall near the threshold potential will soon meet the threshold, therefore spike rapidly. On the network scale, the firing rate of the network can adjust rapidly once the input changes.
 
 Simulation suggests that the delay of network response to input and the delay of synapses have the same time scale, and both are significantly smaller than the delay of a single neuron from resting potential to generating a spike. So E/I balanced network may provide a fast response mechanism for neural networks. 
 
-Fig. 3-2 shows the structure of E/I balanced network:
+Fig. 3-1 shows the structure of E/I balanced network:
 
 1)	Neurons: Neurons are realized with LIF neuron model. The neurons can be divided into excitatory neurons and inhibitory neurons, the ratio of the two types of neurons is $$N_E$$: $$N_I$$ = 4:1.
 
@@ -59,7 +59,7 @@ For example, in the visual motion discrimination task (Roitman and Shadlen, 2002
 
 Wang (2002) proposed a decision making network to model the activity of rhesus LIP neurons during decision making period in the visual motion discrimination task. 
 
-As shown in Fig. 3-5, this network is based on E/I balanced network. The ratio of excitatory neurons and inhibitory neurons is $$N_E:N_I = 4:1$$, and parmeters are adjusted to maintain the balanced state.
+As shown in Fig. 3-5, this network is based on E/I balanced network. The ratio of excitatory neurons and inhibitory neurons is $$N_E:N_I = 4:1$$, and parameters are adjusted to maintain the balanced state.
 
 To accomplish the decision making task, among the excitatory neuron group, two selective subgroup A and B are chosen, both with a size of $$N_A = N_B = 0.15N_E$$. These two subgroups are marked as A and B in Fig. 3-5, and we call other excitatory neurons as non-selective neurons, $$N_{non} = (1-2*0.15)N_E$$.
 
@@ -69,9 +69,9 @@ To accomplish the decision making task, among the excitatory neuron group, two s
 
 <center><img src="../../figs/snns/codes/DMnet2.PNG">	</center>
 
-As it is in E/I balanced network, 4 groups of synapses ---- E2E connection, E2I connection, I2E connection and I2I connection ---- are build in decision making network. Excitatory connections are realized with AMPA synapse, inhibitory connections are realized with GABAa synapse.
+As it is in E/I balanced network, 4 groups of synapses ---- E2E connection, E2I connection, I2E connection and I2I connection ---- are built in decision making network. Excitatory connections are realized with AMPA synapse, inhibitory connections are realized with GABAa synapse.
 
-Decision making network needs to make a decision among the two choice, i.e. among the two subgroups A and B in this task. To achieve this, network must discriminate between this two groups. Excitatory neurons in the same subgroup should self-activate, and inhibit neurons in another selective subgroup. 
+Decision making network needs to make a decision among the two choice, i.e., among the two subgroups A and B in this task. To achieve this, network must discriminate between these two groups. Excitatory neurons in the same subgroup should self-activate, and inhibit neurons in another selective subgroup. 
 
 Therefore, E2E connections are structured in the network. As shown in Sheet 3-1, $$w+ > 1 > w-$$. In this way, a relative activation is established within the subgroups by stronger excitatory synapse connections, and relative inhibition is established between two subgroups or between selective and non-selective subgroups by weaker excitatory synapse connections.
 
@@ -115,7 +115,7 @@ $$
 
 <center><img src="../../figs/snns/codes/DMnet5.PNG">	</center>
 
-During the simulation, subgroup A receives a larger stimulus input than B, after a definite delay period, the activity of group A is significantly higher than group B, which means, the network choose the right direction.
+During the simulation, subgroup A receives a larger stimulus input than B, after a definite delay period, the activity of group A is significantly higher than group B, which means, the network chooses the right direction.
 
 <center><img src = "../../figs/snns/out/output_18_1.png" width="400" height="796"></center>
 
