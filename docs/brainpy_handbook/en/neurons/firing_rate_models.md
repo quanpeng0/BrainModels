@@ -19,7 +19,7 @@ $$
 \mathcal{S}(x) = \frac{1}{1 + exp(- a(x - \theta))} - \frac{1}{1 + exp(a\theta)}
 $$
 
-$$x\in\{E, I\}$$ represents the excitatory and inhibitory neuron columns. In the differential equations, $$\tau_x$$ refers to the time constant of neuron columns, parameters $$k_x$$ and $$r_x$$ control the refractory periods, $$a_x$$ and $$\theta_x$$ refer to the slope factors and phase parameters of sigmoid functions, and external inputs $$I_{{ext}_x}$$ are given separately to excitatory and inhibitory neuron groups.
+$$x\in\{E, I\}$$ represents the excitatory and inhibitory neuron columns. In the differential equations, $$\tau_x$$ refers to the time constant of neuron columns, parameters $$k_x$$ and $$r_x$$ control the refractory periods, $$a_x$$ and $$\theta_x$$ refer to the slope factors and phase parameters of sigmoid functions, and external inputs $$I_{ext_x}$$ are given separately to excitatory and inhibitory neuron groups.
 
 <center><img src="../../figs/neus/codes/frunit1.PNG">	</center>
 

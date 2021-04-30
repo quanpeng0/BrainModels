@@ -9,7 +9,7 @@ These models are simple and easy to compute, while they can still reproduce the 
 The most typical reduced model is the **Leaky Integrate-and-Fire model** (**LIF model**) presented by Lapicque (1907).  LIF model is a combination of integrate process represented by differential equation and spike process represented by conditional judgment:
 
 $$
-\tau \frac{dV}{dt} = - (V - V_{rest}) + R I(t)
+\tau\frac{dV}{dt} = - (V - V_{rest}) + R I(t)
 $$
 If  $$V > V_{th}$$, neuron fires, 
 $$
@@ -17,7 +17,7 @@ V \gets V_{reset}
 $$
 $$\tau = RC$$ is the time constant of LIF model, the larger $$\tau$$ is, the slower model dynamics is. The equation shown above is corresponding to a simpler equivalent circuit than HH model, for it does not model the Na+ and K+ ion channels any more. Actually, in LIF model, only the consistence $$R$$, capacitance $$C$$, battery $$E$$ and external input $$I$$ is modeled.
 
-<center><img src="../../figs/neus/LIF_circuit.png" width="200" height="271">	</center>
+<center><img src="../../figs/neus/LIF_circuit.png" width="200" height="271"></center>
 
 <center><b>Fig1-4 Equivalent circuit of LIF model</b></center>
 
@@ -29,7 +29,7 @@ t-t_{last spike}<=refractory period
 $$
 then neuron is in refractory period, membrane potential $$V$$ will not be updated.
 
-<center><img src="../../figs/neus/codes/LIF.PNG">	</center>
+<center><img src="../../figs/neus/codes/LIF.PNG"></center>
 
 
 ![png](../../figs/neus/out/output_37_0.png)
@@ -44,9 +44,9 @@ $$
 
 In the equation above, $$a_0$$ is a special parameter controls the slope of membrane potential before a spike, and $$V_c$$ is the critical potential for action potential initialization. Below $$V_C$$, membrane potential $$V$$ increases slowly, once it grows beyond $$V_c$$, $$V$$ turns to rapid increase.
 
-<center><img src="../../figs/neus/codes/QuaIF1.PNG">	</center>
+<center><img src="../../figs/neus/codes/QuaIF1.PNG"></center>
 
-<center><img src="../../figs/neus/codes/QuaIF2.PNG">	</center>
+<center><img src="../../figs/neus/codes/QuaIF2.PNG"></center>
 
 
 ![png](../../figs/neus/out/output_41_0.png)
@@ -60,9 +60,9 @@ $$
 
 In the exponential term, $$V_T$$ is the critical potential of generating action potential, below which $$V$$ increases slowly and above which rapidly. $$\Delta_T$$ is the slope of action potentials in ExpIF model, and when $$\Delta_T\to 0$$, the shape of spikes in ExpIF model will be equivalent to the LIF model with $$V_{th} = V_T$$(Fourcaud-Trocme et al., 2003) .
 
-<center><img src="../../figs/neus/codes/ExpIF1.PNG">	</center>
+<center><img src="../../figs/neus/codes/ExpIF1.PNG"></center>
 
-<center><img src="../../figs/neus/codes/ExpIF2.PNG">	</center>
+<center><img src="../../figs/neus/codes/ExpIF2.PNG"></center>
 
 
 ![png](../../figs/neus/out/output_45_0.png)
@@ -86,11 +86,11 @@ The weight term $$w$$ is regulated by the second differential equation. $$a$$ de
 
 Give AdExIF neuron a constant input, after several spikes, the value of $$w$$ will increase to a high value, which slows down the rising speed of $$V$$, thus reduces the neuron's firing rate.
 
-<center><img src="../../figs/neus/codes/AdExIF1.PNG">	</center>
+<center><img src="../../figs/neus/codes/AdExIF1.PNG"></center>
 
-<center><img src="../../figs/neus/codes/AdExIF2.PNG">	</center>
+<center><img src="../../figs/neus/codes/AdExIF2.PNG"></center>
 
-![png](../../figs/neus/out/output_51_0.png)
+<center><img src = "../../figs/neus/out/output_51_0.png"></center>
 
 ### 1.3.5 Hindmarsh-Rose model
 
@@ -122,7 +122,7 @@ In the variable-t plot painted below, we may see that the slow variable $$z$$ ch
 
 With the theoretical analysis module `analysis` of BrainPy, we may explain the existence of this periodicity through theoretical analysis. In Hindmarsh-Rose model, the trajectory of $$V$$ and $$y$$ approaches a limit cycle in phase plane, therefore their values change periodically along the limit cycle.
 
-<center><img src="../../figs/neus/codes/HindmarshRose2.PNG">	</center>
+<center><img src="../../figs/neus/codes/HindmarshRose2.PNG" ></center>
 
 <center><img src="../../figs/neus/1-16.png"></center>
 
@@ -159,7 +159,7 @@ In the $$\frac{dV}{dt} $$ differential equation, just like all the integrate-and
 
 However, in GIF model, variable amounts of internal currents are added to the equation, shown as the $$\sum_j I_j$$ term. Each $$ I_j $$ is an internal current in the neuron, with a decay rate of $$k_j$$.  $$R_j$$ and $$A_j$$ are free parameters, $$R_j$$ describes the dependence of $$I_j$$ reset value on the value of $$I_j$$ before spike, and $$A_j$$ is a constant value added to the reset value after spike.
 
-The variable threshold potential $$V_{th}$$ is regulated by two parameters: $$a$$ describes the dependence of $$V_{th}$$ on the membrane potential $$V$$, and $$b$$ is the rate $$V_{th}$$ approaches the infinite value of threshold $$V_{{th}_{\infty}}$$. $$V_{{th}_{reset}}$$ is the reset value of threshold potential when neuron fires.
+The variable threshold potential $$V_{th}$$ is regulated by two parameters: $$a$$ describes the dependence of $$V_{th}$$ on the membrane potential $$V$$, and $$b$$ is the rate $$V_{th}$$ approaches the infinite value of threshold $$V_{th_{\infty}}$$. $$V_{th_{reset}}$$ is the reset value of threshold potential when neuron fires.
 
 <center><img src="../../figs/neus/codes/GIF1.PNG">	</center>
 

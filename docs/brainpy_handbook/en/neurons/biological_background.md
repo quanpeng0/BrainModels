@@ -4,7 +4,7 @@ As the basic unit of neural systems, neurons maintain mystique to researchers fo
 
 To achieve our final goal of modeling neurons with computational neuroscience methods, we may start with a patch of real neuron membrane.
 
-<center><img src="../../figs/neus/neuron_membrane.png">	</center>
+<center><img src="../../figs/neus/neuron_membrane.png" width="584" height="300">	</center>
 
 <center><b> Fig. 1-1 Neuron membrane diagram | what-when-how.com </b></center>
 
@@ -16,7 +16,7 @@ This membrane potential integrated by all those ion equilibrium potentials is th
 
 However, our neural system receives countless inputs every millisecond, from external inputs to recurrent inputs, from specific stimulus inputs to non-specific background inputs. Receiving all these inputs, neurons generate **action potentials** (or **spikes**) to transfer and process information all across the neural system.
 
-<center><img src="../../figs/neus/action_potential.png">	</center>
+<center><img src="../../figs/neus/action_potential.png" width="533" height="300">	</center>
 
 <center><b> Fig. 1-2 Action Potential | Wikipedia </b></center>
 
@@ -26,7 +26,7 @@ An action potential can be mainly divided into three periods: **depolarization**
 
 A single action potential is complex enough, but in our neural system, one single neuron can generate several action potentials in less than a second. How, exactly, do the neurons fire? Different kinds of neurons may spike when facing different inputs, and the pattern of their spiking can be classified into several firing patterns, some of which are shown in the following figure.
 
-<center><img src="../../figs/neus/multiple_firing_pattern.png">	</center>
+<center><img src="../../figs/neus/multiple_firing_pattern.png" width="600" height="300">	</center>
 
 <center><b>Figure 1-3 Some firing patterns</b></center>
 

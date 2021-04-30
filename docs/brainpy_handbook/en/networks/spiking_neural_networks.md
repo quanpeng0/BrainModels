@@ -8,15 +8,15 @@ Vreeswijk and Sompolinsky (1996) proposed E/I balanced network to explain this i
 
 The randomness and noise in E/I balanced network give  each neuron in the network an internal input which varies with time and space at the order of threshold potential. Therefore, the firing of neurons also has randomness, ensures that E/I balanced network can generate temporal irregular firing pattern spontaneously.
 
-<center><img src="../../figs/snns/3-2.png"></center>
+<center><img src="../../figs/snns/3-2.png" width="616" height="300"></center>
 
 <center><b>Fig.3-2 Structure of E/I balanced network | Vreeswijk and Sompolinsky, 1996</b></center>
 
 Vreeswijk and Sompolinsky also suggested a possible function of this irregular firing pattern: E/I balanced network can respond to the changes of external stimulus quickly.
 
-As shown in Fig. 3-3, when there is no external input, the distribution of neurons’ membrane potentials in E/I balanced network follows a relatively uniform random distribution between resting potential $$V_0$$and threshold potential $$θ$$.
+As shown in Fig. 3-3, when there is no external input, the distribution of neurons’ membrane potentials in E/I balanced network follows a relatively uniform random distribution between resting potential $$V_0$$and threshold potential $$\theta$$.
 
-<center><img src="../../figs/snns/EI_neuron_distribution.jpg"></center>
+<center><img src="../../figs/snns/EI_neuron_distribution.jpg" width="352" hight="300"></center>
 
 <center><b>Fig.3-3 Distribution of neuorn membrane potentials in E/I balanced network 
     | Tian et al., 2020</b></center>
@@ -53,7 +53,7 @@ The modeling of computational neuroscience networks can correspond to specific p
 
 For example, in the visual motion discrimination task (Roitman and Shadlen, 2002), rhesus watch a video in which random dots move towards left or right with definite coherence. Rhesus are required to choose the direction that most dots move to and give their answer by saccade. At the meantime, researchers record the activity of their LIP neurons by implanted electrode.
 
-<center><img src="../../figs/snns/3-4.png"> </center>
+<center><img src="../../figs/snns/3-4.png" width="440" height="200"> </center>
 
 <center><b>Fig.3-4 Experimental Diagram</b></center>
 
@@ -63,7 +63,7 @@ As shown in Fig. 3-5, this network is based on E/I balanced network. The ratio o
 
 To accomplish the decision making task, among the excitatory neuron group, two selective subgroup A and B are chosen, both with a size of $$N_A = N_B = 0.15N_E$$. These two subgroups are marked as A and B in Fig. 3-5, and we call other excitatory neurons as non-selective neurons, $$N_{non} = (1-2*0.15)N_E$$.
 
-<center><img src="../../figs/snns/3-5.png"></center>
+<center><img src="../../figs/snns/3-5.png" width="440" height="240"></center>
 
 <center><b>Fig.3-5 structure of decision makingnetwork</b></center>
 
@@ -76,6 +76,7 @@ Decision making network needs to make a decision among the two choice, i.e. amon
 Therefore, E2E connections are structured in the network. As shown in Sheet 3-1, $$w+ > 1 > w-$$. In this way, a relative activation is established within the subgroups by stronger excitatory synapse connections, and relative inhibition is established between two subgroups or between selective and non-selective subgroups by weaker excitatory synapse connections.
 
 <center><b>Sheet 3-1 Weight of synapse connections between E-neurons</b></center>
+
 <center><img src="../../figs/snns/3-6.png"></center>
 
 <center><img src="../../figs/snns/codes/DMnet1.PNG">	</center>
@@ -116,7 +117,8 @@ $$
 
 During the simulation, subgroup A receives a larger stimulus input than B, after a definite delay period, the activity of group A is significantly higher than group B, which means, the network choose the right direction.
 
-![png](../../figs/snns/out/output_18_1.png)
+<center><img src = "../../figs/snns/out/output_18_1.png" width="400" height="796"></center>
 
 
 <center><b>Fig.3-6 decision making network</b></center>
+
