@@ -1,9 +1,8 @@
 {
     "plugins": [
         "-sharing",
-        "katex"
-    ],
-    "styles":{
-    	"website":"styles/web.css"
-    }
+        "katex",
+        "code",
+        "splitter"
+    ]
 }

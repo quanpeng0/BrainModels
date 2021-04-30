@@ -23,7 +23,7 @@ Let's first look at short-term plasticity. We will start with the results of the
 <div style="text-align:center">
   <img src="../../figs/stp.png" width="500">
   <br>
-  <strong>Fig. 2-1 Short-term plasticity.</strong> (Aaptive from <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+  <strong>Fig. 2-1 Short-term plasticity.</strong> (Adaptive from <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -123,8 +123,9 @@ Fig. 2-2 shows the spiking timing dependent plasticity (STDP) of experimental re
 <div style="text-align:center">
   <img src="../../figs/stdp.png" width="350" height="380">
   <br>
-  <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (Adative from <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
+  <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (Adaptive from <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
 </div>
+
 
 
 <div><br></div>
@@ -315,7 +316,7 @@ where $$\eta$$ represents the learning rate, and $$r_\theta$$ represents the thr
 <div style="text-align:center">
   <img src="../../figs/bcm.png" width="300">
   <br>
-    <strong> Fig. 2-4 BCM rule </strong> (Adaptive from <cite>Gerstner et al., 2014 <sup>[1]</sup></cite>)
+    <strong> Fig. 2-4 BCM rule </strong> (Adaptive from <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
 </div>
 <div><br></div>
 
