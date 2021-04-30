@@ -6,7 +6,7 @@ Hodgkin and Huxley (1952) recorded the generation of action potential on squid g
 
 In last section we have introduced a general template for neuron membrane. Computational neuroscientists always model neuron membrane as equivalent circuit like the following figure.
 
-<center><img src="../../figs/neurons/1-2.png">	</center>
+<center><img src="../../figs/neus/1-2.png">	</center>
 
 <center><b>Fig. 1-4 Equivalent circuit diagram | NeuroDynamics </b></center>
 
@@ -50,12 +50,12 @@ $$
 \beta_n(V) = 0.125 exp(\frac{-(V+65)}{80})
 $$
 
-![png](../../ppt/figs/neus/HH1.PNG)
+![png](../../figs/neus/codes/HH1.PNG)
 
-![png](../../ppt/figs/neus/HH2.PNG)
+![png](../../figs/neus/codes/HH2.PNG)
 
 *Run codes in our github repository: https://github.com/PKU-NIP-Lab/BrainModels*
 
 The V-t plot of HH model simulated by BrainPy is shown below. The three periods, depolarization, repolarization and refractory period of a real action potential can be seen in the V-t plot. In addition, during the depolarization period, the membrane integrates external inputs slowly at first, and increases rapidly once it grows beyond some point, which also reproduces the "shape" of action potentials.
 
-![png](../../figs/neurons/out/output_27_0.png)
+![png](../../figs/neus/out/output_27_0.png)

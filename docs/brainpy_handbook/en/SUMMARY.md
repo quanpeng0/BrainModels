@@ -10,6 +10,6 @@
     * [2.1 Synaptic models](synapse/dynamics.md)
     * [2.2 Plasticity models](synapse/plasticity.md)
 * [3. Network models](networks.md)
-    * [3.1 Spiking neural networks](networks/snn.md)
+    * [3.1 Spiking neural networks](networks/spiking_neural_networks.md)
     * [3.2 Firing rate networks](networks/rate_models.md)
 
