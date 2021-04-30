@@ -6,17 +6,17 @@ Plasticity mainly distinguishes short-term plasticity from long-term plasticity.
 
 The introduction is as follows:
 
-- short-term plasticity
+- Short-term plasticity
 
-- long-term plasticity
+- Long-term plasticity
   - Spike-timing dependent plasticity
 
-  - Rate based Hebb rule
+  - Rate-based Hebb rule
 
     - Oja's rule
     - BCM rule
 
-### 2.2.1 STP
+### 2.2.1 Short-term plasticity (STP)
 
 Let's first look at short-term plasticity. We will start with the results of the experiment. Fig. 2-1 shows the changes of the membrane potential of postsynaptic neurons as the firing of presynaptic neurons. We can see that when the presynaptic neurons repeatedly firing with short intervals, the response of the postsynaptic neurons becomes weaker and weaker, showing a short term depression. But the response recovers after a short period of time, so this plasticity is short-term.
 
@@ -51,7 +51,7 @@ $$
 
 where the dynamics of the synaptic current $$I$$ can be one of the dynamics we introduced in the previous section (i.e., the dynamic of gating variable $$s$$ under current-based condition). $$U$$ and $$A$$ are two constants representing the increments of $$u$$ and $$I$$ after a presynaptic spike, respectively.  $$\tau_f$$ and $$\tau_d$$ are time constants of $$u$$ and $$x$$, respectively.
 
-In this model, $$u$$ contributes the short-term facilitation (STF) by increasing from 0 whenever there is a spike on the presynaptic neuron; while $$x$$ contributes to the short-term depression (STD) by decreasing from 1 after presynaptic spike. The two directions of facilitation and depression occur simultaneously, and the value of $$\tau_f$$ and $$\tau_d$$ determines which direction of plasticity plays a dominant role.
+In this model, $$u$$ contributes to the short-term facilitation (STF) by increasing from 0 whenever there is a spike on the presynaptic neuron; while $$x$$ contributes to the short-term depression (STD) by decreasing from 1 after the  presynaptic spike. The two directions of facilitation and depression occur simultaneously, and the value of $$\tau_f$$ and $$\tau_d$$ determines which direction of plasticity plays a dominant role.
 
 The code implemented with BrainPy is as follows:
 
@@ -99,7 +99,7 @@ run_stp(U=0.2, tau_d=150., tau_f=2.)
 
 ![png](../../figs/out/output_43_0.png)
 
-The plot show that when we set the parameters $$\tau_d > \tau_f$$, $$x$$ recovers very slowly, and $$u$$ decays very quickly, so in the end, the transmitter is not enough to open the receptors, showing STD dominants.
+The plots show that when we set the parameters $$\tau_d > \tau_f$$, $$x$$ recovers very slowly, and $$u$$ decays very quickly, so in the end, the transmitter is not enough to open the receptors, showing STD dominants.
 
 Then let's set ``tau_f`` > ``tau_d``.
 
@@ -116,17 +116,15 @@ We can see from the figure that when we set $$\tau_f > \tau_d$$, on the contrary
 
 ### 2.2.2 Long-term Plasticity
 
-#### STDP
+#### Spike-timing dependent plasticity (STDP)
 
-Fig. 2-2 shows the spiking timing dependent plasticity (STDP) of experimental results. The x-axis is the time difference between the spike of the presynaptic neuron and the postsynaptic neuron. The left part of the zero represents the spike timing of the presynaptic neuron earlier than that of the postsynaptic neuron, which shows long term potentiation (LTP); and the right side of the zero represents the postsynaptic neuron fires before the presynaptic neuron does, showing long term depression（LTD）。
+Fig. 2-2 shows the spiking timing dependent plasticity (STDP) of experimental results. The x-axis is the time difference between the spike of the presynaptic neuron and the postsynaptic neuron. The left part of the zero represents the spike timing of the presynaptic neuron earlier than that of the postsynaptic neuron, which shows long term potentiation (LTP); and the right side of the zero represents the postsynaptic neuron fires before the presynaptic neuron does, showing long term depression (LTD).
 
 <div style="text-align:center">
   <img src="../../figs/stdp.png" width="350" height="380">
   <br>
   <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (Adaptive from <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
 </div>
-
-
 
 <div><br></div>
 
@@ -159,7 +157,7 @@ $$
 
 
 
-As STP model, $$w$$ is the synaptic weight, and $$s$$ is the gating variable. Variables $$A_{s}$$ and $$A_{t}$$ control the LTD and LTP respectively. $$\Delta A_s$$ and $$\Delta A_t$$ are the increments of $$A_{s}$$ and $$A_{t}$$, respectively. $$\tau_s$$ and $$\tau_t$$ are time constants.
+Like STP model, $$w$$ is the synaptic weight, and $$s$$ is the gating variable. Variables $$A_{s}$$ and $$A_{t}$$ control the LTD and LTP respectively. $$\Delta A_s$$ and $$\Delta A_t$$ are the increments of $$A_{s}$$ and $$A_{t}$$, respectively. $$\tau_s$$ and $$\tau_t$$ are time constants.
 
 When the presynaptic neuron fire before the postsynaptic neuron, $$A_t$$ is always 0 until the postsynaptic neuron fire, so $$w$$ will not change for the time being, but $$A_s$$ keep increases; when there is a spike in the postsynaptic neuron, $$w$$ increase with an amount of $$A_s - A_t$$, so it is LTP, and vice verse.
 
@@ -169,7 +167,7 @@ Now let's see how to use BrainPy to implement this model. Here $$s$$ is incremen
 
 ![stdp_update](../../figs/codes/stdp_update.png)
 
-Here we stimulate the presynaptic group and postsynaptic group in different time by varying the input current of the two groups. We apply the first input to the presynaptic group starting at $$t=5ms$$, then stimulate the postsynaptic group starting at $$t=10ms$$, and keep the stimulating interval at $$15ms$$, so $$t_{post}=t_{pre}+5$$. Then we set a long interval after the 3rd spike pairs and change the stimulating order to be $$t_{post}=t_{pre}-3$$ at the 4th spike, so the interval of the postsynaptic group should be $$8ms$$ shorter than the presynaptic one.
+Here we stimulate the presynaptic group and postsynaptic group at different times by varying the input current of the two groups. We apply the first input to the presynaptic group starting at $$t=5ms$$, then stimulate the postsynaptic group starting at $$t=10ms$$, and keep the stimulating interval at $$15ms$$, so $$t_{post}=t_{pre}+5$$. Then we set a long interval after the 3rd spike pairs and change the stimulating order to be $$t_{post}=t_{pre}-3$$ at the 4th spike, so the interval of the postsynaptic group should be $$8ms$$ shorter than the presynaptic one.
 
 ``` python
 duration = 300.
@@ -189,7 +187,7 @@ duration = 300.
                   (0, duration-160-90)])
 ```
 
-Then  run the simulation.
+Then let's run the simulation.
 
 
 ```python
@@ -261,7 +259,7 @@ $$
 \frac d {dt} w_{ij} = c_{00} w_{ij} + c_{10} w_{ij} r_j + c_{01} w_{ij} r_i + c_{20} w_{ij} r_j ^2 + c_{02} w_{ij} r_i ^2 + c_{11} w_{ij} r_i r_j + O(r^3)
 $$
 
-The 6th term contains $$r_i r_j$$，only if $$c_{11}$$ is not zero can the "fire together" of Hebbian learning be satisfied. For example, the formula of ``Oja's rule`` is as follows, which corresponds to 5th and 6th terms of the above formula.
+The 6th term contains $$r_i r_j$$，only if $$c_{11}$$ is not zero can the "fire together" of Hebbian learning be satisfied. For example, the formula of ``Oja's rule`` is as follows, which corresponds to the 5th and 6th terms of the above formula.
 
 $$
 \frac d {dt} w_{ij} = \gamma [r_i r_j - w_{ij} r_i ^2 ]
