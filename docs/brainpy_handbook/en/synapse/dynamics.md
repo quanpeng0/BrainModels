@@ -1,18 +1,18 @@
 ## 2.1 Synaptic Models
 
-In the previous section, we learned how to model neurons and their action potentials. In this section, we will focus on how neurons communicates.
+In the previous section, we learned how to model neurons and their action potentials. In this section, we will focus on how neurons communicate.
 
 ### 2.1.1 Chemical Synapses
 
 #### Biological Background
 
-Fig. 2-1 shows the biological process of information transmission between neurons. The action potential of the presynaptic neuron makes the axon terminal release **neurotransmitters** (also called transmitter) into the synaptic cleft, and then the membrane potential of the postsynaptic cell changes after a brief delay. These changes are called postsynaptic potentials (PSP), and they can be either excitatory or inhibitory depending on the type of transmitter. **Glutamate** is one of the important excitatory neurotransmitters, and Gamma-aminobutyric acid (**GABA**) is one of the important inhibitory neurotransmitters.
+Fig. 2-1 shows the biological process of information transmission between neurons. The action potential of the presynaptic neuron makes the axon terminal release **neurotransmitters** (also called transmitters) into the synaptic cleft, and then the membrane potential of the postsynaptic cell changes after a brief delay. These changes are called postsynaptic potentials (PSP), and they can be either excitatory or inhibitory depending on the type of transmitter. **Glutamate** is one of the important excitatory neurotransmitters, and Gamma-aminobutyric acid (**GABA**) is one of the important inhibitory neurotransmitters.
 
-Neurotransmitters affect their targets by interacting with receptors in the postsynaptic membrane. When the transmitter binds to the receptor, it would either open an ion channel (**ionotropic** receptors) or alter chemical reactions within the target cell (**metabotropic** receptors).
+Neurotransmitters affect their targets by interacting with receptors on the postsynaptic membrane. When the transmitter binds to the receptor, it would either open an ion channel (**ionotropic** receptors) or alter chemical reactions within the target cell (**metabotropic** receptors).
 
 In this section, we will introduce how to model some common synapses and their implementations with ``BrainPy``:
 
-- **AMPA** and **NMDA** receptors are both ionotropic receptors of Glutamate, but the NMDA receptor are typically blocked by magnesium ions (Mg$$^{2+}$$) and cannot respond to the glutamate. With repeated activation of AMPA receptors, the change in postsynaptic potential drives Mg$$^{2+}$$ out of NMDA channel, then the NMDA receptors are able to respond to glutamate. Therefore, NMDA is must slower than AMPA.
+- **AMPA** and **NMDA** receptors are both ionotropic receptors of Glutamate, but the NMDA receptor are typically blocked by magnesium ions (Mg$$^{2+}$$) and cannot respond to the glutamate. With repeated activation of AMPA receptors, the change in postsynaptic potential drives Mg$$^{2+}$$ out of NMDA channel, then the NMDA receptors are able to respond to glutamate. Therefore, the dynamics of NMDA is much slower than that of AMPA.
 
 - **GABA<sub>A</sub>** and **GABA<sub>B</sub>** are two classes of GABA receptors. GABA<sub>A</sub> receptors are ionotropic, typically producing fast inhibitory postsynaptic potential; while GABA<sub>B</sub> receptors are metabotropic receptors, typically producing a slow-occurring inhibitory postsynaptic potential.
 
@@ -25,7 +25,7 @@ In this section, we will introduce how to model some common synapses and their i
 </div>
 <div><br></div>
 
-In order to keep things simple, we use gating variable ``s`` to describe how many portion of ion channels will open whenever a presynaptic spike arrives while modeling. We will first introduce AMPA receptor as an example to show how to develop synapse models and implement with ``BrainPy``.
+In order to keep things simple, we use gating variable ``s`` to describe how many portion of ion channels will open whenever a presynaptic spike arrives while modeling. We will first introduce AMPA receptor as an example to show how to develop synapse models and implement them with ``BrainPy``.
 
 
 
@@ -51,11 +51,11 @@ $$
 
 Where $$\alpha [T]$$ denotes the transition probability from state $$(1-s)$$ to state $$(s)$$; and $$\beta$$ represents the transition probability of the other direction.
 
-Now let's see how to implement such a model with BrainPy. First of all, we need to define a class that inherits from`` bp.TwoEndConn ``, because synapses connect two neurons. Within the class, we can define the differential equation with ``derivative`` function, this is the same as the definition of neuron models. Then we use the``__ init__ ``Function to initialize the required parameters and variables.
+Now let's see how to implement such a model with BrainPy. First of all, we need to define a class that inherits from `` bp.TwoEndConn ``, because synapses connect two neurons. Within the class, we can define the differential equation with ``derivative`` function, this is the same as the definition of neuron models. Then we use the ``__ init__ `` Function to initialize the required parameters and variables.
 
 <img src="../../figs/codes/ampa_init.png" style="text-align:center;width:170">
 
-We update $$s$$ by a ``update`` function.
+We update $$s$$ by an ``update`` function.
 
 <img src="../../figs/codes/ampa_update.png" style="text-align:center;width:170">
 
@@ -72,11 +72,11 @@ As can be seen from the above figure, when the presynaptic neurons fire, the val
 
 #### Alpha、Exponential Synapses
 
-Because many synaptic models have the same dynamic characteristics as AMPA synapses, sometimes we don't need to use models that specifically correspond to biological synapses. Therefore, some abstract synaptic models have been proposed. Here, we will introduce the implementation of four abstract models on BrainPy. These models are also available in the ``Brain-Models`` package.
+Because many synaptic models have the same dynamic characteristics as AMPA synapses, sometimes we don't need to use models that specifically correspond to biological synapses. Therefore, some abstract synaptic models have been proposed. Here, we will introduce the implementation of four abstract models on BrainPy. These models can also be found in the ``Brain-Models`` package.
 
 ##### (1) Differences of two exponentials
 
-The first is ``Differences of two exponentials``, the dynamic is given by,
+Let's first introduce the ``Differences of two exponentials`` model, its dynamics is given by,
 
 $$
 s = \frac {\tau_1 \tau_2}{\tau_1 - \tau_2} (\exp(-\frac{t - t_s}{\tau_1})
@@ -98,11 +98,11 @@ $$
 \text{if (fire), then} \ x \leftarrow x+ 1
 $$
 
-Here we specify the logic of increment of $$x$$ in the ``Update`` function when the presynaptic neurons fire. The code is as follows:
+Here we specify the logic of increment of $$x$$ in the ``update`` function when the presynaptic neurons fire. The code is as follows:
 
 <img src="../../figs/codes/2exp.png" style="text-align:center;width:170">
 
-Then we would expect to see the follow result:
+Then we expect to see the following result:
 
 
 ![png](../../figs/out/output_16_0.png)
@@ -133,7 +133,7 @@ Code implementation is similar:
 
 <img src="../../figs/codes/alpha.png" style="text-align:center;width:170">
 
-Then we would expect to see the follow result:
+Then we expect to see the following result:
 
 ![png](../../figs/out/output_20_0.png)
 
@@ -154,7 +154,7 @@ The implementing code is given by:
 
 <img src="../../figs/codes/exp.png" style="text-align:center;width:170">
 
-Then we would expect to see the follow result:
+Then we expect to see the following result:
 
 
 ![png](../../figs/out/output_24_0.png)
@@ -165,15 +165,14 @@ Then we would expect to see the follow result:
 Sometimes even the decay process can be ignored, so there is a ``voltage jump`` model, which is given by:
 
 $$
-\text{if (fire), then} \ V \leftarrow V+1
+\text{if (fire), then} \ s \leftarrow s+1
 $$
 
-In the implementation, even the differential equation is not needed, just update the postsynaptic membrane potential in the ``update`` function. However, because it will directly modify the membrane potential, when the postsynaptic neurons have a refractory period, it should only update the membrane potential while not in the refractory period.
-
 The code is as follows:
+
 <img src="../../figs/codes/vj.png" style="text-align:center;width:170">
 
-Then we would expect to see the follow result:
+Then we expect to see the following result:
 
 
 ![png](../../figs/out/output_28_0.png)
@@ -181,11 +180,7 @@ Then we would expect to see the follow result:
 
 #### Current-based and Conductance-based synapses
 
-Previously, we have modeled the gating variable $$s$$. 
-
-> The current that passes through a synaptic channel is denoted as $$I$$.
-
-There are two different methods to model the relationships of $$s$$ and $$I$$ (the input current of postsynaptic neurons): **current-based** and **conductance-based**. The main difference between them is whether the synaptic current is influenced by the membrane potential of postsynaptic neurons.
+So far, we have modeled the gating variable $$s$$, now let's see how to model the effect of the gating variables on the synaptic current. The current that passes through a synaptic channel is denoted as $$I$$. There are two different methods to model the relationships between $$s$$ and $$I$$: **current-based** and **conductance-based**. The main difference between them is whether the synaptic current is influenced by the membrane potential of postsynaptic neurons.
 
 The formula of the current-based model is as follow:
 
@@ -195,7 +190,7 @@ $$
 
 While coding, we usually multiply $$s$$ by a weight $$w$$. We can implement excitatory and inhibitory synapses by adjusting the positive and negative values of the weight $$w$$.
 
-Here implement the delay of synapses by applying a delay time to ``I_syn`` variable with the ``register_constant_delay`` function provided by BrainPy.
+The delay of synapses is implemented by applying the delay time to the ``I_syn`` variable using the ``register_constant_delay`` function provided by BrainPy.
 
 ![Ibase](../../figs/codes/Ibase.png)
 
@@ -205,7 +200,7 @@ $$
 I=\bar{g}s(V-E)
 $$
 
-Here $$E$$ is a reverse potential, which can determine whether the direction of $$I$$ is inhibition or excitation. For example, when the resting potential is about -65, subtracting a lower $$E$$, such as -75, will become positive, thus will change the direction of the current in the formula and produce the suppression current. The $$E$$ value of excitatory synapses is relatively high, such as 0.
+Here $$E$$ is a reverse potential, which can determine whether the effect of $$I$$ is inhibition or excitation. For example, when the resting potential is about -65, subtracting a lower $$E$$, such as -75, will become positive, thus will change the direction of the current in the formula and produce the suppression current. The $$E$$ value of excitatory synapses is relatively high, such as 0.
 
 In terms of implementation, you can apply a synaptic delay to the variable ``g``.
 

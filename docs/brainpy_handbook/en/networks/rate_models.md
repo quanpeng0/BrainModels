@@ -13,7 +13,7 @@ In addition to spiking models, BrainPy can also implement Firing rate models. Le
 
 <div><br></div>
 
-The formula is as follows:
+The model is given by,
 
 $$
 \frac{dS_1} {dt} = -\frac {S_1} \tau + (1-S_1) \gamma r_1
@@ -198,7 +198,7 @@ Then we define the functions.
 
 
 
-Where the functions ``dist`` and ``make_conn`` are designed to get the connection strength $$J$$ between each of the two neuron groups. In the ``make_conn`` function, we first calculate the distance matrix between each of the two $$x$$. Because neurons are arranged in rings, the value of $$x$$ is between $$-\pi$$ and $$\pi$$, so the range of $$x-x'$$ is $$2\pi$$, and -$$\pi$$ and $$\pi$$ are the same points (the actual furthest is $$\pi$$, that is, half of ``z_range``, the distance exceeded needs to be subtracted from a ``z_range``). We use the ``dist`` function to handle the distance on the ring.
+Where the functions ``dist`` and ``make_conn`` are designed to get the connection strength $$J$$ between each of the two neuron groups. In the ``make_conn`` function, we first calculate the distance matrix between each of the two $$x$$. Because neurons are arranged in rings, the value of $$x$$ is between $$-\pi$$ and $$\pi$$, so the range of $$|x-x'|$$ is $$2\pi$$, and -$$\pi$$ and $$\pi$$ are the same points (the actual maximum value is $$\pi$$, that is, half of ``z_range``, the distance exceeded needs to be subtracted from a ``z_range``). We use the ``dist`` function to handle the distance on the ring.
 
 The ``get_stimulus_by_pos`` function processes external inputs based on position ``pos``, which allows users to get input current by setting target positions. For example, in a simple population coding, we give an external input of ``pos=0``, and we run in this way:
 
