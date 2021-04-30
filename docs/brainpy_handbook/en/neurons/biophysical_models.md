@@ -16,7 +16,9 @@ As Na+ ion channel and K+ ion channel are important in the generation of action 
 
 Consider the Kirchhoff’s first law, that is,  for any node in an electrical circuit, the sum of currents flowing into that node is equal to the sum of currents flowing out of that node, Fig. 1-2 can be modeled as differential equations:
 $$
+\begin{gather*}
 C \frac{dV}{dt} = -(\bar{g}_{Na} m^3 h (V - E_{Na}) + \bar{g}_K n^4(V - E_K) + g_{leak}(V - E_{leak})) + I(t)
+\end{gather*}
 $$
 
 $$
