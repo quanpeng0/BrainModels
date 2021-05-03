@@ -160,7 +160,7 @@ Then we expect to see the following result:
 ![png](../../figs/out/output_24_0.png)
 
 
-##### （4）Voltage jump
+##### (4) Voltage jump
 
 Sometimes even the decay process can be ignored, so there is a ``voltage jump`` model, which is given by:
 

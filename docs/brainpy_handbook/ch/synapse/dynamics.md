@@ -1,24 +1,47 @@
-# 突触模型
+## 2.1 突触模型
 
-## 突触动力学
+我们在前面的章节中已经学习了如何建模神经元的动作电位，那么神经元之间是怎么连接起来的呢？神经元的动作电位是如何在不同神经元之间传导的呢？这里，我们将介绍如何用BrainPy对神经元之间的沟通进行模拟仿真。
 
-当我们建模好了神经元的发放以后，就需要把这些神经元连接起来了。突触对于神经元之间的沟通十分重要，是形成网络的重要组成部分。因此，我们需要对突触进行计算建模。
+### 2.1.1 化学突触
 
-我们将在这一部分介绍如何用BrainPy实现突触的动力学。
+#### 生物背景
 
-### 化学突触
+我们可以从图2-1这个生物突触的图中看到神经元之间信息传递的过程。当突触前神经元的动作电位传递到轴突的末端（terminal），它会往突触间隙释放**神经递质**（又称递质）。神经递质会和突触后神经元上的受体结合，从而引起突触后神经元膜电位的改变，这种改变成为突触后电位（PSP）。根据神经递质种类的不同，突触后电位可以是兴奋性或是抑制的。例如**谷氨酸**（Glutamate）就是一种重要兴奋性的神经递质，而**GABA**则是一种重要的抑制性神经递质。
 
-#### AMPA 突触
+神经递质与受体的结合可能会导致离子通道的打开（**离子型**受体）或改变化学反应的过程（**代谢型**受体）。
 
-如图所示为神经元间信息传递的生物过程。突触前神经元释放的神经递质与突触后神经元上的受体结合，从而打开突触后神经元细胞膜上的离子通道，引起膜电位的变化。这里我们首先介绍经典的带有AMPA受体的突触，然后介绍如何用BrainPy实现它。
+在本节中，我们将介绍如何使用BrainPy来实现一些常见的突触模型，主要有：
 
-<img src="../../figs/bio_syn.png">
+- **AMPA**和**NMDA**：它们都是谷氨酸的离子型受体，被结合后都可以直接打开离子通道。但是NMDA通常会被镁离子（Mg$$^{2+}$$）堵住，无法对谷氨酸做出反应。由于镁离子对电压敏感，当AMPA导致突触后电位改变到超过镁离子的阈值以后，镁离子就会离开NMDA通道，让NMDA可以对谷氨酸做出反应。因此，NMDA的反应是比较慢的。
+- **GABA<sub>A</sub>**和**GABA<sub>B</sub>**：它们是GABA的两类受体，其中GABA<sub>A</sub>是离子型受体，通常可以产生快速的抑制性电位；而GABA<sub>B</sub>则为代谢型受体，通常会产生缓慢的抑制性电位。
 
-AMPA（a-氨基-3-羟基-5-甲基-4-异恶唑丙酸）型受体是一种离子型受体，它本身就是离子通道，所以当它被神经递质结合后，会立即打开离子通道，引起突触后神经元膜电位的变化。
 
-一个经典的模型是用马尔可夫过程来建模离子通道的开关。这里$$s$$代表通道打开的概率，$$1-s$$代表离子通道关闭的概率，$$\alpha$$和$$\beta$$是转移概率（transition probability）。由于神经递质能让离子通道打开，所以从$$1-s$$到$$s$$的转移概率受神经递质浓度影响，我们将神经递质浓度表示为[T]，得到以下的马尔可夫过程。
 
-<img src="../../figs/markov.png" style="zoom: 25%;" >
+<div style="text-align:center">
+  <img src="../../figs/bio_syn.png" width="450">
+  <br>
+    <strong> 图 2-1 生物突触 </strong> (引自 <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+</div>
+<div><br></div>
+
+为了简便地建模从神经递质释放到引起突触后电位的这个过程，我们可以把神经递质释放、递质与受体结合、受体引起的变化这些过程概括为突触前神经元的动作电位变化如何引起突触后神经元膜上的离子通道变化，即用门控变量$$s$$来描述每当突触前神经元产生动作电位的时候，有多少比例的离子通道会被打开。我们首先来看看AMPA的例子。
+
+
+
+#### AMPA模型
+
+如前所述，AMPA（a-氨基-3-羟基-5-甲基-4-异恶唑丙酸）受体是一种离子型受体，也就是说，当它被神经递质结合后会立即打开离子通道，从而引起突触后神经元膜电位的变化。
+
+我们可以用马尔可夫过程来描述离子通道的开关。如图2-2所示，$$s$$代表通道打开的概率，$$1-s$$代表离子通道关闭的概率，$$\alpha$$和$$\beta$$是转移概率（transition probability）。由于神经递质能让离子通道打开，所以从$$1-s$$到$$s$$的转移概率受神经递质浓度（以[T]表示）影响。
+
+<div style="text-align:center">
+  <img src="../../figs/markov.png" width="170"> 
+  <br>	
+  <strong> Fig. 2-2 离子通道动力学的马尔可夫过程 </strong>
+</div>
+
+
+<div><br></div>
 
 把该过程用微分方程描述，得到以下式子。
 
@@ -26,82 +49,102 @@ $$
 \frac {ds}{dt} = \alpha [T] (1-s) - \beta s
 $$
 
-其中，$$\alpha [T]$$ 表示从状态$$(1-s)$$到状态$$(s)$$的转移概率；$$\beta$$ 表示从s到(1-s)的转移概率。
+其中，$$\alpha [T]$$ 表示从状态$$(1-s)$$到状态$$(s)$$的转移概率；$$\beta$$ 表示从$$s$$到$$(1-s)$$的转移概率。
 
-下面我们来看看如何用BrainPy去实现这样一个模型。首先，我们要定义一个class，因为突触是连接两个神经元的，所以这个class继承自``bp.TwoEndConn``。
+下面我们来看看如何用BrainPy去实现这样一个模型。首先，我们要定义一个类，因为突触是连接两个神经元的，所以这个类继承自``bp.TwoEndConn``。在这个类中，和神经元模型一样，我们用一个``derivative``函数来实现上述微分方程，并在后面的``__init__``函数中初始化这个函数，指定用``bp.odeint``来解这个方程，并指定数值积分方法。由于这微分方程是线性的，我们选用``exponential_euler``方法。
 
-定义这个class，我们首先用``__init__``函数来初始化所需的参数和变量。首先，在突触中，我们需要``pre``和``post``来分别表示这个突触所连接的突触前神经元与突触后神经元。需要注意的是，``pre``和``post``都是向量，代表两群神经元，因此，我们还需要指定两群神经元具体链接情况的``conn``。在这里，我们可以从``conn``中获得连接矩阵``conn_mat``。
+> 首先，在突触中，我们需要``pre``和``post``来分别表示这个突触所连接的突触前神经元与突触后神经元。需要注意的是，``pre``和``post``都是向量，代表两群神经元，因此，我们还需要指定两群神经元具体链接情况的``conn``。在这里，我们可以从``conn``中获得连接矩阵``conn_mat``。
 
-现在我们知道如何在BrainPy定义一个突触模型了，接下来就重点看一下如何实现AMPA突触。我们注意到，公式中有神经递质的浓度[T]，为了简化计算，[T]可以视为常数，并由``T_duration``控制它持续的时间。因此，我们简化的实现为，每当突触前神经元发放了，会释放神经递质，递质维持``T_duration``的时间长度后即清空。因此我们只需要判断，如果此时处于``T_duration``，则[T]=T，否则[T]=0。那么判断过程则需要用``t_last_pre_spike``这个变量来记录突触前神经元最近一次发放的时间。
+<img src="../../figs/codes/ampa_init.png" style="text-align:center;width:170">
 
-完成初始化后，我们把微分方程的右边抄到``derivative``这个函数里，然后在``update``函数中更新[T]和$$s$$。
+然后我们在``update``函数中更新$$s$$。
 
+<img src="../../figs/codes/ampa_update.png" style="text-align:center;width:170">
 
-```python
-import brainpy as bp
-bp.backend.set(backend='numpy', dt=0.1)
+我们已经定义好了一个AMPA类，现在可以画出$$s$$随时间变化的图了。我们首先写一个``run_syn``函数来方便之后运行更多的突触模型，然后把AMPA类和需要自定义的变量传入这个函数来运行并画图。
 
-class AMPA(bp.TwoEndConn):
-    target_backend = 'general'
-    
-    @staticmethod
-    def derivative(s, t, TT, alpha, beta):
-        ds = alpha * TT * (1 - s) - beta * s 
-        return ds
-    
-    def __init__(self, pre, post, conn, alpha=0.98,
-                 beta=0.18, T=0.5, T_duration=0.5,
-                 **kwargs):
-        # parameters
-        self.alpha = alpha
-        self.beta = beta
-        self.T = T
-        self.T_duration = T_duration
-        
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
+<img src="../../figs/codes/ampa_run.png" style="text-align:center;width:170">
 
-        # variable
-        self.s = bp.ops.zeros(self.size)
-        self.t_last_pre_spike = -1e7 * bp.ops.ones(self.size)
-
-        self.int_s = bp.odeint(f=self.derivative, method='exponential_euler')
-        
-        super(AMPA, self).__init__(pre=pre, post=post, **kwargs)
-        
-
-      
-    def update(self, _t):
-        spike = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        self.t_last_pre_spike = bp.ops.where(spike, _t, self.t_last_pre_spike)
-        TT = ((_t - self.t_last_pre_spike) < self.T_duration) * self.T
-        self.s = self.int_s(self.s, _t, TT, self.alpha, self.beta)
-```
-
-实现完后我们就可以画出$$s$$随时间变化的图。
-
-
-```python
-import brainmodels as bm
-
-neu1 = bm.neurons.LIF(2, monitors=['V'])
-neu2 = bm.neurons.LIF(3, monitors=['V'])
-syn = AMPA(T_duration=3.,pre=neu1, post=neu2, conn=bp.connect.All2All(), monitors=['s'])
-
-net = bp.Network(neu1, syn, neu2)
-net.run(30., inputs=(neu1, 'input', 35.))
-bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
-```
+运行以上代码，我们就会看到以下的结果：
 
 
 ![png](../../figs/out/output_9_0.png)
 
+由上图可以看出，当突触前神经元产生一个动作电位，$$s$$的值会先增加，然后衰减。
 
-由上图可以看到当突触前神经元发放后，$$s$$的值会先增加，然后decay。
 
-#### 指数及Alpha突触模型
+
+#### NMDA模型
+
+如前所述，NMDA受体一开始被镁离子堵住，而随着膜电位的变化，镁离子又会移开，我们用$$c_{Mg}$$表示镁离子的浓度，它对突触后膜的电导$$g$$的影响可以由以下公式描述：
+
+$$
+g_{\infty} =(1+{e}^{-\alpha V} \cdot \frac{c_{Mg} } {\beta})^{-1}
+$$
+
+$$
+g = \bar{g} \cdot g_{\infty}  s
+$$
+
+在此公式中，$$g_{\infty}$$的值随着镁离子浓度增加而减小。而随着电压$$V$$增加，$$g_{\infty}$$越来越不受镁离子的影响，建模了镁离子随电压增加而离开的效应。$$\alpha, \beta$$和$$\bar{g}$$是一些常数。门控变量$$s$$和AMPA模型类似，其动力学由以下公式给出：
+$$
+\frac{d s}{dt} =-\frac{s}{\tau_{\text{decay}}}+a x(1-s)
+$$
+
+$$
+\frac{d x}{dt} =-\frac{x}{\tau_{\text{rise}}}
+$$
+
+$$
+\text{if (pre fire), then} \ x \leftarrow x+ 1
+$$
+
+其中，$$\tau_{\text{decay}}$$和$$\tau_{\text{rise}}$$分别为$$s$$衰减及上升的时间常数，$$a$$是参数。
+
+接下来我们用BrainPy来实现NMDA模型，代码如下。
+
+<img src="../../figs/codes/nmda.png" style="text-align:center;width:170">
+
+由于前面我们已经定义了``run_syn``函数，在这里我们可以直接调用：
+
+``` python
+run_syn(NMDA)
+```
+
+![png](../../figs/out/output_nmda.png)
+
+由图可以看出，NMDA的上升和衰减过程都比AMPA模型更加缓慢。
+
+
+
+#### GABA<sub>B</sub>模型
+
+GABA<sub>B</sub>是一种代谢型受体，神经递质和受体结合后不会直接打开离子通道，而是通过G蛋白作为第二信使来起作用。因此，这里我们用$$[R]$$表示多少比例的受体被激活，并用$$[G]$$表示激活的G蛋白的浓度，$$s$$由$$[G]$$调节，公式如下：
+$$
+\frac{d[R]}{dt} = k_3 [T](1-[R])- k_4 [R]
+$$
+
+$$
+\frac{d[G]}{dt} = k_1 [R]- k_2 [G]
+$$
+
+$$
+s =\frac{[G]^{4}} {[G]^{4}+K_{d}}
+$$
+
+$$[R]$$的动力学类似于AMPA模型中$$s$$，受神经递质浓度$$[T]$$影响，$$k_3, k_4$$表示转移概率。$$[G]$$的动力学受$$[R]$$影响，并由参数$$k_1, k_2$$控制。$$K_d$$为一个常数。
+
+用BrainPy实现的代码如下。
+
+<img src="../../figs/codes/gabab.png" style="text-align:center;width:170">
+
+![png](../../figs/out/output_gabab.png)
+
+> （抑制性 -> E, I）
+
+
+
+#### 指数及Alpha模型
 
 由于许多突触模型都有类似AMPA突触那样先上升后下降的动力学特征，有时候我们建模不需要具体对应到生物学上的突触，因此，有人提出了一些抽象的突触模型。这里，我们会介绍四种这类抽象模型在BrainPy上的实现。这些模型在``Brain-Models``中也有现成的提供。
 
