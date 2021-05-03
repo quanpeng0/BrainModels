@@ -49,16 +49,13 @@ class AdQuaIF(bp.NeuGroup):
     mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== ========================================================================================================================    
     
-    Returns:
-        bp.Neutype: return description of the AdQuaIF model.
+    **Neuron Variables**
 
-    **Neuron State**
+    An object of neuron class record those variables for each synapse:
 
-    ST refers to neuron state, members of ST are listed below:
-    
-    =============== ================= =========================================================
-    **Member name** **Initial Value** **Explanation**
-    --------------- ----------------- ---------------------------------------------------------
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     V               0.                Membrane potential.
 
     w               0.                Adaptation current.
@@ -74,11 +71,9 @@ class AdQuaIF(bp.NeuGroup):
                                       Can be seen as bool.
                              
     t_last_spike    -1e7              Last spike time stamp.
+
     =============== ================= =========================================================
     
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-        
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
                neurons to networks and models of cognition. Cambridge 
