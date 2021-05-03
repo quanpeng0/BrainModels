@@ -37,14 +37,13 @@ class Exponential(bp.TwoEndConn):
 
     ============= ============== ======== ===================================================================================  
     
-    Returns:
-        bp.Syntype: return description of a synapse model with single exponential decay.
+    **Synapse Variables**
 
-    **Synapse State**
-    
-    ================ ================== =========================================================
-    **Member name**  **Initial values** **Explanation**
-    ---------------- ------------------ ---------------------------------------------------------    
+    An object of synapse class record those variables for each synapse:
+
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     s                  0                  Gating variable.
 
     w                  0                  Synaptic weights.

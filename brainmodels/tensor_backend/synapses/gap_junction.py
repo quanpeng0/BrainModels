@@ -15,24 +15,15 @@ class Gap_junction(bp.TwoEndConn):
 
         I_{syn} = w (V_{pre} - V_{post})
 
-    **Synapse State**
+    **Synapse Variables**
 
-    ST refers to synapse state, members of ST are listed below:
+    An object of synapse class record those variables for each synapse:
 
-    =============== ================= =========================================================
-    **Member name** **Initial Value** **Explanation**
-    --------------- ----------------- ---------------------------------------------------------
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     w                0.                Synapse weights.
     =============== ================= =========================================================
-
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-
-    Args:
-        mode (string): data structure of ST members.
-
-    Returns:
-        bp.SynType: return description of synapse model with gap junction.
 
     Reference:
         .. [1] Chow, Carson C., and Nancy Kopell. 
@@ -70,24 +61,17 @@ class Gap_junction_lif(bp.TwoEndConn):
 
         I_{syn} = w (V_{pre} - V_{post})
 
-    ST refers to synapse state, members of ST are listed below:
+    **Synapse Variables**
 
-    =============== ================= =========================================================
-    **Member name** **Initial Value** **Explanation**
-    --------------- ----------------- ---------------------------------------------------------
+    An object of synapse class record those variables for each synapse:
+
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     w                0.                Synapse weights.
     
     spikelet         0.                conductance for post-synaptic neuron
     =============== ================= =========================================================
-
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-
-    Args:
-        k_spikelet (float): 
-
-    Returns:
-        bp.SynType: return description of synapse model with gap junction.
 
     References:
         .. [1] Chow, Carson C., and Nancy Kopell. 

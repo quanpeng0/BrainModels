@@ -63,18 +63,13 @@ class STDP(bp.TwoEndConn):
 
     ============= ============== ======== =================================================================
 
-    Returns:
-        bp.Syntype: return description of STDP.
+    **Synapse Variables**
 
+    An object of synapse class record those variables for each synapse:
 
-    **Learning Rule State**
-
-    ST refers to synapse state (note that STDP learning rule can be implemented as synapses),
-    members of ST are listed below:
-
-    ================ ================= =========================================================
-    **Member name**  **Initial Value** **Explanation**
-    ---------------- ----------------- ---------------------------------------------------------
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     A_s              0.                Source neuron trace.
 
     A_t              0.                Target neuron trace.
@@ -84,8 +79,6 @@ class STDP(bp.TwoEndConn):
     w                0.                Synapse weight.
     ================ ================= =========================================================
 
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
 
     References:
         .. [1] Stimberg, Marcel, et al. "Equation-oriented specification of neural models for

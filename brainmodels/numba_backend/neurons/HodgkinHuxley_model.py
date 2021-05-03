@@ -57,13 +57,13 @@ class HH(bp.NeuGroup):
     mode          'vector'       \        Data structure of ST members.
     ============= ============== ======== ====================================
 
-    **Neuron State**
+    **Neuron Variables**
 
-    ST refers to the neuron state, items in ST are listed below:
+    An object of neuron class record those variables for each synapse:
 
-    =============== ==================  =========================================================
-    **Member name** **Initial values**  **Explanation**
-    --------------- ------------------  ---------------------------------------------------------
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     V                        -65         Membrane potential.
 
     m                        0.05        gating variable of the sodium ion channel.
@@ -77,9 +77,6 @@ class HH(bp.NeuGroup):
     spike                     0          Flag to mark whether the neuron is spiking.
                                          Can be seen as bool.
     =============== ==================  =========================================================
-
-    Note that all ST members are saved as floating point type in BrainPy,
-    though some of them represent other data types (such as boolean).
 
     References:
         .. [1] Hodgkin, Alan L., and Andrew F. Huxley. "A quantitative description

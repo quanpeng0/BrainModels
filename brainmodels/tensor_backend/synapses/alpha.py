@@ -46,24 +46,17 @@ class Alpha(bp.TwoEndConn):
     mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== ===================================================================================  
 
-    Returns:
-        bp.Syntype: return description of the alpha synapse model.
 
-    **Synapse State**
+    **Synapse Variables**
 
+    An object of synapse class record those variables for each synapse:
 
-    ST refers to the synapse state, items in ST are listed below:
-
-    ================ ================== =========================================================
-    **Member name**  **Initial values** **Explanation**
-    ---------------- ------------------ ---------------------------------------------------------    
-    g                  0                  Synapse conductance on the post-synaptic neuron.
+    ================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------    g                  0                  Synapse conductance on the post-synaptic neuron.
     s                  0                  Gating variable.
     x                  0                  Gating variable.  
     ================ ================== =========================================================
-
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
 
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 

@@ -32,23 +32,20 @@ class AMPA1(bp.TwoEndConn):
     mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== ===================================================================================
 
-    Returns:
-        bp.Syntype: return description of the AMPA synapse model.
 
-    **Synapse State**
+    **Synapse Variables**
 
-    ST refers to the synapse state, items in ST are listed below:
+    An object of synapse class record those variables for each synapse:
 
-    =============== ================== =========================================================
-    **Member name** **Initial values** **Explanation**
-    --------------- ------------------ ---------------------------------------------------------
-    s                   0               Gating variable.
+    ================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
+    s                0.                Gating variable.
 
-    g                   0               Synapse conductance.
-    =============== ================== =========================================================
+    g                0.                Synapse conductance on post-synaptic neuron.
 
-    Note that all ST members are saved as floating point type in BrainPy,
-    though some of them represent other data types (such as boolean).
+    ================ ================= =========================================================
+
 
     References:
         .. [1] Brunel N, Wang X J. Effects of neuromodulation in a cortical network
@@ -118,25 +115,22 @@ class AMPA2(bp.TwoEndConn):
     mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== ================================================    
     
-    Returns:
-        bp.Syntype: return description of the AMPA synapse model.
 
-    **Synapse State**
+    **Synapse Variables**
 
-    ST refers to the synapse state, items in ST are listed below:
+    An object of synapse class record those variables for each synapse:
     
-    ================ ================== =========================================================
-    **Member name**  **Initial values** **Explanation**
-    ---------------- ------------------ ---------------------------------------------------------
+    ================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     s                 0                 Gating variable.
     
     g                 0                 Synapse conductance.
 
     t_last_pre_spike  -1e7              Last spike time stamp of the pre-synaptic neuron.
+
     ================ ================== =========================================================
-    
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
+
 
     References:
         .. [1] Vijayan S, Kopell N J. Thalamic model of awake alpha oscillations 

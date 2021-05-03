@@ -46,16 +46,13 @@ class STP(bp.TwoEndConn):
     mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== ===========================================    
     
-    Returns:
-        bp.Syntype: return description of the Short-term plasticity synapse model.
+    **Synapse Variables**
 
-    **Synapse State**
+    An object of synapse class record those variables for each synapse:
 
-    ST refers to the synapse state, items in ST are listed below:
-    
-    =============== ================== =====================================================================
-    **Member name** **Initial values** **Explanation**
-    --------------- ------------------ ---------------------------------------------------------------------
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     u                 0                 Release probability of the neurotransmitters.
 
     x                 1                 A Normalized variable denoting the fraction of remain neurotransmitters.
@@ -65,9 +62,6 @@ class STP(bp.TwoEndConn):
     g                 0                 Synapse conductance.
     =============== ================== =====================================================================
     
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-
 
     References:
         .. [1] Tsodyks, Misha, Klaus Pawelzik, and Henry Markram. "Neural networks

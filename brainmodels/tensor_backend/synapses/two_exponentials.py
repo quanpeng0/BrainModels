@@ -50,16 +50,13 @@ class Two_exponentials(bp.TwoEndConn):
     mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== ===================================================================================  
     
-    Returns:
-        bp.Syntype: return description of the two_exponentials synapse model.
+    **Synapse Variables**
 
-    **Synapse State**
-        
-    ST refers to synapse state, members of ST are listed below:
+    An object of synapse class record those variables for each synapse:
 
-    ================ ================== =========================================================
-    **Member name**  **Initial values** **Explanation**
-    ---------------- ------------------ ---------------------------------------------------------    
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     g                  0                  Synapse conductance on the post-synaptic neuron.
 
     s                  0                  Gating variable.
@@ -67,9 +64,6 @@ class Two_exponentials(bp.TwoEndConn):
     x                  0                  Gating variable.                              
     ================ ================== =========================================================
     
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 
                 "The Synapse." Principles of Computational Modelling in Neuroscience. 
