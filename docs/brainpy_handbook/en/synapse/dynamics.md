@@ -83,7 +83,7 @@ s = \frac {\tau_1 \tau_2}{\tau_1 - \tau_2} (\exp(-\frac{t - t_s}{\tau_1})
 - \exp(-\frac{t - t_s}{\tau_2}))
 $$
 
-Where $$t_s$$ denotes the spike timing of the presynatic neuron, with two time constants $$\tau_1$$ and $$\tau_2$$ .
+Where $$t_s$$ denotes the spike timing of the presynatic neuron, $$\tau_1$$ and $$\tau_2$$ are time constants.
 
 While implementing with BrainPy, we use the following differential equation form,
 $$
@@ -114,7 +114,7 @@ Dynamics of ``Alpha synapse`` is given by,
 $$
 s = \frac{t - t_s}{\tau} \exp(-\frac{t - t_s}{\tau})
 $$
-As the dual exponential synapse we mentioned above,  $$t_s$$ denotes the spike timing of the presynaptic neuron, with a time constant $$\tau$$.
+As the dual exponential synapse,  $$t_s$$ denotes the spike timing of the presynaptic neuron, with a time constant $$\tau$$.
 
 The differential equation form of alpha synapse is also very similar with the dual exponential synapses, with $$\tau = \tau_1 = \tau_2$$, as shown below:
 $$
@@ -182,6 +182,8 @@ Then we expect to see the following result:
 
 So far, we have modeled the gating variable $$s$$, now let's see how to model the effect of the gating variables on the synaptic current. The current that passes through a synaptic channel is denoted as $$I$$. There are two different methods to model the relationships between $$s$$ and $$I$$: **current-based** and **conductance-based**. The main difference between them is whether the synaptic current is influenced by the membrane potential of postsynaptic neurons.
 
+##### (1) Current-based
+
 The formula of the current-based model is as follow:
 
 $$
@@ -194,8 +196,9 @@ The delay of synapses is implemented by applying the delay time to the ``I_syn``
 
 ![Ibase](../../figs/codes/Ibase.png)
 
-In the conductance-based model, the conductance is $$g=\bar{g} s$$. Therefore, according to Ohm's law, the formula is given by:
+##### (2) Conductance-based
 
+In the conductance-based model, the conductance is $$g=\bar{g} s$$. Therefore, according to Ohm's law, the formula is given by:
 $$
 I=\bar{g}s(V-E)
 $$

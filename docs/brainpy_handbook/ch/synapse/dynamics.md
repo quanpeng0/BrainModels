@@ -150,16 +150,16 @@ $$[R]$$的动力学类似于AMPA模型中$$s$$，受神经递质浓度$$[T]$$影
 
 ##### (1) 双指数差（Differences of two exponentials）
 
-我们首先来看双指数差（Differences of two exponentials）模型，它的公式如下：
+我们首先来看**双指数差**（Differences of two exponentials）模型，它有两个指数项相减，公式如下：
 
 $$
 s = \frac {\tau_1 \tau_2}{\tau_1 - \tau_2} (\exp(-\frac{t - t_s}{\tau_1})
 - \exp(-\frac{t - t_s}{\tau_2}))
 $$
 
+其中 $$t_s$$ 表示突触前神经元产生动作电位的时间，$$\tau_1$$和$$\tau_2$$为时间常数。
 
 在BrainPy的实现中，我们采用以下微分方程形式：
-
 $$
 		\frac {ds} {dt} = x
 $$
@@ -172,54 +172,9 @@ $$
 \text{if (fire), then} \ x \leftarrow x+ 1
 $$
 
+这里我们用``update``函数来控制$$x$$增加的逻辑。代码如下：
 
-
-这里我们把判断当突触前神经元有发放时，$$x$$增加的逻辑写到``update``函数中。代码如下：
-
-
-```python
-class Two_exponentials(bp.TwoEndConn):
-    target_backend = 'general'
-
-    @staticmethod
-    def derivative(s, x, t, tau1, tau2):
-        dxdt = (-(tau1 + tau2) * x - s) / (tau1 * tau2)
-        dsdt = x
-        return dsdt, dxdt
-    
-    def __init__(self, pre, post, conn, tau1=1.0, tau2=3.0, **kwargs):
-        # parameters
-        self.tau1 = tau1
-        self.tau2 = tau2
-
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
-
-        # variables
-        self.s = bp.ops.zeros(self.size)
-        self.x = bp.ops.zeros(self.size)
-
-        self.integral = bp.odeint(f=self.derivative, method='rk4')
-        
-        super(Two_exponentials, self).__init__(pre=pre, post=post, **kwargs)
-    
-    def update(self, _t):
-        self.s, self.x = self.integral(self.s, self.x, _t, self.tau1, self.tau2)
-        self.x += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
-```
-
-
-```python
-neu1 = bm.neurons.LIF(2, monitors=['V'])
-neu2 = bm.neurons.LIF(3, monitors=['V'])
-syn = Two_exponentials(tau1=2., pre=neu1, post=neu2, conn=bp.connect.All2All(), monitors=['s'])
-
-net = bp.Network(neu1, syn, neu2)
-net.run(30., inputs=(neu1, 'input', 35.))
-bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
-```
+<img src="../../figs/codes/2exp.png" style="text-align:center;width:170">
 
 
 ![png](../../figs/out/output_16_0.png)
@@ -227,8 +182,11 @@ bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
 
 ##### (2) Alpha突触
 
-Alpha突触和上述模型类似，唯独在这里$$\tau_1 = \tau_2$$，因此公式更加简化了：
-
+**Alpha突触**的动力学由以下公式给出：
+$$
+s = \frac{t - t_s}{\tau} \exp(-\frac{t - t_s}{\tau})
+$$
+和双指数差模型类似， $$t_s$$ 表示突触前神经元产生动作电位的时间，不同的是这里只有一个时间常数$$\tau$$。微分方程形式如下：
 $$
 \frac {ds} {dt} = x
 $$
@@ -241,51 +199,9 @@ $$
 \text{if (fire), then} \ x \leftarrow x+ 1
 $$
 
-代码实现也类似：
+可以看出alpha模型和双指数差模型其实很相似，相当于是$$\tau=\tau_1 = \tau_2$$。因此，代码实现上也很接近：
 
-
-```python
-class Alpha(bp.TwoEndConn):
-    target_backend = 'general'
-
-    @staticmethod
-    def derivative(s, x, t, tau):
-        dxdt = (-2 * tau * x - s) / (tau ** 2)
-        dsdt = x
-        return dsdt, dxdt
-    
-    def __init__(self, pre, post, conn, tau=3.0, **kwargs):
-        # parameters
-        self.tau = tau
-
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
-
-        # variables
-        self.s = bp.ops.zeros(self.size)
-        self.x = bp.ops.zeros(self.size)
-
-        self.integral = bp.odeint(f=self.derivative, method='rk4')
-        
-        super(Alpha, self).__init__(pre=pre, post=post, **kwargs)
-    
-    def update(self, _t):
-        self.s, self.x = self.integral(self.s, self.x, _t, self.tau)
-        self.x += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
-```
-
-
-```python
-neu1 = bm.neurons.LIF(2, monitors=['V'])
-neu2 = bm.neurons.LIF(3, monitors=['V'])
-syn = Alpha(pre=neu1, post=neu2, conn=bp.connect.All2All(), monitors=['s'])
-
-net = bp.Network(neu1, syn, neu2)
-net.run(30., inputs=(neu1, 'input', 35.))
-bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
-```
+<img src="../../figs/codes/alpha.png" style="text-align:center;width:170">
 
 
 ![png](../../figs/out/output_20_0.png)
@@ -293,8 +209,7 @@ bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
 
 ##### (3) 单指数衰减（Single exponential decay）
 
-有时候在建模中可以忽略上升的过程，而只需要建模衰退（decay）的过程。这种模型称为单指数衰减（Single exponential decay）模型，其公式就更加简化了：
-
+下面我们来介绍一种更加简化的模型，它忽略了上升的过程，而只建模了衰减（decay）的过程。**单指数衰减**（Single exponential decay）模型用一个指数项来描述衰减的过程，公式如下：
 $$
 \frac {ds}{dt}=-\frac s {\tau_{decay}}
 $$
@@ -305,102 +220,22 @@ $$
 
 代码实现如下：
 
-
-```python
-class Exponential(bp.TwoEndConn):
-    target_backend = 'general'
-
-    @staticmethod
-    def derivative(s, t, tau):
-        ds = -s / tau
-        return ds
-    
-    def __init__(self, pre, post, conn, tau=8.0, **kwargs):
-        # parameters
-        self.tau = tau
-
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
-
-        # variables
-        self.s = bp.ops.zeros(self.size)
-        
-        self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
-        
-        super(Exponential, self).__init__(pre=pre, post=post, **kwargs)
-
-
-    def update(self, _t):
-        self.s = self.integral(self.s, _t, self.tau)
-        self.s += bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
-```
-
-
-```python
-neu1 = bm.neurons.LIF(2, monitors=['V'])
-neu2 = bm.neurons.LIF(3, monitors=['V'])
-syn = Exponential(pre=neu1, post=neu2, conn=bp.connect.All2All(), monitors=['s'])
-
-net = bp.Network(neu1, syn, neu2)
-net.run(30., inputs=(neu1, 'input', 35.))
-bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
-```
+<img src="../../figs/codes/exp.png" style="text-align:center;width:170">
 
 
 ![png](../../figs/out/output_24_0.png)
 
 
-##### （4）电压跳变（Voltage jump）
+##### (4) 电压跳变（Voltage jump）
 
-建模上，有时候甚至连衰退的过程也可以忽略，这样的模型成为电压跳变（Voltage jump）模型，公式如下：
-
+电压跳变（Voltage jump）模型比单指数衰减模型还要更加简化，它连衰退的过程也忽略了，公式如下：
 $$
-\text{if (fire), then} \ V \leftarrow V+1
+\text{if (fire), then} \ s \leftarrow s+1
 $$
 
-在实现上，连微分方程都不需要了，只需要在``update``函数中更新突触后膜的膜电位。但是，由于更新的是膜电位，因此要主要当突触后神经元为LIF等具有不应期的神经元时，不应期的时候不会改变膜电位。代码如下：
+在实现上，只需要在``update``函数中更新$$s$$即可。代码如下：
 
-
-```python
-class Voltage_jump(bp.TwoEndConn):        
-    target_backend = 'general'
-
-    def __init__(self, pre, post, conn, post_refractory=False,  **kwargs):
-        # parameters
-        self.post_refractory = post_refractory
-
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
-
-        # variables
-        self.s = bp.ops.zeros(self.size)
-        
-        super(Voltage_jump, self).__init__(pre=pre, post=post, **kwargs)
-    
-    def update(self, _t):
-        self.s = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
-             
-        if self.post_refractory:
-            refra_map = (1. - bp.ops.unsqueeze(self.post.refractory, 0)) * self.conn_mat
-            self.post.V += bp.ops.sum(self.s * refra_map, axis=0)
-        else:
-            self.post.V += bp.ops.sum(self.s, axis=0)
-```
-
-
-```python
-neu1 = bm.neurons.LIF(2, monitors=['V'])
-neu2 = bm.neurons.LIF(3, monitors=['V'])
-syn = Voltage_jump(pre=neu1, post=neu2, conn=bp.connect.All2All(), monitors=['s'])
-
-net = bp.Network(neu1, syn, neu2)
-net.run(30., inputs=(neu1, 'input', 35.))
-bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
-```
+<img src="../../figs/codes/vj.png" style="text-align:center;width:170">
 
 
 ![png](../../figs/out/output_28_0.png)
@@ -408,9 +243,11 @@ bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
 
 #### 基于电流的和基于电导的突触
 
-前面我们已经建模了门控变量$$s$$。有两种不同的方法来建模从$$s$$到突触电流$$I$$（即突触后神经元的输入电流）的关系，分别为
-**基于电流的（current-based）**
-与**基于电导的（conductance-based）**。两者的主要区别在于突触电流是否受突触后神经元膜电位的影响。
+目前为止，我们都在介绍门控变量$$s$$的动力学，现在让我们来看看突触电流如何变化。我们用$$I$$表示通过突触的电流，从$$s$$到$$I$$的关系有有两种不同的方法来建模，分别为
+**基于电流（current-based）**
+与**基于电导（conductance-based）**。两者的主要区别在于突触电流是否受突触后神经元膜电位的影响。
+
+##### （1）基于电流（Current-based）
 
 基于电流的模型公式如下：
 
@@ -418,27 +255,15 @@ $$
 I \propto s
 $$
 
-在代码实现上，我们通常会乘上一个权重$$w$$，我们可以通过调整权重的正负值来实现兴奋性和抑制性突触。
+在代码实现上，我们通常会乘上一个权重$$w$$。我们可以通过调整权重$$w$$的正负值来实现兴奋性和抑制性突触。另外，我们通过使用BrainPy提供的``register_constant_delay``函数给变量``I_ syn``加上延迟时间来实现突触的延迟。
 
-这里还通过使用BrainPy提供的``register_constant_delay``函数给变量``I_ syn``加上延迟时间来实现突触的延迟。
+![Ibase](../../figs/codes/Ibase.png)
 
 
-```python
-def __init__(self, pre, post, conn, **kwargs):
-    # ...
-    self.s = bp.ops.zeros(self.size)
-    self.w = bp.ops.ones(self.size) * .2
-    self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
 
-def update(self, _t):
-    for i in nb.prange(self.size):
-        # ... 
-        self.I_syn.push(i, self.w[i] * self.s[i])
-        self.post.input[post_id] += self.I_syn.pull(i) 
-```
+##### （2）基于电导（Conductance-based）
 
 在基于电导的模型中，电导为$$g=\bar{g}s$$。因此，根据欧姆定律得公式如下：
-
 $$
 I=\bar{g}s(V-E)
 $$
@@ -447,77 +272,53 @@ $$
 
 代码实现上，可以把延迟时间应用到变量``g``上。
 
+![gbase](../../figs/codes/gbase.png)
 
-```python
-def __init__(self, pre, post, conn, g_max, E, **kwargs):
-    self.g_max = g_max
-    self.E = E
-    # ...
-    self.s = bp.ops.zeros(self.size)
-    self.g = self.register_constant_delay('g', size=self.size, delay_time=delay)
 
-def update(self, _t):
-    for i in nb.prange(self.size):
-        # ...
-        self.g.push(i, self.g_max * self.s[i])
-        self.post.input[post_id] -= self.g.pull(i) * (self.post.V[post_id] - self.E)
-```
 
-### 电突触（缝隙连接 Gap junction）
+### 2.1.2 电突触
 
 除了前面介绍的化学突触以外，电突触在我们神经系统中也很常见。
 
-<img src="../../figs/bio_gap.png">
+<div  style="text-align:center">
+    <div style="display:grid;grid-template-columns: 1fr 3fr 1fr 3fr;grid-template-rows:1fr 3fr;justify-items:center;align-items:center">
+      <div style="grid-column:1;grid-row:1;align-self:end;justify-self:end">
+        <strong>(a)</strong>
+      </div>
+      <div style="grid-column:2;grid-row:2">
+        <img src="../../figs/bio_gap.png" width="200">
+      </div>
+      <div style="grid-column:3;grid-row:1;align-self:end;justify-self:end">
+        <strong>(b)</strong>
+      </div>
+      <div style="grid-column:4;grid-row:2">
+        <img style="width:200px" src="../../figs/gap_model.jpg">
+      </div>
+    </div>
+  <br>
+  <strong> Fig. 2-3 (a)</strong> 神经元间的缝隙连接. 
+  <strong>(b)</strong> 等效模型. 
+  <br>(修改自 <cite>Sterratt et al., 2011 <sup><a href="#Sterratt2011">[2]</a></sup></cite>)
+</div>
 
-如上图，两个神经元通过连接通道 (junction channels) 相连，可以直接导电。因此，可以看作是两个神经元由一个常数电阻连起来，如下图所示。
 
-<img src="../../figs/gap_model.jpg">
+<div><br></div>
 
-根据欧姆定律可得以下公式。
+如图2-3a所示，两个神经元通过连接通道（junction channels）相连，可以直接导电，这种连接又称为缝隙连接（gap junction）。因此，可以看作是两个神经元由一个常数电阻连起来，如图2-3b所示。
+
+根据欧姆定律可得以下公式：
 
 $$
 I_{1} = w (V_{0} - V_{1})
 $$
 
-这里电导表示为$$w$$，它表示连接的权重。
+这里$$V_0$$和$$V_1$$分别为两个神经元的膜电位，突触权重$$w$$表示常数电导。
 
 在BrainPy的实现中，只需要在``update``函数里更新即可。
 
+![gap](../../figs/codes/gap.png)
 
-```python
-class Gap_junction(bp.TwoEndConn):
-    target_backend = 'general'
-
-    def __init__(self, pre, post, conn, delay=0., k_spikelet=0.1, post_refractory=False,  **kwargs):
-        self.delay = delay
-        self.k_spikelet = k_spikelet
-        self.post_refractory = post_refractory
-
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
-
-        # variables
-        self.w = bp.ops.ones(self.size)
-        self.spikelet = self.register_constant_delay('spikelet', size=self.size, delay_time=delay)
-
-        super(Gap_junction, self).__init__(pre=pre, post=post, **kwargs)
-
-    def update(self, _t):
-        v_post = bp.ops.vstack((self.post.V,) * self.size[0])
-        v_pre = bp.ops.vstack((self.pre.V,) * self.size[1]).T
-
-        I_syn = self.w * (v_pre - v_post) * self.conn_mat
-        self.post.input += bp.ops.sum(I_syn, axis=0)
-
-        self.spikelet.push(self.w * self.k_spikelet * bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat)
-
-        if self.post_refractory:
-            self.post.V += bp.ops.sum(self.spikelet.pull(), axis=0) * (1. - self.post.refractory)
-        else:
-            self.post.V += bp.ops.sum(self.spikelet.pull(), axis=0)
-```
+定义好了缝隙连接的类以后，我们跑模拟来看给0号神经元输入时，1号神经元的电位变化。我们首先实例化两个LIF神经元模型，并用缝隙连接把它们连接起来。然后仅给0号神经元``neu0``一个恒定的电流，``neu1``没有外界输入。
 
 
 ```python
@@ -549,4 +350,14 @@ plt.show()
 
 
 ![png](../../figs/out/output_37_0.png)
+
+结果图中，下图$$V_0$$表示0号神经元的膜电位变化，而上图$$V_1$$为1号神经元的膜电位。可以看到，当$$V_0$$在阈值以下上升时，$$V_1$$也跟着上升；而当$$V_0$$达到阈值产生动作电位时，$$V_1$$有一个快速的上升（spikelet）以后马上降到一个更低的值。
+
+
+
+### 参考资料
+
+> <span id="Gerstner2014"><sup>[1]</sup></span>. Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
+
+> <span id="Sterratt2011"><sup>[2]</sup></span>. Sterratt, David, et al. Principles of computational modeling in neuroscience. Cambridge University Press, 2011.
 
