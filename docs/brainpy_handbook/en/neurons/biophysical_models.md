@@ -14,7 +14,7 @@ The equivalent circuit diagram of Fig.1-1 is shown in Fig. 1-4, in which the pat
 
 As Na+ ion channels and K+ ion channels are important in the generation of action potentials, these two ion channels are modeled as the two variable resistances $$R_{Na}$$ and $$R_K$$ in parallel on the right side of the circuit diagram, and the resistance $$R$$ refers to all the non-specific ion channels on the membrane. The batteries $$E_{Na}$$, $$E_K$$ and $$E_L$$ refer to the electric potential differences caused by the concentration differences of corresponding ions.
 
-Consider the Kirchhoff’s first law, that is,  for any node in an electrical circuit, the sum of currents flowing into that node is equal to the sum of currents flowing out of that node, Fig. 1-2 can be modeled as differential equations:
+Consider the Kirchhoff’s first law, that is,  for any node in an electrical circuit, the sum of currents flowing into that node is equal to the sum of currents flowing out of that node, Fig. 1-4 can be modeled as differential equations:
 
 $$
 C \frac{dV}{dt} = -(\bar{g}_{Na} m^3 h (V - E_{Na}) + \bar{g}_K n^4(V - E_K) + g_{leak}(V - E_{leak})) + I(t)
