@@ -53,15 +53,15 @@ Where $$\alpha [T]$$ denotes the transition probability from state $$(1-s)$$ to 
 
 Now let's see how to implement such a model with BrainPy. First of all, we need to define a class that inherits from `` bp.TwoEndConn ``, because synapses connect two neurons. Within the class, we can define the differential equation with ``derivative`` function, this is the same as the definition of neuron models. Then we use the ``__ init__ `` Function to initialize the required parameters and variables.
 
-<img src="../../figs/codes/ampa_init.png" style="text-align:center;width:170">
+<img src="../../figs/codes/ampa_init.png" style="width:100%">
 
 We update $$s$$ by an ``update`` function.
 
-<img src="../../figs/codes/ampa_update.png" style="text-align:center;width:170">
+<img src="../../figs/codes/ampa_update.png" style="width:100%">
 
 After the implementation, we can plot the graph of $$s$$ changing with time. We would first write a ``run_syn`` function to run and plot the graph. To run a synapse, we need neuron groups, so we use the LIF neuron provided by ``brainmodels`` package.
 
-<img src="../../figs/codes/ampa_run.png" style="text-align:center;width:170">
+<img src="../../figs/codes/ampa_run.png" style="width:100%">
 
 Then we would expect to see the following result:
 
@@ -100,7 +100,7 @@ $$
 
 Here we specify the logic of increment of $$x$$ in the ``update`` function when the presynaptic neurons fire. The code is as follows:
 
-<img src="../../figs/codes/2exp.png" style="text-align:center;width:170">
+<img src="../../figs/codes/2exp.png" style="width:100%">
 
 Then we expect to see the following result:
 
@@ -131,7 +131,7 @@ $$
 
 Code implementation is similar:
 
-<img src="../../figs/codes/alpha.png" style="text-align:center;width:170">
+<img src="../../figs/codes/alpha.png" style="width:100%">
 
 Then we expect to see the following result:
 
@@ -152,7 +152,7 @@ $$
 
 The implementing code is given by:
 
-<img src="../../figs/codes/exp.png" style="text-align:center;width:170">
+<img src="../../figs/codes/exp.png" style="width:100%">
 
 Then we expect to see the following result:
 
@@ -170,7 +170,7 @@ $$
 
 The code is as follows:
 
-<img src="../../figs/codes/vj.png" style="text-align:center;width:170">
+<img src="../../figs/codes/vj.png" style="width:100%">
 
 Then we expect to see the following result:
 

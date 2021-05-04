@@ -1,4 +1,5 @@
 # Languages
 
-* [En](en/)
-* [Ch](ch/)
+* [English](en/)
+* [简体中文](ch/)
+
