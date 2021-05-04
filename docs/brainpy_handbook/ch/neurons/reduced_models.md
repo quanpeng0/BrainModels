@@ -1,13 +1,14 @@
-## 1.3 Reduced models
+## 1.3 简化模型
 
-Inspired by biophysical experiments, Hodgkin-Huxley model is precise but costly. Researchers proposed the reduced models to reduce the consumption on computing resources and running time in simulation. 
+启发自生理实验的Hodgkin-Huxley模型准确但昂贵。研究者们提出了简化模型，希望能降低仿真的运行时间和计算资源的消耗。
 
 These models are simple and easy to compute, while they can still reproduce the main pattern of neuron behaviors. Although their representation capabilities are not as good as biophysical models, such a loss of accuracy is sometimes acceptable considering their simplicity.
 
-### 1.3.1 Leaky Integrate-and-Fire model
+简化模型简单、易于计算，并且他们仍然能够复现神经元发放的主要特征。尽管它们的表示能力不如生理模型，但和它们的简便相比，在特定场景下研究者们有时也可以接受一定的精度损失。
 
-The most typical reduced model is the **Leaky Integrate-and-Fire model** (**LIF model**) presented by Lapicque (1907).  LIF model is a combination of integrate process represented by differential equation and spike process represented by conditional judgment:
+### 1.3.1 泄漏积分-发放模型
 
+最经典的简化模型，莫过于Lapicque（1907）提出的**泄漏积分-发放模型**（Leaky Integrate-and-Fire model, **LIF model**）。LIF模型是由微分方程表示的积分过程和由条件判断表示的发放过程的结合：
 $$
 \tau\frac{dV}{dt} = - (V - V_{rest}) + R I(t)
 $$
@@ -15,34 +16,33 @@ If  $$V > V_{th}$$, neuron fires,
 $$
 V \gets V_{reset}
 $$
-$$\tau = RC$$ is the time constant of LIF model, the larger $$\tau$$ is, the slower model dynamics is. The equation shown above is corresponding to a simpler equivalent circuit than HH model, for it does not model the Na+ and K+ ion channels any more. Actually, in LIF model, only the consistence $$R$$, capacitance $$C$$, battery $$E$$ and external input $$I$$ is modeled.
+$$\tau = RC$$是LIF模型的时间常数，$$\tau$$越大，模型的动力学就越慢。如上所示的方程对应于一个比HH模型的等效电路图更加简单的等效电路，因为它不再建模钠离子通道和钾离子通道。实际上，LIF模型中只有电阻$$R$$，电容$$C$$，电源$$E$$和外部输入$$I$$被建模。
 
 <center><img src="../../figs/neus/LIF_circuit.png" width="200" height="271"></center>
 
 <center><b>Fig1-4 Equivalent circuit of LIF model</b></center>
 
-Compared with HH model, LIF model does not model the shape of action potentials, which means, the membrane potential does not burst before a spike. Also, the refractory period is overlooked in the original model, and in order to generate it, another conditional judgment must be added:
+比起HH模型，LIF模型没有建模动作电位的形状，也就是说，在发放一个峰电位之前，LIF神经元的膜电位不会骤增。并且在原始模型中，不应期也被忽视了。为了仿真模拟不应期，必须再补充一个条件判断：
 
-If 
+如果
 $$
 t-t_{last spike}<=refractory period
 $$
-then neuron is in refractory period, membrane potential $$V$$ will not be updated.
+则神经元处在不应期中，膜电位$$V$$不再更新。
 
 <center><img src="../../figs/neus/codes/LIF.PNG"></center>
 
 
 ![png](../../figs/neus/out/output_37_0.png)
 
-### 1.3.2 Quadratic Integrate-and-Fire model
+### 1.3.2 二次积分-发放模型
 
-To pursue higher representation capability, Latham et al. (2000) proposed **Quadratic Integrate-and-Fire model** (**QuaIF model**), in which they add a second order term in differential equation so the neurons can generate spike better.
-
+为了追求更强的表示能力，Latham等人（2000）提出了**二次积分-发放模型**（Quadratic Integrate-and-Fire model，**QuaIF model**），他们在微分方程的右侧添加了一个二阶项，使得神经元能产生更好的动作电位。
 $$
 \tau\frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) + RI(t)
 $$
 
-In the equation above, $$a_0$$ is a special parameter controls the slope of membrane potential before a spike, and $$V_c$$ is the critical potential for action potential initialization. Below $$V_C$$, membrane potential $$V$$ increases slowly, once it grows beyond $$V_c$$, $$V$$ turns to rapid increase.
+在上式中，$$a_0$$是控制着膜电位发放前的斜率的参数，$$V_c$$是动作电位初始化的临界值。当低于 $$V_C$$时，膜电位 $$V$$缓慢增长，一旦越过 $$V_C$$， $$V$$就转为迅速增长。
 
 <center><img src="../../figs/neus/codes/QuaIF1.PNG"></center>
 
@@ -52,13 +52,13 @@ In the equation above, $$a_0$$ is a special parameter controls the slope of memb
 ![png](../../figs/neus/out/output_41_0.png)
 
 
-### 1.3.3 Exponential Integrate-and-Fire model
-**Exponential Integrate-and-Fire model** (**ExpIF model**) (Fourcaud-Trocme et al., 2003) is more expressive than QuaIF model. With the exponential term added to the right hand of differential equation, the dynamics of ExpIF model can now generates a more realistic action potential.
+### 1.3.3 指数积分-发放模型
+**指数积分发放模型**（Exponential Integrate-and-Fire model,  **ExpIF model**）（Fourcaud-Trocme et al., 2003）的表示能力比QuaIF模型更强。ExpIF模型在微分方程右侧增加了指数项，使得模型现在可以产生更加真实的动作电位。
 $$
 \tau \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} + R I(t)
 $$
 
-In the exponential term, $$V_T$$ is the critical potential of generating action potential, below which $$V$$ increases slowly and above which rapidly. $$\Delta_T$$ is the slope of action potentials in ExpIF model, and when $$\Delta_T\to 0$$, the shape of spikes in ExpIF model will be equivalent to the LIF model with $$V_{th} = V_T$$(Fourcaud-Trocme et al., 2003) .
+在指数项中$$V_T$$是动作电位初始化的临界值，在其下$$V$$缓慢增长，其上$$V$$迅速增长。$$\Delta_T$$是ExpIF模型中动作电位的斜率。当$$\Delta_T\to 0$$时，ExpIF模型中动作电位的形状将等同于$$V_{th} = V_T$$的LIF模型（Fourcaud-Trocme et al.，2003）。
 
 <center><img src="../../figs/neus/codes/ExpIF1.PNG"></center>
 
@@ -67,11 +67,11 @@ In the exponential term, $$V_T$$ is the critical potential of generating action 
 
 ![png](../../figs/neus/out/output_45_0.png)
 
-### 1.3.4 Adaptive Exponential Integrate-and-Fire model
+### 1.3.4 适应性指数积分-发放模型
 
-While facing a constant stimulus, the response generated by a single neuron will sometimes decreases over time, this phenomenon is called **adaptation** in biology.
+当面对恒定的外部刺激时，神经元一开始高频发放，随后发放率逐渐降低，最终稳定在一个较小值，这种现象生物上称为**适应**。
 
-To reproduce the adaptation behavior of neurons, researchers add a weight variable $$w$$ to existing integrate-and-fire models like LIF, QuaIF and ExpIF models. Here we introduce a typical one: **Adaptive Exponential Integrate-and-Fire model** (**AdExIF model**) (Gerstner et al, 2014).
+为了复现神经元的适应行为，研究者们在已有的积分-发放模型，如LIF、QuaIF和ExpIF模型上增加了权重变量w。这里我们介绍其中一个经典模型，**适应性指数积分-发放模型**（Adaptive Exponential Integrate-and-Fire model，**AdExIF model**）（Gerstner et al.，2014）。
 $$
 \tau_m \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} - R w + R I(t)
 $$
@@ -80,11 +80,11 @@ $$
 \tau_w \frac{dw}{dt} = a(V - V_{rest})- w + b \tau_w \sum \delta(t - t^f))
 $$
 
-The first differential equation of AdExIF model, as the model's name shows, is similar to ExpIF model we introduced above, except for the term of adaptation, which is shown as $$-Rw$$ in the equation.
+就如它的名字所示，AdExIF模型的第一个微分方程和我们上面介绍的ExpIF模型非常相似，不同的是适应项，即方程中$$-Rw$$这一项。
 
-The weight term $$w$$ is regulated by the second differential equation. $$a$$ describes the sensitivity of the recovery variable $$w$$ to the sub-threshold fluctuations of $$V$$, and $$b$$ is the increment value of $$w$$ generated by a spike, and $$w$$ will also decay over time. 
+权重项$$w$$受到第二个微分方程的调控。$$a$$描述了权重变量$$w$$对$$V$$的下阈值波动的敏感性，$$b$$表示$$w$$在一次发放后的增长值，并且$$w$$也会随时间衰减。
 
-Give AdExIF neuron a constant input, after several spikes, the value of $$w$$ will increase to a high value, which slows down the rising speed of $$V$$, thus reduces the neuron's firing rate.
+给神经元一个恒定输入，在连续发放几个动作电位之后，$$w$$的值将会上升到一个高点，减慢$$V$$的增长速度，从而降低神经元的发放率。
 
 <center><img src="../../figs/neus/codes/AdExIF1.PNG"></center>
 
@@ -92,10 +92,9 @@ Give AdExIF neuron a constant input, after several spikes, the value of $$w$$ wi
 
 <center><img src = "../../figs/neus/out/output_51_0.png"></center>
 
-### 1.3.5 Hindmarsh-Rose model
+### 1.3.5 Hindmarsh-Rose模型
 
-To simulate the bursting spike pattern in neurons (i.e., continuously firing in a short time period), Hindmarsh and Rose (1984) proposed **Hindmarsh-Rose model**, import a third model variable $$z$$ as slow variable to control the bursting of neuron.
-
+为了模拟神经元中的**爆发式发放**（bursting，即在短时间内的连续发放），Hindmarsh和Rose（1984）提出了**Hindmarsh-Rose模型**，引入了第三个模型变量$$z$$作为慢变量来控制神经元的爆发。
 $$
 \frac{d V}{d t} = y - a V^3 + b V^2 - z + I
 $$
@@ -110,25 +109,27 @@ $$
 
 The $$V$$ variable refers to membrane potential, and $$y$$, $$z$$ are two gating variables. The parameter $$b$$ in $$\frac{dV}{dt}$$ equation allows the model to switch between spiking and bursting states, and controls the spiking frequency. $$r$$ controls slow variable $$z$$'s variation speed, affects the number of spikes per burst when bursting, and governs the spiking frequency together with $$b$$. The parameter $$s$$ governs adaptation, and other parameters are fitted by firing patterns.
 
+变量$$V$$表示膜电位，$$y$$和$$z$$是两个门控变量。在$$dV/dt$$方程中的参数$$b$$允许模型在发放和爆发两个状态之间切换，并且控制着发放的频率。参数$$r$$控制着慢变量$$z$$的变化速度，影响着神经元爆发式发放时，每次爆发包含的动作电位个数，并且和$$b$$一起统筹控制发放频率，参数$$s$$控制着适应行为。其它参数根据发放模式拟合得到。
+
 <center><img src="../../figs/neus/codes/HindmarshRose.PNG">	</center>
 
 ![png](../../figs/neus/out/output_58_1.png)
 
-
-In the variable-t plot painted below, we may see that the slow variable $$z$$ changes much slower than $$V$$ and $$y$$. Also, $$V$$ and $$y$$ are changing periodically during the simulation.
+在下图中，画出了三个变量随时间的变化，可以看到慢变量$$z$$的改变要慢于$$V$$和$$y$$。而且，$$V$$和$$y$$在仿真过程中呈周期性变化。
 
 ![png](../../figs/neus/out/output_60_1.png)
 
-
-With the theoretical analysis module `analysis` of BrainPy, we may explain the existence of this periodicity through theoretical analysis. In Hindmarsh-Rose model, the trajectory of $$V$$ and $$y$$ approaches a limit cycle in phase plane, therefore their values change periodically along the limit cycle.
+利用BrainPy的理论分析模块`analysis`，我们可以分析出这种周期性的产生原因。在模型的相图中，$$V$$和$$y$$的轨迹趋近于一个极限环，因此他们的值会沿着极限环发生周期性的改变。
 
 <center><img src="../../figs/neus/codes/HindmarshRose2.PNG" ></center>
 
 <center><img src="../../figs/neus/1-16.png"></center>
 
-### 1.3.6 Generalized Integrate-and-Fire model
+### 1.3.6 归纳积分-发放模型
 
-**Generalized Integrate-and-Fire model** (**GIF model**) (Mihalaş et al., 2009) integrates several firing patterns in one model. With 4 model variables, it can generate more than 20 types of firing patterns, and is able to alternate between patterns by fitting parameters.
+**归纳积分-发放模型**（Generalized Integrate-and-Fire model，**GeneralizedIF model**）（Mihalaş et al.，2009）整合了多种发放模式。该模型拥有四个模型变量，能产生多于20种发放模式，并可以通过调整参数在各模式之间切换。
+
+
 $$
 \frac{d I_j}{d t} = - k_j I_j, j = {1, 2}
 $$
@@ -141,8 +142,7 @@ $$
 \frac{d V_{th}}{d t} = a(V - V_{rest}) - b(V_{th} - V_{th\infty})
 $$
 
-When V meets Vth, Generalized IF neuron fire:
-
+当$$V$$达到$$V_{th}$$时，GeneralizedIF模型发放：
 $$
 I_j \leftarrow R_j I_j + A_j
 $$
@@ -155,11 +155,11 @@ $$
 V_{th} \leftarrow max(V_{th_{reset}}, V_{th})
 $$
 
-In the $$\frac{dV}{dt} $$ differential equation, just like all the integrate-and-fire models, $$\tau$$ is time constant, $$V$$ is membrane potential, $$V_{rest}$$ is resting potential, $$R$$ is conductance, and $$I$$ is external input. 
+在$$dV/dt$$的方程中，和所有积分-发放模型一样，$$\tau$$表示时间常数，$$V$$表示膜电位，$$V_{rest}$$表示静息电位，$$R$$为电阻，而$$I$$为外部输入。 
 
-However, in GIF model, variable amounts of internal currents are added to the equation, shown as the $$\sum_j I_j$$ term. Each $$ I_j $$ is an internal current in the neuron, with a decay rate of $$k_j$$.  $$R_j$$ and $$A_j$$ are free parameters, $$R_j$$ describes the dependence of $$I_j$$ reset value on the value of $$I_j$$ before spike, and $$A_j$$ is a constant value added to the reset value after spike.
+不过，在GIF模型中，数目可变的内部电流被加入到方程中，写作$$\sum_j I_j$$一项。每一个$$I_j$$都代表神经元中的一个内部电流，并以速率$$k_j$$衰减。$$R_j$$和$$A_j$$是自由参数，$$R_j$$描述了$$I_j$$的重置值对发放前的$$I_j$$的值的依赖，$$A_j$$是在发放后加到$$I_j$$上的一个常数值。
 
-The variable threshold potential $$V_{th}$$ is regulated by two parameters: $$a$$ describes the dependence of $$V_{th}$$ on the membrane potential $$V$$, and $$b$$ is the rate $$V_{th}$$ approaches the infinite value of threshold $$V_{th_{\infty}}$$. $$V_{th_{reset}}$$ is the reset value of threshold potential when neuron fires.
+可变的阈值电位$$V_{th}$$受两个参数的调控：$$a$$ 描述了$$V_{th}$$对膜电位$$V$$ 的依赖，$$b$$描述了$$V_{th}$$接近阈值电位在时间趋近于无穷大时的值$$V_{th_{\infty}}$$的速率。$$V_{th_{reset}}$$是当神经元发放时，阈值电位被重置到的值。
 
 <center><img src="../../figs/neus/codes/GIF1.PNG">	</center>
 
