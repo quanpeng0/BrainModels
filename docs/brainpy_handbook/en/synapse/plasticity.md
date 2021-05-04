@@ -21,7 +21,7 @@ The introduction is as follows:
 Let's first look at short-term plasticity. We will start with the results of the experiment. Fig. 2-1 shows the changes of the membrane potential of postsynaptic neurons as the firing of presynaptic neurons. We can see that when the presynaptic neurons repeatedly firing with short intervals, the response of the postsynaptic neurons becomes weaker and weaker, showing a short term depression. But the response recovers after a short period of time, so this plasticity is short-term.
 
 <div style="text-align:center">
-  <img src="../../figs/stp.png" width="500">
+  <img src="../../figs/stp.png" width="400">
   <br>
   <strong>Fig. 2-1 Short-term plasticity.</strong> (Adaptive from <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
 </div>
@@ -121,17 +121,18 @@ We can see from the figure that when we set $$\tau_f > \tau_d$$, on the contrary
 Fig. 2-2 shows the spiking timing dependent plasticity (STDP) of experimental results. The x-axis is the time difference between the spike of the presynaptic neuron and the postsynaptic neuron. The left part of the zero represents the spike timing of the presynaptic neuron earlier than that of the postsynaptic neuron, which shows long term potentiation (LTP); and the right side of the zero represents the postsynaptic neuron fires before the presynaptic neuron does, showing long term depression (LTD).
 
 <div style="text-align:center">
-  <img src="../../figs/stdp.png" width="350" height="380">
+  <img src="../../figs/stdp.png" width="350" height="320">
   <br>
   <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (Adaptive from <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
 </div>
 
+
 <div><br></div>
 
-The model formula is as follows, 
+The computational model of STDP is given by, 
 
 $$
-\frac {dA_s} {dt} = - \frac {A_s} {\tau_s} 
+\frac {dA_s} {dt} = - \frac {A_s} {\tau_s}
 $$
 
 $$
@@ -157,17 +158,17 @@ $$
 
 
 
-Like STP model, $$w$$ is the synaptic weight, and $$s$$ is the gating variable. Variables $$A_{s}$$ and $$A_{t}$$ control the LTD and LTP respectively. $$\Delta A_s$$ and $$\Delta A_t$$ are the increments of $$A_{s}$$ and $$A_{t}$$, respectively. $$\tau_s$$ and $$\tau_t$$ are time constants.
+Where $$w$$ is the synaptic weight, and $$s$$ is the same gating variable as we mentioned in the previous section. Like the STP model, LTD and LTP are controlled by two variables $$A_{s}$$ and $$A_{t}$$, respectively. $$\Delta A_s$$ and $$\Delta A_t$$ are the increments of $$A_{s}$$ and $$A_{t}$$, respectively. $$\tau_s$$ and $$\tau_t$$ are time constants.
 
-When the presynaptic neuron fire before the postsynaptic neuron, $$A_t$$ is always 0 until the postsynaptic neuron fire, so $$w$$ will not change for the time being, but $$A_s$$ keep increases; when there is a spike in the postsynaptic neuron, $$w$$ increase with an amount of $$A_s - A_t$$, so it is LTP, and vice verse.
+According to this model, when a presynaptic neuron fire before the postsynaptic neuron, $$A_s$$ increases everytime when there is a spike on the presynaptic neuron, and $$A_t$$ will stay on 0 until the postsynaptic neuron fire, so $$w$$ will not change for the time being. When there is a spike in the postsynaptic neuron, the increment of $$w$$ will be an amount of $$A_s - A_t$$, since $$A_s > A_t$$ in this situation, LTP will be presented, and vice verse.
 
-Now let's see how to use BrainPy to implement this model. Here $$s$$ is incremental when there is a spike of the presynaptic neuron, which is the same as the previous common synapse model. So this placement can be added to the previous synapse models. Here we usually use single exponential decay to implement the dynamics of $$s$$.
+Now let's see how to use BrainPy to implement this model. Here we use the single exponential decay model to implement the dynamics of $$s$$.
 
 ![stdp_init](../../figs/codes/stdp_init.png)
 
 ![stdp_update](../../figs/codes/stdp_update.png)
 
-Here we stimulate the presynaptic group and postsynaptic group at different times by varying the input current of the two groups. We apply the first input to the presynaptic group starting at $$t=5ms$$, then stimulate the postsynaptic group starting at $$t=10ms$$, and keep the stimulating interval at $$15ms$$, so $$t_{post}=t_{pre}+5$$. Then we set a long interval after the 3rd spike pairs and change the stimulating order to be $$t_{post}=t_{pre}-3$$ at the 4th spike, so the interval of the postsynaptic group should be $$8ms$$ shorter than the presynaptic one.
+We control the spike timing by varying the input current of the presynaptic group and postsynaptic group. We apply the first input to the presynaptic group starting at $$t=5ms$$ (with amplitude of 30$$\mu A$$, lasts for 15 ms to ensure to induce a spike with LIF neuron model), then start to stimulate the postsynaptic group at $$t=10ms$$. The intervals between each two inputs are $$15ms$$. We keep those $$t_{post}=t_{pre}+5$$ during the first 3 spike-pairs. Then we set a long interval before switching the stimulating order to be $$t_{post}=t_{pre}-3$$ since the 4th spike.
 
 ``` python
 duration = 300.

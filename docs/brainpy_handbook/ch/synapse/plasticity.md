@@ -1,18 +1,23 @@
-## 突触可塑性
+## 2.2 突触可塑性
 
-我们刚刚讨论了突触动力学，但还没有涉及到突触可塑性。接下来就来看看如何使用BrainPy实现突触可塑性。
+在前一节中，我们讨论了突触动力学，但还没有涉及到突触可塑性。接下来我们将在本节中介绍如何使用BrainPy来实现突触可塑性。
 
-可塑性主要区分短时程可塑性与长时程可塑性。我们将首先介绍突触短时程可塑性（STP），然后介绍几种不同的突触长时程可塑性模型。
-
-### 突触短时程可塑性（STP）
-
-我们首先看实验的结果，图为突触前神经元发放时突触后神经元膜电位的变化。我们可以看到，当突触前神经元以短时间间隔持续发放的时候，突触后神经元的反应会越来越弱，呈现出短时程抑制 (short term depression)。但是很快就恢复了，所以这个可塑性是短期的。
-
-<img src="../../figs/stp.png">
+可塑性主要分为短时程可塑性（short-term plasticity）与长时程可塑性（long-term plasticity）。我们将首先介绍突触短时程可塑性，然后介绍几种不同的突触长时程可塑性模型。
 
 
-模型的公式如下。在这里，短时程可塑性主要由$$u$$和$$x$$两个变量来描述。其中，$$u$$表示神经递质释放的概率，初始值为0，并随着突触前神经元的每次发放而增加，贡献短时程易化（STF）；而$$x$$代表神经递质的剩余量，初始值为1，每次突触前神经元发放都会用掉一些，这意味着它会减少，从而贡献短时程抑制（STD）。因此易化和抑制两个方向是同时发生的。$$\tau_f$$和$$\tau_d$$分别控制$$u$$和$$x$$的恢复速度，两者关系决定了可塑性的哪个方向起主导作用。
 
+### 2.2.1 突触短时程可塑性（STP）
+
+我们首先从实验结果来介绍突触短时程可塑性。在图2-1中，上图表示突触前神经元的动作电位，下图为突触后神经元的膜电位。我们可以看到，当突触前神经元在短时间内持续发放的时候，突触后神经元的反应越来越弱，呈现出短时程抑制 (short term depression)。而当突触前神经元停止发放几百毫秒后，再来一个动作电位，此时突触后神经元的反应基本恢复到一开始的状态，因此这个抑制效果持续的时间很短，称为短时程可塑性。
+
+<div style="text-align:center">
+  <img src="../../figs/stp.png" width="400">
+  <br>
+  <strong>Fig. 2-1 突触短时程可塑性</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+</div>
+<div><br></div>
+
+那么接下来就让我们来看看描述短时称可塑性的计算模型。短时程可塑性主要由神经递质释放的概率$$u$$和神经递质的剩余量$$x$$两个变量来描述。整体的动力学方程如下：
 $$
 \frac {dI} {dt} = - \frac I {\tau}
 $$
@@ -26,7 +31,7 @@ $$
 $$
 
 $$
-\text{if (pre \ fire), then}
+\text{if (pre fire), then}
 \begin{cases} 
 u^+ = u^- + U(1-u^-) \\ 
 I^+ = I^- + Au^+x^- \\
@@ -34,138 +39,88 @@ x^+ = x^- - u^+x^-
 \end{cases}
 $$
 
+其中，突触电流$$I$$的动力学可以采用上一节介绍的任意一种$$s$$的动力学模型，这里我们采用简单、常用的单指数衰减（single exponential decay）模型来描述。$$U$$和$$A$$分别为$$u$$和$$I$$的增量，而$$\tau_f$$和$$\tau_d$$则分别为$$u$$和$$x$$的时间常数。
+
+在该模型中，$$u$$主要贡献了短时程易化（Short-term facilitation；STF），它的初始值为0，并随着突触前神经元的每次发放而增加；而$$x$$则主要贡献短时程抑制（Short-term depression；STD），它的初始值为1，并在每次突触前神经元发放时都会被用掉一些（即减少）。易化和抑制两个方向是同时发生的，因此$$\tau_f$$和$$\tau_d$$的大小关系决定了可塑性的哪个方向起主导作用。
+
 用BrainPy实现的代码如下：
 
+> - 由于突触可塑性也是发生在突触上的，这里和突触模型一样，继承自bp.TwoEndConn
 
-```python
-class STP(bp.TwoEndConn):
-    target_backend = 'general'
+![stp_init](../../figs/codes/stp_init.png)
 
-    @staticmethod
-    def derivative(s, u, x, t, tau, tau_d, tau_f):
-        dsdt = -s / tau
-        dudt = - u / tau_f
-        dxdt = (1 - x) / tau_d
-        return dsdt, dudt, dxdt
-    
-    def __init__(self, pre, post, conn, delay=0., U=0.15, tau_f=1500., tau_d=200., tau=8.,  **kwargs):
-        # parameters
-        self.tau_d = tau_d
-        self.tau_f = tau_f
-        self.tau = tau
-        self.U = U
-        self.delay = delay
+![stp_update](../../figs/codes/stp_update.png)
 
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
+定义好STP的类以后，接下来让我们来定义跑模拟的函数。跟突触模型一样，我们需要实例化两个神经元群并把它们连接在一起。结果画图方面，除了$$s$$的动力学以外，我们也希望看到$$u$$和$$x$$随时间的变化，因此我们制定``monitors=['s', 'u', 'x']``。
 
-        # variables
-        self.s = bp.ops.zeros(self.size)
-        self.x = bp.ops.ones(self.size)
-        self.u = bp.ops.zeros(self.size)
-        self.w = bp.ops.ones(self.size)
-        self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
+``` python
+def run_stp(**kwargs):
+    neu1 = bm.neurons.LIF(1, monitors=['V'])
+    neu2 = bm.neurons.LIF(1, monitors=['V'])
 
-        self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
-        
-        super(STP, self).__init__(pre=pre, post=post, **kwargs)
+    syn = STP(pre=neu1, post=neu2, conn=bp.connect.All2All(),
+              monitors=['s', 'u', 'x'], **kwargs)
+    net = bp.Network(neu1, syn, neu2)
+    net.run(100., inputs=(neu1, 'input', 28.))
 
+    # plot
+    fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
 
-    def update(self, _t):
-        self.s, u, x = self.integral(self.s, self.u, self.x, _t, self.tau, self.tau_d, self.tau_f)
-        
-        pre_spike_map = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        u += self.U * (1-self.u) * pre_spike_map
-        self.s += self.w * u * self.x * pre_spike_map
-        x -= u * self.x * pre_spike_map
-        
-        self.u = u
-        self.x = x
+    fig.add_subplot(gs[0, 0])
+    plt.plot(net.ts, syn.mon.u[:, 0], label='u')
+    plt.plot(net.ts, syn.mon.x[:, 0], label='x')
+    plt.legend()
 
-        self.I_syn.push(self.s)
-        self.post.input += bp.ops.sum(self.I_syn.pull(), axis=0)
+    fig.add_subplot(gs[1, 0])
+    plt.plot(net.ts, syn.mon.s[:, 0], label='s')
+    plt.legend()
+
+    plt.xlabel('Time (ms)')
+    plt.show()
 ```
 
+接下来，我们设 ``tau_d`` > ``tau_f``，让我们来看看结果。
 
-```python
-neu1 = bm.neurons.LIF(1, monitors=['V'])
-neu2 = bm.neurons.LIF(1, monitors=['V'])
-
-# STD
-syn = STP(U=0.2, tau_d=150., tau_f=2., pre=neu1, post=neu2, 
-          conn=bp.connect.All2All(), monitors=['s', 'u', 'x'])
-net = bp.Network(neu1, syn, neu2)
-net.run(100., inputs=(neu1, 'input', 28.))
-
-# plot
-fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
-
-fig.add_subplot(gs[0, 0])
-plt.plot(net.ts, syn.mon.u[:, 0], label='u')
-plt.plot(net.ts, syn.mon.x[:, 0], label='x')
-plt.legend()
-
-fig.add_subplot(gs[1, 0])
-plt.plot(net.ts, syn.mon.s[:, 0], label='s')
-plt.legend()
-
-plt.xlabel('Time (ms)')
-plt.show()
+``` python
+run_stp(U=0.2, tau_d=150., tau_f=2.)
 ```
 
 
 ![png](../../figs/out/output_43_0.png)
 
+从结果图中，我们可以看出当设置 $$\tau_d > \tau_f$$时，$$x$$每次用掉以后恢复得很慢，而$$u$$每次增加后很快又衰减下去了，因此从$$s$$随时间变化的图中我们可以看到STD占主导。
 
+
+
+接下来看看当我们设置``tau_f`` > ``tau_d``时的结果。
 
 ```python
-neu1 = bm.neurons.LIF(1, monitors=['V'])
-neu2 = bm.neurons.LIF(1, monitors=['V'])
-
-# STF
-syn = STP(U=0.1, tau_d=10, tau_f=100., pre=neu1, post=neu2, 
-          conn=bp.connect.All2All(), monitors=['s', 'u', 'x'])
-net = bp.Network(neu1, syn, neu2)
-net.run(100., inputs=(neu1, 'input', 28.))
-
-# plot
-fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
-
-fig.add_subplot(gs[0, 0])
-plt.plot(net.ts, syn.mon.u[:, 0], label='u')
-plt.plot(net.ts, syn.mon.x[:, 0], label='x')
-plt.legend()
-
-fig.add_subplot(gs[1, 0])
-plt.plot(net.ts, syn.mon.s[:, 0], label='s')
-plt.legend()
-
-plt.xlabel('Time (ms)')
-plt.show()
+run_stp(U=0.1, tau_d=10, tau_f=100.)
 ```
 
 
 ![png](../../figs/out/output_44_0.png)
 
+结果图显示，当$$\tau_f > \tau_d$$时，$$x$$每次用掉后很快又补充回去了，这表示突触前神经元总是有足够的神经递质可用。同时，$$u$$的衰减非常缓慢，即释放神经递质的概率越来越高，从$$s$$的动力学可以看出STF占主导地位。
 
-这些图显示，当我们设置参数$$\tau_d>\tau_f$$、$$x$$每用掉一些后恢复非常缓慢，$$u$$每次上升后非常快衰减，因此，transmitter不够用了，不足以打开受体，表现出STD为主；
-相反，当$$\tau_f > \tau_d$$，$$x$$每次用到后很快又补充回去了，总是有足够的transmitter可用。同时，$$u$$的衰减非常缓慢，因此释放transmitter的概率越来越高，表现出STF为主。
 
-### 突触长时程可塑性
+
+### 2.2.2 突触长时程可塑性
 
 #### 脉冲时间依赖可塑性（STDP）
 
-首先我们看实验上画的图，x轴是突触前神经元和突触后神经元发放的时间差，零的左侧代表突触前神经元的发放比突触后神经元的更早，由图片可以看出表现为长时程增强 (long term potentiation; LTP）；而零的右侧代表突触后神经元比突触前神经元更先发放，呈现表现为长时程抑制 (long term depression; LTD）。
+图2-2显示了实验上观察到的脉冲时间依赖可塑性（spiking timing dependent plasticity；STDP）的现象。x轴为突触前神经元和突触后神经元产生脉冲（spike）的时间差，位于零点左侧的数据点为突触前神经元先于突触后神经元发放的情况，由图可见此时突触权重为正，表现出长时程增强 (long term potentiation；LTP）的现象；而零点右侧则是突触后神经元比突触前神经元更先发放的情况，表现出长时程抑制 (long term depression；LTD）。
 
-<img src="../../figs/stdp.png">
+<div style="text-align:center">
+  <img src="../../figs/stdp.png" width="350" height="320">
+  <br>
+  <strong>Fig. 2-2 脉冲时间依赖可塑性.</strong> (改编自 <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
+</div>
+<div><br></div>
 
-
-模型公式如下，其中$$A_{source}$$和$$A_{target}$$两个变量分别控制LTD和LTP。当突触前神经元先于突触后神经元发放时，在突触后神经元发放之前，$$A_t$$一直为0，所以$$w$$暂时不会有变化，只是$$A_s$$持续增加；直到突触后神经元发放时，$$w$$增加$$A_s - A_t$$，所以表现为长时程增强（LTP）。反之亦然。
-
+STDP的计算模型如下：
 $$
-\frac {dA_s} {dt} = - \frac {A_s} {\tau_s} 
+\frac {dA_s} {dt} = - \frac {A_s} {\tau_s}
 $$
 
 $$
@@ -173,7 +128,7 @@ $$
 $$
 
 $$
-\text{if (pre \ fire), then}
+\text{if (pre fire), then}
 \begin{cases} 
 s \leftarrow s + w \\
 A_s \leftarrow A_s + \Delta A_s \\ 
@@ -182,166 +137,103 @@ w \leftarrow w - A_t
 $$
 
 $$
-\text{if (post \ fire), then}
+\text{if (post fire), then}
 \begin{cases} 
 A_t \leftarrow A_t + \Delta A_t \\ 
 w \leftarrow w + A_s 
 \end{cases}
 $$
 
-现在让我们看看如何使用BrainPy来实现这个模型。$$s$$会在突触前神经元出现脉冲时增加，这与前面介绍的突触模型的动力学一致，这里我们通常使用单指数衰减 (single exponential decay)模型来实现$$s$$的动力学。
+其中$$w$$为突触权重，$$s$$与上一节讨论的一样为门控变量。与STP模型类似，这里由$$A_{s}$$和$$A_{t}$$两个变量分别控制LTD和LTP。$$\Delta A_s$$ 和 $$\Delta A_t$$分别为$$A_{s}$$ 和 $$A_{t}$$的增量，而$$\tau_s$$ 和 $$\tau_t$$则分别为它们的时间常数。
+
+根据这个模型，当突触前神经元先于突触后神经元发放时，在突触后神经元发放之前，每当突触前神经元有一个脉冲，$$A_s$$便增加，而由于此时突触后神经元没有脉冲，因此$$A_t$$保持在初始值0，$$w$$暂时不会有变化。直到突触后神经元发放时，$$w$$的增量将会是$$A_s - A_t$$，由于$$A_s>A_t$$，此时会表现出长时程增强（LTP）。反之亦然。
+
+现在让我们看看如何使用BrainPy来实现这个模型。其中$$s$$动力学的实现部分，我们跟STP模型一样采用单指数衰减模型。
+
+![stdp_init](../../figs/codes/stdp_init.png)
+
+我们通过给予突触前和突触后的两群神经元不同的电流输入来控制它们产生脉冲的时间。首先我们在$$t=5ms$$时刻给突触前神经元第一段电流（每一段强度为30$$\mu A$$，并持续15ms，保证LIF模型会产生一个脉冲），然后在$$t=10ms$$才给突触后神经元一个输入。每段输入之间间隔$$15ms$$。以此在前三对脉冲中保持$$t_{post}=t_{pre}+5$$。接下来我们设置一个较长的间隔，然后把刺激顺序调整为$$t_{post}=t_{pre}-3$$。
 
 
 ```python
-class STDP(bp.TwoEndConn):
-    target_backend = 'general'
-    
-    @staticmethod
-    def derivative(s, A_s, A_t, t, tau, tau_s, tau_t):
-        dsdt = -s / tau
-        dAsdt = - A_s / tau_s
-        dAtdt = - A_t / tau_t
-        return dsdt, dAsdt, dAtdt
-    
-    def __init__(self, pre, post, conn, delay=0., 
-                delta_A_s=0.5, delta_A_t=0.5, w_min=0., w_max=20., 
-                tau_s=10., tau_t=10., tau=10., **kwargs):
-        # parameters
-        self.tau_s = tau_s
-        self.tau_t = tau_t
-        self.tau = tau
-        self.delta_A_s = delta_A_s
-        self.delta_A_t = delta_A_t
-        self.w_min = w_min
-        self.w_max = w_max
-        self.delay = delay
-
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
-
-        # variables
-        self.s = bp.ops.zeros(self.size)
-        self.A_s = bp.ops.zeros(self.size)
-        self.A_t = bp.ops.zeros(self.size)
-        self.w = bp.ops.ones(self.size) * 1.
-        self.I_syn = self.register_constant_delay('I_syn', size=self.size, delay_time=delay)
-
-        self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
-        
-        super(STDP, self).__init__(pre=pre, post=post, **kwargs)
-
-
-    def update(self, _t):
-        s, A_s, A_t = self.integral(self.s, self.A_s, self.A_t, 
-                                    _t, self.tau, self.tau_s, self.tau_t)
-        w = self.w
-
-        pre_spike_map = bp.ops.unsqueeze(self.pre.spike, 1) * self.conn_mat
-        s += w * pre_spike_map
-        A_s += self.delta_A_s * pre_spike_map
-        w -= A_t * pre_spike_map
-        
-        post_spike_map = bp.ops.unsqueeze(self.post.spike, 0) * self.conn_mat
-        A_t += self.delta_A_t * post_spike_map
-        w += A_s * post_spike_map
-        
-        self.A_s = A_s
-        self.A_t = A_t
-        self.w = bp.ops.clip(w, self.w_min, self.w_max)
-        self.s = s
-
-        self.I_syn.push(self.s)
-        self.post.input += bp.ops.sum(self.I_syn.pull(), axis=0)
+duration = 300.
+(I_pre, _) = bp.inputs.constant_current(
+  							[(0, 5), (30, 15),
+                 (0, 15), (30, 15),  
+                 (0, 15), (30, 15),
+                 # long interval (98ms)
+                 (0, 98), (30, 15),
+                 (0, 15), (30, 15),
+                 (0, 15), (30, 15),
+                 (0, duration-155-98)])
+(I_post, _) = bp.inputs.constant_current(
+  								[(0, 10), (30, 15),
+                  (0, 15), (30, 15),
+                  (0, 15), (30, 15),
+                  # t_interval=98-8=90(ms)            
+                  (0, 90), (30, 15),
+                  (0, 15), (30, 15),
+                  (0, 15), (30, 15),
+                  (0, duration-160-90)])
 ```
 
+接下来跑模拟的代码和STP类似，这里我们画出突触前后神经元的脉冲时间以及$$s$$和$$w$$随时间的变化。
 
-```python
+``` python
 pre = bm.neurons.LIF(1, monitors=['spike'])
 post = bm.neurons.LIF(1, monitors=['spike'])
 
-# pre before post
-duration = 60.
-(I_pre, _) = bp.inputs.constant_current([(0, 5), (30, 15), 
-                                         (0, 5), (30, 15), 
-                                         (0, duration-40)])
-(I_post, _) = bp.inputs.constant_current([(0, 7), (30, 15), 
-                                          (0, 5), (30, 15), 
-                                          (0, duration-7-35)])
-
-syn = STDP(pre=pre, post=post, conn=bp.connect.All2All(), monitors=['s', 'A_s', 'A_t', 'w'])
+syn = STDP(pre=pre, post=post, conn=bp.connect.All2All(), monitors=['s', 'w'])
 net = bp.Network(pre, syn, post)
 net.run(duration, inputs=[(pre, 'input', I_pre), (post, 'input', I_post)])
 
 # plot
-fig, gs = bp.visualize.get_figure(3, 1)
+fig, gs = bp.visualize.get_figure(4, 1, 2, 7)
 
-fig.add_subplot(gs[0, 0])
-plt.plot(net.ts, syn.mon.w[:, 0], label='w')
-plt.legend()
+def hide_spines(my_ax):
+    plt.legend()
+    plt.xticks([])
+    plt.yticks([])
+    my_ax.spines['left'].set_visible(False)
+    my_ax.spines['right'].set_visible(False)
+    my_ax.spines['bottom'].set_visible(False)
+    my_ax.spines['top'].set_visible(False)
 
-fig.add_subplot(gs[2, 0])
-plt.plot(net.ts, 2*pre.mon.spike[:, 0], label='pre_spike')
-plt.plot(net.ts, 2*post.mon.spike[:, 0], label='post_spike')
-plt.legend()
+ax=fig.add_subplot(gs[0, 0])
+plt.plot(net.ts, syn.mon.s[:, 0], label="s")
+hide_spines(ax)
 
-fig.add_subplot(gs[1, 0])
-plt.plot(net.ts, syn.mon.s[:, 0], label='s')
+ax1=fig.add_subplot(gs[1, 0])
+plt.plot(net.ts, pre.mon.spike[:, 0], label="pre spike")
+plt.ylim(0, 2)
+hide_spines(ax1)
+plt.legend(loc = 'center right')
+
+ax2=fig.add_subplot(gs[2, 0])
+plt.plot(net.ts, post.mon.spike[:, 0], label="post spike")
+plt.ylim(-1, 1)
+hide_spines(ax2)
+
+ax3=fig.add_subplot(gs[3, 0])
+plt.plot(net.ts, syn.mon.w[:, 0], label="w")
 plt.legend()
+# hide spines
+plt.yticks([])
+ax3.spines['left'].set_visible(False)
+ax3.spines['right'].set_visible(False)
+ax3.spines['top'].set_visible(False)
 
 plt.xlabel('Time (ms)')
 plt.show()
 ```
+
 
 
 ![png](../../figs/out/output_51_0.png)
 
-
-结果正如我们所预期的，当突触前神经元在突触后神经元之前发放时，$$w$$增加，呈现LTP。
-
-```python
-pre = bm.neurons.LIF(1, monitors=['spike'])
-post = bm.neurons.LIF(1, monitors=['spike'])
-
-# post before pre
-duration = 60.
-(I_post, _) = bp.inputs.constant_current([(0, 5), (30, 15), 
-                                         (0, 5), (30, 15), 
-                                         (0, duration-40)])
-(I_pre, _) = bp.inputs.constant_current([(0, 7), (30, 15), 
-                                          (0, 5), (30, 15), 
-                                          (0, duration-7-35)])
-
-syn = STDP(pre=pre, post=post, conn=bp.connect.All2All(), monitors=['s', 'A_s', 'A_t', 'w'])
-net = bp.Network(pre, syn, post)
-net.run(duration, inputs=[(pre, 'input', I_pre), (post, 'input', I_post)])
-
-# plot
-fig, gs = bp.visualize.get_figure(3, 1)
-
-fig.add_subplot(gs[0, 0])
-plt.plot(net.ts, syn.mon.w[:, 0], label='w')
-plt.legend()
-
-fig.add_subplot(gs[2, 0])
-plt.plot(net.ts, 2*pre.mon.spike[:, 0], label='pre_spike')
-plt.plot(net.ts, 2*post.mon.spike[:, 0], label='post_spike')
-plt.legend()
-
-fig.add_subplot(gs[1, 0])
-plt.plot(net.ts, syn.mon.s[:, 0], label='s')
-plt.legend()
-
-plt.xlabel('Time (ms)')
-plt.show()
-```
+结果正如我们所预期的，在150ms前，突触前神经元的脉冲时间在突触后神经元之前，$$w$$增加，呈现LTP。而150ms后，突触后神经元先于突触前神经元发放，$$w$$减少，呈现LTD。
 
 
-![png](../../figs/out/output_53_0.png)
-
-
-如我们所料，当突触后神经元先于突触前神经元发放时，$$w$$减少，呈现LTD。
 
 #### Oja法则
 

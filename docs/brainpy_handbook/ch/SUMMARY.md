@@ -4,7 +4,7 @@
 * [1. 神经元模型](neurons.md)
     * [1.1 生物背景](neurons/biological_background.md)
     * [1.2 生理模型](neurons/biophysical_models.md)
-    * [1.3 Reduced models](neurons/reduced_models.md)
+    * [1.3 简化模型](neurons/reduced_models.md)
     * [1.4 发放率模型](neurons/firing_rate_models.md)
 * [2. 突触模型](synapses.md)
     * [2.1 突触动力学模型](synapse/dynamics.md)

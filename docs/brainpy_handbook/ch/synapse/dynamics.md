@@ -55,15 +55,15 @@ $$
 
 > 首先，在突触中，我们需要``pre``和``post``来分别表示这个突触所连接的突触前神经元与突触后神经元。需要注意的是，``pre``和``post``都是向量，代表两群神经元，因此，我们还需要指定两群神经元具体链接情况的``conn``。在这里，我们可以从``conn``中获得连接矩阵``conn_mat``。
 
-<img src="../../figs/codes/ampa_init.png" style="text-align:center;width:170">
+<img src="../../figs/codes/ampa_init.png" style="width:100%">
 
 然后我们在``update``函数中更新$$s$$。
 
-<img src="../../figs/codes/ampa_update.png" style="text-align:center;width:170">
+<img src="../../figs/codes/ampa_update.png" style="width:100%">
 
 我们已经定义好了一个AMPA类，现在可以画出$$s$$随时间变化的图了。我们首先写一个``run_syn``函数来方便之后运行更多的突触模型，然后把AMPA类和需要自定义的变量传入这个函数来运行并画图。
 
-<img src="../../figs/codes/ampa_run.png" style="text-align:center;width:170">
+<img src="../../figs/codes/ampa_run.png" style="width:100%">
 
 运行以上代码，我们就会看到以下的结果：
 
@@ -103,7 +103,7 @@ $$
 
 接下来我们用BrainPy来实现NMDA模型，代码如下。
 
-<img src="../../figs/codes/nmda.png" style="text-align:center;width:170">
+<img src="../../figs/codes/nmda.png" style="width:100%">
 
 由于前面我们已经定义了``run_syn``函数，在这里我们可以直接调用：
 
@@ -136,7 +136,7 @@ $$[R]$$的动力学类似于AMPA模型中$$s$$，受神经递质浓度$$[T]$$影
 
 用BrainPy实现的代码如下。
 
-<img src="../../figs/codes/gabab.png" style="text-align:center;width:170">
+<img src="../../figs/codes/gabab.png" style="width:100%">
 
 ![png](../../figs/out/output_gabab.png)
 
@@ -174,7 +174,7 @@ $$
 
 这里我们用``update``函数来控制$$x$$增加的逻辑。代码如下：
 
-<img src="../../figs/codes/2exp.png" style="text-align:center;width:170">
+<img src="../../figs/codes/2exp.png" style="width:100%">
 
 
 ![png](../../figs/out/output_16_0.png)
@@ -201,7 +201,7 @@ $$
 
 可以看出alpha模型和双指数差模型其实很相似，相当于是$$\tau=\tau_1 = \tau_2$$。因此，代码实现上也很接近：
 
-<img src="../../figs/codes/alpha.png" style="text-align:center;width:170">
+<img src="../../figs/codes/alpha.png" style="width:100%">
 
 
 ![png](../../figs/out/output_20_0.png)
@@ -220,7 +220,7 @@ $$
 
 代码实现如下：
 
-<img src="../../figs/codes/exp.png" style="text-align:center;width:170">
+<img src="../../figs/codes/exp.png" style="width:100%">
 
 
 ![png](../../figs/out/output_24_0.png)
@@ -235,7 +235,7 @@ $$
 
 在实现上，只需要在``update``函数中更新$$s$$即可。代码如下：
 
-<img src="../../figs/codes/vj.png" style="text-align:center;width:170">
+<img src="../../figs/codes/vj.png" style="width:100%">
 
 
 ![png](../../figs/out/output_28_0.png)
