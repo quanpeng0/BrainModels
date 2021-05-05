@@ -20,7 +20,7 @@
 <div style="text-align:center">
   <img src="../../figs/bio_syn.png" width="450">
   <br>
-    <strong> 图 2-1 生物突触 </strong> (引自 <cite>Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
+    <strong> 图 2-1 生物突触 </strong> (引自 <cite id="reffn_1">Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -298,8 +298,9 @@ $$
   <br>
   <strong> Fig. 2-3 (a)</strong> 神经元间的缝隙连接. 
   <strong>(b)</strong> 等效模型. 
-  <br>(修改自 <cite>Sterratt et al., 2011 <sup><a href="#fn_2">2</a></sup></cite>)
+  <br>(修改自 <cite  id="reffn_2">Sterratt et al., 2011 <sup><a href="#fn_2">2</a></sup></cite>)
 </div>
+
 
 
 

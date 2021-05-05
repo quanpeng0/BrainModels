@@ -13,7 +13,7 @@
 <div style="text-align:center">
   <img src="../../figs/stp.png" width="400">
   <br>
-  <strong>图2-1 突触短时程可塑性</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
+  <strong>图2-1 突触短时程可塑性</strong> (改编自 <cite  id="reffn_1">Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -114,7 +114,7 @@ run_stp(U=0.1, tau_d=10, tau_f=100.)
 <div style="text-align:center">
   <img src="../../figs/stdp.png" width="350" height="320">
   <br>
-  <strong>图2-2 脉冲时间依赖可塑性</strong> (改编自 <cite>Bi & Poo, 2001 <sup><a href="#fn_2">2</a></sup></cite>)
+  <strong>图2-2 脉冲时间依赖可塑性</strong> (改编自 <cite  id="reffn_2">Bi & Poo, 2001 <sup><a href="#fn_2">2</a></sup></cite>)
 </div>
 <div><br></div>
 
