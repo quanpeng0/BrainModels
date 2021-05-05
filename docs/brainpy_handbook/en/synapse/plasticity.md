@@ -317,7 +317,7 @@ where $$\eta$$ represents the learning rate, and $$r_\theta$$ represents the thr
 <div style="text-align:center">
   <img src="../../figs/bcm.png" width="300">
   <br>
-    <strong> Fig. 2-4 BCM rule </strong> (Adaptive from <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+    <strong> Fig. 2-4 BCM rule </strong> (Adaptive from <cite>Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
 <div><br></div>
 

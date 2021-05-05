@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>3.2 Firing rate networks · GitBook</title>
+        <title>3.2 Firing rate networks · BrainPy Handbook</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -29,11 +29,11 @@
                 
             
                 
-                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-search-pro/search.css">
                 
             
                 
-                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-search/search.css">
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
                 
             
                 
@@ -320,14 +320,12 @@
                                 
                                 <h2 id="32-firing-rate-networks">3.2 Firing rate networks</h2>
 <h3 id="321-decision-model">3.2.1 Decision model</h3>
-<p>In addition to spiking models, BrainPy can also implement Firing rate models. Let&apos;s first look at the implementation of a simplified version of the decision model. The model was simplified by the researcher (Wong &amp; Wang, 2006)<sup><a href="#fn_[1]">[1]</a></sup> through a series of means such as mean field approach. In the end, there are only two variables, <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>S</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">S_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.05764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathrm mtight">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span> and <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>S</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">S_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.05764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathrm mtight">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span>, which respectively represent the state of two neuron groups and correspond to two options.</p>
+<p>In addition to spiking models, BrainPy can also implement Firing rate models. Let&apos;s first look at the implementation of a simplified version of the decision model. The model was simplified by the researcher (Wong &amp; Wang, 2006)<sup><a href="#fn_1" id="reffn_1">1</a></sup> through a series of means such as mean field approach. In the end, there are only two variables, <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>S</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">S_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.05764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathrm mtight">1</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span> and <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>S</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">S_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base textstyle uncramped"><span class="mord"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist"><span style="top:0.15em;margin-right:0.05em;margin-left:-0.05764em;"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span><span class="reset-textstyle scriptstyle cramped mtight"><span class="mord mathrm mtight">2</span></span></span><span class="baseline-fix"><span class="fontsize-ensurer reset-size5 size5"><span style="font-size:0em;">&#x200B;</span></span>&#x200B;</span></span></span></span></span></span></span>, which respectively represent the state of two neuron groups and correspond to two options.</p>
 <div align="center">
-  <img src="../../figs/decision.png" width="400">
+  <img src="../../figs/decision.png" width="300">
   <br>
-  <strong>Fig. 3-1 Reduced decision model.</strong> (Adaptive from <cite>Wong &amp; Wang, 2006 <sup><a href="#fn_[1]">[1]</a></sup></cite>)
+  <strong>Fig. 3-1 Reduced decision model.</strong> (Adaptive from <cite>Wong &amp; Wang, 2006 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
-
-
 <div><br></div>
 
 <p>The model is given by,</p>
@@ -415,16 +413,12 @@ Fixed point #1 at s2=0.0026865954387078755, s1=0.7410985604497689 is a stable no
 plot vector field ...
 </code></pre><p><img src="../../figs/out/output_79_5.png" alt="png"></p>
 <h3 id="322-cann">3.2.2 CANN</h3>
-<p>Let&apos;s see another example of firing rate model, a continuous attractor neural network (CANN)<sup><a href="#fn_[2]">[2]</a></sup>. Fig. 3-2 demonstrates the structure of one-dimensional CANN.</p>
+<p>Let&apos;s see another example of firing rate model, a continuous attractor neural network (CANN)<sup><a href="#fn_2" id="reffn_2">2</a></sup>. Fig. 3-2 demonstrates the structure of one-dimensional CANN.</p>
 <div align="center">
-  <img src="../../figs/cann.png" width="400">
+  <img src="../../figs/cann.png" width="300">
   <br>
-  <strong>Fig. 3-2 Structure of CANN.</strong> (Adaptive from <cite>Wu et al., 2008 <sup><a href="#fn_[2]">[2]</a></sup></cite>)
+  <strong>Fig. 3-2 Structure of CANN.</strong> (Adaptive from <cite>Wu et al., 2008 <sup><a href="#fn_2">2</a></sup></cite>)
 </div>
-
-
-
-
 <div><br></div>
 
 <p>We denote (x) as the parameter space site of the neuron group, and the dynamics of the total synaptic input of neuron group (x) <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>u</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">u(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base textstyle uncramped"><span class="mord mathit">u</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mclose">)</span></span></span></span> is given by:
@@ -502,8 +496,12 @@ plot_animate()
 </code></pre>
 <p><img src="../../figs/CANN-tracking.gif"></p>
 <h3 id="reference">Reference</h3>
-<p><sup id="fn_[1]">[1]</sup>: Wong, K.-F. &amp; Wang, X.-J. A Recurrent Network Mechanism of Time Integration in Perceptual Decisions.  J. Neurosci. 26, 1314&#x2013;1328 (2006).</p>
-<p><sup id="fn_[2]">[2]</sup>: Si Wu, Kosuke Hamaguchi, and Shun-ichi Amari. &quot;Dynamics and computation of continuous attractors.&quot; Neural computation 20.4 (2008): 994-1025.</p>
+<blockquote id="fn_1">
+<sup>1</sup>. Wong, K.-F. &amp; Wang, X.-J. A Recurrent Network Mechanism of Time Integration in Perceptual Decisions.  J. Neurosci. 26, 1314&#x2013;1328 (2006).<a href="#reffn_1" title="Jump back to footnote [1] in the text."> &#x21A9;</a>
+</blockquote>
+<blockquote id="fn_2">
+<sup>2</sup>. Si Wu, Kosuke Hamaguchi, and Shun-ichi Amari. &quot;Dynamics and computation of continuous attractors.&quot; Neural computation 20.4 (2008): 994-1025.<a href="#reffn_2" title="Jump back to footnote [2] in the text."> &#x21A9;</a>
+</blockquote>
 
                                 
                                 </section>
@@ -543,7 +541,7 @@ plot_animate()
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"3.2 Firing rate networks","level":"1.4.2","depth":2,"previous":{"title":"3.1 Spiking neural networks","level":"1.4.1","depth":2,"path":"networks/spiking_neural_networks.md","ref":"networks/spiking_neural_networks.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-sharing","katex","code","splitter"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"katex":{},"code":{"copyButtons":true},"splitter":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"en","gitbook":"*"},"file":{"path":"networks/rate_models.md","mtime":"2021-04-30T14:01:17.828Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-30T14:09:14.860Z"},"basePath":"..","book":{"language":"en"}});
+            gitbook.page.hasChanged({"page":{"title":"3.2 Firing rate networks","level":"1.4.2","depth":2,"previous":{"title":"3.1 Spiking neural networks","level":"1.4.1","depth":2,"path":"networks/spiking_neural_networks.md","ref":"networks/spiking_neural_networks.md","articles":[]},"dir":"ltr"},"config":{"plugins":["katex","code","splitter","-lunr","-search","search-pro"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"katex":{},"code":{"copyButtons":true},"splitter":{},"search-pro":{},"highlight":{},"sharing":{"all":["facebook","google","twitter","weibo","instapaper"],"facebook":true,"google":false,"instapaper":false,"twitter":true,"vk":false,"weibo":false},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageBreaksBefore":"/","headerTemplate":"_TITLE_","paperSize":"a4","margin":{"right":62,"left":62,"top":56,"bottom":56},"fontSize":12,"fontFamily":"Arial","footerTemplate":null,"chapterMark":"pagebreak","pageNumbers":true},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"BrainPy Handbook","language":"en","gitbook":"*","description":"A Handbook introducing how to implement brain models by BrainPy for computational neuroscience."},"file":{"path":"networks/rate_models.md","mtime":"2021-05-05T05:22:11.407Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-05T05:39:29.321Z"},"basePath":"..","book":{"language":"en"}});
         });
     </script>
 </div>
@@ -561,19 +559,15 @@ plot_animate()
         
     
         
-        <script src="../../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        <script src="../../gitbook/gitbook-plugin-search-pro/jquery.mark.min.js"></script>
         
     
         
-        <script src="../../gitbook/gitbook-plugin-search/search.js"></script>
+        <script src="../../gitbook/gitbook-plugin-search-pro/search.js"></script>
         
     
         
-        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        <script src="../../gitbook/gitbook-plugin-sharing/buttons.js"></script>
         
     
         

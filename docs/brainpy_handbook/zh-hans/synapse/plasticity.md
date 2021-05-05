@@ -13,7 +13,7 @@
 <div style="text-align:center">
   <img src="../../figs/stp.png" width="400">
   <br>
-  <strong>图2-1 突触短时程可塑性</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+  <strong>图2-1 突触短时程可塑性</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -114,7 +114,7 @@ run_stp(U=0.1, tau_d=10, tau_f=100.)
 <div style="text-align:center">
   <img src="../../figs/stdp.png" width="350" height="320">
   <br>
-  <strong>图2-2 脉冲时间依赖可塑性</strong> (改编自 <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
+  <strong>图2-2 脉冲时间依赖可塑性</strong> (改编自 <cite>Bi & Poo, 2001 <sup><a href="#fn_2">2</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -300,7 +300,7 @@ $$
 <div style="text-align:center">
   <img src="../../figs/bcm.png" width="300">
   <br>
-    <strong> 图2-4 BCM法则</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+    <strong> 图2-4 BCM法则</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -364,6 +364,5 @@ plt.show()
 
 ### 参考资料
 
-> <span id="Gerstner2014"><sup>[1]</sup></span>. Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
-
-> <span id="Bi2001"><sup>[2]</sup></span>. Bi, Guo-qiang, and Mu-ming Poo. "Synaptic modification by correlated activity: Hebb's postulate revisited." Annual review of neuroscience 24.1 (2001): 139-166.
+[^1]: Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
+[^2]: Bi, Guo-qiang, and Mu-ming Poo. "Synaptic modification by correlated activity: Hebb's postulate revisited." Annual review of neuroscience 24.1 (2001): 139-166.

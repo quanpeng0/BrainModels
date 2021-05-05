@@ -4,14 +4,22 @@
 
 The dynamics of NMDA is given by:
 
-$$ \frac{d s_{j}(t)}{dt} =-\frac{s_{j}(t)}{\tau_{decay}}+a x_{j}(t)(1-s_{j}(t))  $$
+$$
+\frac{d s_{j}(t)}{dt} =-\frac{s_{j}(t)}{\tau_{decay}}+a x_{j}(t)(1-s_{j}(t))
+$$
 
-$$ \frac{d x_{j}(t)}{dt} =-\frac{x_{j}(t)}{\tau_{rise}}+
-\sum_{k} \delta(t-t_{j}^{k})  $$
+$$
+\frac{d x_{j}(t)}{dt} =-\frac{x_{j}(t)}{\tau_{rise}}+
+\sum_{k} \delta(t-t_{j}^{k})  
+$$
 
-$$ g_{\infty}(V,[{Mg}^{2+}]_{o}) =(1+{e}^{-\alpha V} \cdot \frac{[{Mg}^{2+}]_{o} } {\beta})^{-1}  $$
+$$
+g_{\infty}(V,[{Mg}^{2+}]_{o}) =(1+{e}^{-\alpha V} \cdot \frac{[{Mg}^{2+}]_{o} } {\beta})^{-1}  
+$$
 
-$$ g(t) = \bar{g}_{syn} \cdot g_{\infty}  s $$
+$$
+g(t) = \bar{g}_{syn} \cdot g_{\infty}  s 
+$$
 
 Where $E=0$.
 

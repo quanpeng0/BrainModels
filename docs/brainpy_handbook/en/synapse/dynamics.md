@@ -21,7 +21,7 @@ In this section, we will introduce how to model some common synapses and their i
 <div style="text-align:center">
   <img src="../../figs/bio_syn.png" width="450">
   <br>
-    <strong> Fig. 2-1 Biological Synapse </strong> (Adaptive from <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+    <strong> Fig. 2-1 Biological Synapse </strong> (Adaptive from <cite>Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -233,7 +233,7 @@ In addition to the chemical synapses described earlier, electrical synapses are 
   <br>
   <strong> Fig. 2-3 (a)</strong> Gap junction connection between two cells. 
   <strong>(b)</strong> An equivalent diagram. 
-  <br>(Adaptive from <cite>Sterratt et al., 2011 <sup><a href="#Sterratt2011">[2]</a></sup></cite>)
+  <br>(Adaptive from <cite>Sterratt et al., 2011 <sup><a href="#fn_2">2</a></sup></cite>)
 </div>
 
 <div><br></div>
@@ -291,7 +291,6 @@ plt.show()
 
 ### References
 
-> <span id="Gerstner2014"><sup>[1]</sup></span>. Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
-
-> <span id="Sterratt2011"><sup>[2]</sup></span>. Sterratt, David, et al. Principles of computational modeling in neuroscience. Cambridge University Press, 2011.
+[^1]: Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
+[^2]: Sterratt, David, et al. Principles of computational modeling in neuroscience. Cambridge University Press, 2011.
 

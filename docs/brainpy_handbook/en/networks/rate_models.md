@@ -9,10 +9,6 @@ In addition to spiking models, BrainPy can also implement Firing rate models. Le
   <br>
   <strong>Fig. 3-1 Reduced decision model.</strong> (Adaptive from <cite>Wong & Wang, 2006 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
-
-
-
-
 <div><br></div>
 
 The model is given by,
