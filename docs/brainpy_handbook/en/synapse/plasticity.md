@@ -248,7 +248,7 @@ The simulation result shows that weights $$w$$ increase when the presynaptic neu
 
 #### Oja's rule
 
-Next, let's look at the rate model based on Hebbian learning. Because Hebbian learning is "fire together, wire together", regardless of the order before and after, spiking time can be ignored, so it can be simplified as a rate-based model. Let's first look at the general form of Hebbian learning. For the $$j$$ to $$i$$ connection as shown in the figure, $$r_j, r_i$$ denotes the firing rate of pre- and post-neuron groups, respectively. According to the locality characteristic of Hebbian learning, The change of $$w_{ij}$$ is affected by $$w$$ itself and $$r_j, r_i$$, we get the following differential equation.
+Next, let's look at the rate model based on Hebbian learning. Because Hebbian learning is "fire together, wire together", regardless of the order before and after, spiking time can be ignored, so it can be simplified as a rate-based model. Let's first look at the general form of Hebbian learning. For the $$j$$ to $$i$$ connection, $$r_j, r_i$$ denotes the firing rate of pre- and post-neuron groups, respectively. According to the locality characteristic of Hebbian learning, The change of $$w_{ij}$$ is affected by $$w$$ itself and $$r_j, r_i$$, we get the following differential equation.
 
 $$
 \frac d {dt} w_{ij} = F(w_{ij}; r_{i},r_j)
@@ -302,7 +302,7 @@ It can be seen from the results that at the beginning, when the two groups of ne
 
 #### BCM rule
 
-The BCM rule is given by,
+Now let's see other example of Hebbian learning, the BCM rule. It's given by,
 
 $$
 \frac d{dt} w_{ij} =  \eta r_i(r_i - r_\theta) r_j
@@ -319,7 +319,7 @@ where $$\eta$$ represents the learning rate, and $$r_\theta$$ represents the thr
 </div>
 <div><br></div>
 
-Here we implement the same connections as the previous Oja's rule (Fig. 2-3), with different firing rates. Here the two groups of neurons are alternately firing. Among them, the blue group is always stronger than the red one. We adjust the threshold by setting it as the time average of $$r_i$$, that is $$r_\theta = f(r_i)$$. The code implemented by BrainPy is as follows.
+We will implement the same connections as the previous Oja's rule (Fig. 2-3), with different firing rates. Here the two groups of neurons are alternately firing. Among them, the blue group is always stronger than the red one. We adjust the threshold by setting it as the time average of $$r_i$$, that is $$r_\theta = f(r_i)$$. The code implemented by BrainPy is as follows.
 
 ![bcm_def](../../figs/codes/bcm_def.png)
 

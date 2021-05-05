@@ -13,7 +13,7 @@
 <div style="text-align:center">
   <img src="../../figs/stp.png" width="400">
   <br>
-  <strong>Fig. 2-1 突触短时程可塑性</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+  <strong>图2-1 突触短时程可塑性</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -114,7 +114,7 @@ run_stp(U=0.1, tau_d=10, tau_f=100.)
 <div style="text-align:center">
   <img src="../../figs/stdp.png" width="350" height="320">
   <br>
-  <strong>Fig. 2-2 脉冲时间依赖可塑性.</strong> (改编自 <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
+  <strong>图2-2 脉冲时间依赖可塑性</strong> (改编自 <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -237,178 +237,75 @@ plt.show()
 
 #### Oja法则
 
-接下来我们看基于赫布学习律（Hebbian learning）的发放率模型 (rate model)。
-
-赫布学习律认为相互连接的两个神经元在经历同步的放电活动后，它们之间的突触连接就会得到增强。而这个同步不需要在意两个神经元前后发放的次序，因此可以忽略具体的发放时间，简化为发放率模型。我们首先看赫布学习律的一般形式，对于如图所示的$$j$$到$$i$$的连接，用$$v_j$$和$$v_i$$分别表示前神经元组和后神经元组的发放率 (firing rate)，根据赫布学习律的局部性(locality)特性，$$w_{ij}$$的变化受$$w$$本身、以及$$v_j, v_i$$的影响，可得以下微分方程。
+接下来我们看基于赫布学习律（Hebbian learning）的发放率模型 (firing rate model)。赫布学习律认为相互连接的两个神经元在经历同步的放电活动后，它们之间的突触连接就会得到增强。而这个同步不需要在意两个神经元前后发放的次序，因此可以忽略具体的发放时间，简化为发放率模型。我们首先看赫布学习律的一般形式，对于$$j$$到$$i$$的连接，用$$r_j$$和$$r_i$$分别表示前神经元组和后神经元组的发放率，根据赫布学习律的局部性（locality）特性，$$w_{ij}$$的变化受$$w$$本身及$$r_j, r_i$$的影响，得以下微分方程：
 
 $$
-\frac d {dt} w_{ij} = F(w_{ij}; v_{i},v_j)
+\frac d {dt} w_{ij} = F(w_{ij}; r_{i},r_j)
 $$
 
-把上式右边经过泰勒展开得到以下式子。
+把上式右边经过泰勒展开可得下式：
 
 $$
-\frac d {dt} w_{ij} = c_{00} w_{ij} + c_{10} w_{ij} v_j + c_{01} w_{ij} v_i + c_{20} w_{ij} v_j ^2 + c_{02} w_{ij} v_i ^2 + c_{11} w_{ij} v_i v_j + O(v^3)
+\frac d {dt} w_{ij} = c_{00} w_{ij} + c_{10} w_{ij} r_j + c_{01} w_{ij} r_i + c_{20} w_{ij} r_j ^2 + c_{02} w_{ij} r_i ^2 + c_{11} w_{ij} r_i r_j + O(r^3)
 $$
 
-第6项包含$$v_i v_j$$，$$c_{11}$$非0才满足赫布学习律的同步发放。例如**Oja法则**的公式如下，可以看出对应于上式第5、6项。
+赫布学习律的关键在于第六项，只有当第六项的系数$$c_{11}$$非0才满足赫布学习律的同步发放。上式给出了赫布学习律的一般形式，接下来我们看一个具体的例子。
 
+**Oja法则**的公式如下，对应于上式第5、6项系数非零，其中$$\gamma$$为学习速率（learning rate）。
 $$
-\frac d {dt} w_{ij} = \gamma [v_i v_j - w_{ij} v_i ^2 ]
+\frac d {dt} w_{ij} = \gamma [r_i r_j - w_{ij} r_i ^2 ]
 $$
 
 
 下面我们用BrainPy来实现Oja法则。
 
+![oja_def](../../figs/codes/oja_def.png)
 
-```python
-class Oja(bp.TwoEndConn):
-    target_backend = 'general'
+由于Oja法则是发放率模型，它需要突触前后神经元具有变量$$r$$，因此我们定义一个简单的发放率神经元模型来观察两组神经元的学习规则。
 
-    @staticmethod
-    def derivative(w, t, gamma, r_pre, r_post):
-        dwdt = gamma * (r_post * r_pre - r_post * r_post * w)
-        return dwdt
-
-    def __init__(self, pre, post, conn, delay=0.,
-                 gamma=0.005, w_max=1., w_min=0.,
-                 **kwargs):
-        # params
-        self.gamma = gamma
-        self.w_max = w_max
-        self.w_min = w_min
-        # no delay in firing rate models
-
-        # conns
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
-
-        # data
-        self.w = bp.ops.ones(self.size) * 0.05
-
-        self.integral = bp.odeint(f=self.derivative)
-        super(Oja, self).__init__(pre=pre, post=post, **kwargs)
-
-    def update(self, _t):
-        w = self.conn_mat * self.w
-        self.post.r = bp.ops.sum(w.T * self.pre.r, axis=1)
-        
-        # resize to matrix
-        dim = self.size
-        r_post = bp.ops.vstack((self.post.r,) * dim[0])
-        r_pre = bp.ops.vstack((self.pre.r,) * dim[1]).T
-        
-        self.w = self.integral(w, _t, self.gamma, r_pre, r_post)
-```
-
-我们打算实现如图所示的连接，紫色同时接受蓝色和红色两群神经元的输入。给后神经元的input和红色是完全一致的，而蓝色一开始一致，后来不一致了。
-
-<img src="../../figs/conn.png">
-
-由于Oja是一个发放率模型，我们需要一个基于发放率的神经元模型来观察两组神经元的学习规则。
+![oja_run_neu](../../figs/codes/oja_run_neu.png)
 
 
-```python
-class neu(bp.NeuGroup):
-    target_backend = 'general'
 
-    @staticmethod
-    def integral(r, t, I, tau):
-        dr = -r / tau + I
-        return dr
+我们打算实现如图2-3所示的连接。突触后神经元群$$i$$（紫色）同时接受两群神经元$$j_1$$（蓝色）和$$j_2$$（红色）的输入。我们给$$i$$和$$j_2$$完全相同的刺激，而给$$j_1$$的刺激一开始跟$$i$$一致，但后来就不一致了。因此，根据赫布学习律，我们预期同步发放时，突触权重$$w$$会增加，当$$j_1$$不再与$$i$$同步发放时，则$$w_{ij_1}$$停止增加。
 
-    def __init__(self, size, tau=10., **kwargs):
-        self.tau = tau
+<div style="text-align:center">
+  <img src="../../figs/conn.png" width="300">
+  <br>
+  <strong>图2-3 神经元的连接</strong>
+</div>
+<div><br></div>
 
-        self.r = bp.ops.zeros(size)
-        self.input = bp.ops.zeros(size)
-
-        self.g = bp.odeint(self.integral)
-
-        super(neu, self).__init__(size=size, **kwargs)
-
-    def update(self, _t):
-        self.r = self.g(self.r, _t, self.input, self.tau)
-        self.input[:] = 0
-```
+![oja_run](../../figs/codes/oja_run.png)
 
 
-```python
-# set params
-neu_pre_num = 2
-neu_post_num = 2
-dt = 0.02
-bp.backend.set('numpy', dt=dt)
-
-# build network
-neu_pre = neu(neu_pre_num, monitors=['r'])
-neu_post = neu(neu_post_num, monitors=['r'])
-
-syn = Oja(pre=neu_pre, post=neu_post,
-          conn=bp.connect.All2All(), monitors=['w'])
-
-net = bp.Network(neu_pre, syn, neu_post)
-
-# create input
-current_mat_in = []
-current_mat_out = []
-current1, _ = bp.inputs.constant_current(
-    [(2., 20.), (0., 20.)] * 3 + [(0., 20.), (0., 20.)] * 2)
-current2, _ = bp.inputs.constant_current([(2., 20.), (0., 20.)] * 5)
-current3, _ = bp.inputs.constant_current([(2., 20.), (0., 20.)] * 5)
-current_mat_in = np.vstack((current1, current2))
-current_mat_out = current3
-current_mat_out = np.vstack((current_mat_out, current3))
-
-# simulate network
-net.run(duration=200.,
-        inputs=[(neu_pre, 'r', current_mat_in.T, '='),
-                (neu_post, 'r', current_mat_out.T)])
-
-# paint
-fig, gs = bp.visualize.get_figure(4, 1, 3, 12)
-
-fig.add_subplot(gs[0, 0])
-plt.plot(net.ts, neu_pre.mon.r[:, 0], 'b', label='pre r1')
-plt.legend()
-
-fig.add_subplot(gs[1, 0])
-plt.plot(net.ts, neu_pre.mon.r[:, 1], 'r', label='pre r2')
-plt.legend()
-
-fig.add_subplot(gs[2, 0])
-plt.plot(net.ts, neu_post.mon.r[:, 0], color='purple', label='post r')
-plt.ylim([0, 4])
-plt.legend()
-
-fig.add_subplot(gs[3, 0])
-plt.plot(net.ts, syn.mon.w[:, 0, 0], 'b', label='syn.w1')
-plt.plot(net.ts, syn.mon.w[:, 1, 0], 'r', label='syn.w2')
-plt.legend()
-plt.show()
-```
 
 
 ![png](../../figs/out/output_61_0.png)
 
+从结果可以看到，在前100ms内，$$j_1$$和$$j_2$$均与$$i$$同步发放，他们对应的$$w_1$$和$$w_2$$也同步增加，显示出LTP。而100ms后，$$j_1$$（蓝色）不再发放，只有$$j_2$$（红色）与$$i$$同步发放，因此$$w_1$$不再增加，$$w_2$$则持续增加。该结果符合赫布学习律。
 
-从结果可以看到，一开始两群神经元同时给input时，他们的weights都上升，post的反应越来越强，显示出LTP。100ms后，group1不再一起发放，只有group2给input，就只有group2的weights增加。结果符合Hebbian learning的fire together，wire together。
+
 
 #### BCM法则
 
-BCM法则的公式如下：
-
+现在我们来看赫布学习律的另一个例子——BCM法则。它的公式如下：
 $$
-\frac d{dt} w_{ij} =  \eta v_i(v_i - v_\theta) v_j
+\frac d{dt} w_{ij} =  \eta r_i(r_i - r_\theta) r_j
 $$
 
-公式右边画出来如下图所示，当发放频率高于阈值时呈现LTP，低于阈值时则为LTD。因此，通过调整阈值可以实现选择性。
-
-<img src="../../figs/bcm.png">
+其中$$\eta$$为学习速率，$$r_\theta$$为学习的阈值（见图2-4）。图2-4画出了上式的右边，当发放频率高于阈值时呈现LTP，低于阈值时则为LTD。因此，通过调整阈值可以实现选择性。
 
 
-这里我们使用和Oja法则相同的连接方式，只是两群神经元为交替发放。其中，蓝色总比红色发放更强一些。动态调整阈值为$$v_i$$的时间平均，即 $$v_\theta = f(v_i)$$。BrainPy实现的代码如下，在``update``函数中更新阈值。
+
+<div style="text-align:center">
+  <img src="../../figs/bcm.png" width="300">
+  <br>
+    <strong> 图2-4 BCM法则</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+</div>
+<div><br></div>
+
+我们将实现和Oja法则相同的连接方式（图2-3），但给的刺激不同。在这里，我们让$$j_1$$（）和$$j_2$$交替发放。其中，蓝色总比红色发放更强一些。动态调整阈值为$$v_i$$的时间平均，即 $$v_\theta = f(v_i)$$。BrainPy实现的代码如下，在``update``函数中更新阈值。
 
 
 ```python
