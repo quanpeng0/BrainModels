@@ -23,7 +23,7 @@ Let's first look at short-term plasticity. We will start with the results of the
 <div style="text-align:center">
   <img src="../../figs/stp.png" width="400">
   <br>
-  <strong>Fig. 2-1 Short-term plasticity.</strong> (Adaptive from <cite>Gerstner et al., 2014 <sup><a href="#Gerstner2014">[1]</a></sup></cite>)
+  <strong>Fig. 2-1 Short-term plasticity.</strong> (Adaptive from <cite>Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -123,8 +123,9 @@ Fig. 2-2 shows the spiking timing dependent plasticity (STDP) of experimental re
 <div style="text-align:center">
   <img src="../../figs/stdp.png" width="350" height="320">
   <br>
-  <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (Adaptive from <cite>Bi & Poo, 2001 <sup><a href="#Bi2001">[2]</a></sup></cite>)
+  <strong>Fig. 2-2 Spike timing dependent plasticity.</strong> (Adaptive from <cite>Bi & Poo, 2001 <sup><a href="#fn_2">2</a></sup></cite>)
 </div>
+
 
 
 <div><br></div>
@@ -168,7 +169,7 @@ Now let's see how to use BrainPy to implement this model. Here we use the single
 
 ![stdp_update](../../figs/codes/stdp_update.png)
 
-We control the spike timing by varying the input current of the presynaptic group and postsynaptic group. We apply the first input to the presynaptic group starting at $$t=5ms$$ (with amplitude of 30$$\mu A$$, lasts for 15 ms to ensure to induce a spike with LIF neuron model), then start to stimulate the postsynaptic group at $$t=10ms$$. The intervals between each two inputs are $$15ms$$. We keep those $$t_{post}=t_{pre}+5$$ during the first 3 spike-pairs. Then we set a long interval before switching the stimulating order to be $$t_{post}=t_{pre}-3$$ since the 4th spike.
+We control the spike timing by varying the input current of the presynaptic group and postsynaptic group. We apply the first input to the presynaptic group starting at $$t=5ms$$ (with amplitude of 30 $$\mu A$$, lasts for 15 ms to ensure to induce a spike with LIF neuron model), then start to stimulate the postsynaptic group at $$t=10ms$$. The intervals between each two inputs are $$15ms$$. We keep those $$t_{post}=t_{pre}+5$$ during the first 3 spike-pairs. Then we set a long interval before switching the stimulating order to be $$t_{post}=t_{pre}-3$$ since the 4th spike.
 
 ``` python
 duration = 300.
@@ -195,7 +196,8 @@ Then let's run the simulation.
 pre = bm.neurons.LIF(1, monitors=['spike'])
 post = bm.neurons.LIF(1, monitors=['spike'])
 
-syn = STDP(pre=pre, post=post, conn=bp.connect.All2All(), monitors=['s', 'w'])
+syn = STDP(pre=pre, post=post, conn=bp.connect.All2All(), 
+           monitors=['s', 'w'])
 net = bp.Network(pre, syn, post)
 net.run(duration, inputs=[(pre, 'input', I_pre), (post, 'input', I_post)])
 
@@ -383,6 +385,7 @@ The results show that the blue group with stronger input demonstrating LTP, whil
 
 ### References
 
-> <span id="Gerstner2014"><sup>[1]</sup></span>. Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
+[^1]: Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
 
-> <span id="Bi2001"><sup>[2]</sup></span>. Bi, Guo-qiang, and Mu-ming Poo. "Synaptic modification by correlated activity: Hebb's postulate revisited." Annual review of neuroscience 24.1 (2001): 139-166.
+[^2]: Bi, Guo-qiang, and Mu-ming Poo. "Synaptic modification by correlated activity: Hebb's postulate revisited." Annual review of neuroscience 24.1 (2001): 139-166.
+

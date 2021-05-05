@@ -152,26 +152,24 @@ $$
 
 ![stdp_init](../../figs/codes/stdp_init.png)
 
-我们通过给予突触前和突触后的两群神经元不同的电流输入来控制它们产生脉冲的时间。首先我们在$$t=5ms$$时刻给突触前神经元第一段电流（每一段强度为30$$\mu A$$，并持续15ms，保证LIF模型会产生一个脉冲），然后在$$t=10ms$$才给突触后神经元一个输入。每段输入之间间隔$$15ms$$。以此在前三对脉冲中保持$$t_{post}=t_{pre}+5$$。接下来我们设置一个较长的间隔，然后把刺激顺序调整为$$t_{post}=t_{pre}-3$$。
+![stdp_update](../../figs/codes/stdp_update.png)
+
+我们通过给予突触前和突触后的两群神经元不同的电流输入来控制它们产生脉冲的时间。首先我们在$$t=5ms$$时刻给突触前神经元第一段电流（每一段强度为30 $$\mu A$$，并持续15ms，保证LIF模型会产生一个脉冲），然后在$$t=10ms$$才给突触后神经元一个输入。每段输入之间间隔$$15ms$$。以此在前三对脉冲中保持$$t_{post}=t_{pre}+5$$。接下来我们设置一个较长的间隔，然后把刺激顺序调整为$$t_{post}=t_{pre}-3$$。
 
 
 ```python
 duration = 300.
-(I_pre, _) = bp.inputs.constant_current(
-  							[(0, 5), (30, 15),
+(I_pre, _) = bp.inputs.constant_current([(0, 5), (30, 15),   # pre at 5ms
                  (0, 15), (30, 15),  
                  (0, 15), (30, 15),
-                 # long interval (98ms)
-                 (0, 98), (30, 15),
+                 (0, 98), (30, 15),  # switch order: t_interval=98ms
                  (0, 15), (30, 15),
                  (0, 15), (30, 15),
                  (0, duration-155-98)])
-(I_post, _) = bp.inputs.constant_current(
-  								[(0, 10), (30, 15),
+(I_post, _) = bp.inputs.constant_current([(0, 10), (30, 15), # post at 10 
                   (0, 15), (30, 15),
                   (0, 15), (30, 15),
-                  # t_interval=98-8=90(ms)            
-                  (0, 90), (30, 15),
+                  (0, 90), (30, 15), # switch order: t_interval=98-8=90(ms)
                   (0, 15), (30, 15),
                   (0, 15), (30, 15),
                   (0, duration-160-90)])
@@ -183,7 +181,8 @@ duration = 300.
 pre = bm.neurons.LIF(1, monitors=['spike'])
 post = bm.neurons.LIF(1, monitors=['spike'])
 
-syn = STDP(pre=pre, post=post, conn=bp.connect.All2All(), monitors=['s', 'w'])
+syn = STDP(pre=pre, post=post, conn=bp.connect.All2All(),
+           monitors=['s', 'w'])
 net = bp.Network(pre, syn, post)
 net.run(duration, inputs=[(pre, 'input', I_pre), (post, 'input', I_post)])
 
@@ -294,7 +293,7 @@ $$
 \frac d{dt} w_{ij} =  \eta r_i(r_i - r_\theta) r_j
 $$
 
-其中$$\eta$$为学习速率，$$r_\theta$$为学习的阈值（见图2-4）。图2-4画出了上式的右边，当发放频率高于阈值时呈现LTP，低于阈值时则为LTD。因此，通过调整阈值可以实现选择性。
+其中$$\eta$$为学习速率，$$r_\theta$$为学习的阈值（见图2-4）。图2-4画出了上式的右边，当发放频率高于阈值时呈现LTP，低于阈值时则为LTD。因此，这是一种频率依赖可塑性（回想一下，前面介绍的STDP为时间依赖可塑性），可以通过调整阈值$$r_\theta$$实现选择性。
 
 
 
@@ -305,74 +304,21 @@ $$
 </div>
 <div><br></div>
 
-我们将实现和Oja法则相同的连接方式（图2-3），但给的刺激不同。在这里，我们让$$j_1$$（）和$$j_2$$交替发放。其中，蓝色总比红色发放更强一些。动态调整阈值为$$v_i$$的时间平均，即 $$v_\theta = f(v_i)$$。BrainPy实现的代码如下，在``update``函数中更新阈值。
+我们将实现和Oja法则相同的连接方式（图2-3），但给的刺激不同。在这里，我们让$$j_1$$（蓝色）和$$j_2$$（红色）交替发放，且$$j_1$$的发放率比$$j_2$$高。我们动态调整阈值为$$r_i$$的时间平均，即 $$r_\theta = f(r_i)=\frac {\int dt r_i}T$$。BrainPy实现的代码如下。
 
+![bcm_def](../../figs/codes/bcm_def.png)
 
-```python
-class BCM(bp.TwoEndConn):
-    target_backend = 'general'
-
-    @staticmethod
-    def derivative(w, t, lr, r_pre, r_post, r_th):
-        dwdt = lr * r_post * (r_post - r_th) * r_pre
-        return dwdt
-
-    def __init__(self, pre, post, conn, lr=0.005, w_max=2., w_min=0., **kwargs):
-        # parameters
-        self.lr = lr
-        self.w_max = w_max
-        self.w_min = w_min
-        self.dt = bp.backend._dt
-
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
-
-        # variables
-        self.w = bp.ops.ones(self.size)
-        self.sum_post_r = bp.ops.zeros(post.size[0])
-
-        self.int_w = bp.odeint(f=self.derivative, method='rk4')
-
-        super(BCM, self).__init__(pre=pre, post=post, **kwargs)
-
-    def update(self, _t):
-        # update threshold
-        self.sum_post_r += self.post.r
-        r_th = self.sum_post_r / (_t / self.dt + 1)
-
-        # resize to matrix
-        w = self.w * self.conn_mat
-        dim = self.size
-        r_th = bp.ops.vstack((r_th,) * dim[0])
-        r_post = bp.ops.vstack((self.post.r,) * dim[0])
-        r_pre = bp.ops.vstack((self.pre.r,) * dim[1]).T
-
-        # update w
-        w = self.int_w(w, _t, self.lr, r_pre, r_post, r_th)
-        self.w = bp.ops.clip(w, self.w_min, self.w_max)
-
-        # output
-        self.post.r = bp.ops.sum(w.T * self.pre.r, axis=1)
-```
-
+定义了BCM类以后，我们可以跑模拟了。
 
 ```python
-w_max = 2.
 n_post = 1
 n_pre = 20
 
 # group selection
 group1, duration = bp.inputs.constant_current(([1.5, 1], [0, 1]) * 20)
 group2, duration = bp.inputs.constant_current(([0, 1], [1., 1]) * 20)
-
-group1 = bp.ops.vstack((
-                    (group1,)*10))
-
-group2 = bp.ops.vstack((
-                    (group2,)*10
-                    ))
+group1 = bp.ops.vstack(((group1,)*10))
+group2 = bp.ops.vstack(((group2,)*10))
 input_r = bp.ops.vstack((group1, group2))
 
 pre = neu(n_pre, monitors=['r'])
@@ -388,7 +334,6 @@ w2 = bp.ops.mean(bcm.mon.w[:, 10:, 0], 1)
 
 r1 = bp.ops.mean(pre.mon.r[:, :10], 1)
 r2 = bp.ops.mean(pre.mon.r[:, 10:], 1)
-post_r = bp.ops.mean(post.mon.r[:, :], 1)
 
 fig, gs = bp.visualize.get_figure(2, 1, 3, 12)
 fig.add_subplot(gs[1, 0], xlim=(0, duration), ylim=(0, w_max))
@@ -413,5 +358,12 @@ plt.show()
 
 ![png](../../figs/out/output_66_0.png)
 
+结果显示，每次发放率都比较高的$$j_1$$（蓝色），其对应的$$w_1$$持续增加，显示出LTP。而$$w_2$$则呈现出LTD，这个结果显示出BCM法则的选择功能。
 
-结果发现，对input较强的group 1是LTP，而对input较弱的group 2是LTD，最终选择了group 1。
+
+
+### 参考资料
+
+> <span id="Gerstner2014"><sup>[1]</sup></span>. Gerstner, Wulfram, et al. Neuronal dynamics: From single neurons to networks and models of cognition. Cambridge University Press, 2014.
+
+> <span id="Bi2001"><sup>[2]</sup></span>. Bi, Guo-qiang, and Mu-ming Poo. "Synaptic modification by correlated activity: Hebb's postulate revisited." Annual review of neuroscience 24.1 (2001): 139-166.
