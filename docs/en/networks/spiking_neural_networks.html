@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>3.1 Spiking neural networks · GitBook</title>
+        <title>3.1 Spiking neural networks · BrainPy Handbook</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -29,11 +29,11 @@
                 
             
                 
-                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-search-pro/search.css">
                 
             
                 
-                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-search/search.css">
+                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
                 
             
                 
@@ -323,7 +323,7 @@
                                 <h2 id="31-spiking-neural-network">3.1 Spiking Neural Network</h2>
 <h3 id="311-ei-balanced-network">3.1.1 E/I balanced network</h3>
 <p>In 1990s, biologists found in experiments that neuron activities in brain cortex show a temporal irregular spiking pattern. This pattern exists widely in brain areas, but researchers knew few about its mechanism or function.</p>
-<p>Vreeswijk and Sompolinsky (1996) proposed E/I balanced network to explain this irregular spiking pattern. The feature of this network is the strong, random and sparse synapse connections between neurons. Because of this feature and corresponding parameter settings, each neuron in the network will receive great excitatory and inhibitory input from within the network. However, these two types of inputs will cancel each other, and maintain the total internal input at a relatively small order of magnitude, which is only enough to generate action potentials.</p>
+<p>Vreeswijk and Sompolinsky (1996) proposed <strong>E/I balanced network</strong> to explain this irregular spiking pattern. The feature of this network is the strong, random and sparse synapse connections between neurons. Because of this feature and corresponding parameter settings, each neuron in the network will receive great excitatory and inhibitory input from within the network. However, these two types of inputs will cancel each other, and maintain the total internal input at a relatively small order of magnitude, which is only enough to generate action potentials.</p>
 <p>The randomness and noise in E/I balanced network give  each neuron in the network an internal input which varies with time and space at the order of threshold potential. Therefore, the firing of neurons also has randomness, ensures that E/I balanced network can generate temporal irregular firing pattern spontaneously.</p>
 <center><img src="../../figs/snns/3-2.png" width="616" height="300"></center>
 
@@ -453,7 +453,7 @@ f_B \sim N(\mu_B, \delta^2)
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"3.1 Spiking neural networks","level":"1.4.1","depth":2,"next":{"title":"3.2 Firing rate networks","level":"1.4.2","depth":2,"path":"networks/rate_models.md","ref":"networks/rate_models.md","articles":[]},"previous":{"title":"3. Network models","level":"1.4","depth":1,"path":"networks.md","ref":"networks.md","articles":[{"title":"3.1 Spiking neural networks","level":"1.4.1","depth":2,"path":"networks/spiking_neural_networks.md","ref":"networks/spiking_neural_networks.md","articles":[]},{"title":"3.2 Firing rate networks","level":"1.4.2","depth":2,"path":"networks/rate_models.md","ref":"networks/rate_models.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-sharing","katex","code","splitter"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"katex":{},"code":{"copyButtons":true},"splitter":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"en","gitbook":"*"},"file":{"path":"networks/spiking_neural_networks.md","mtime":"2021-04-30T14:01:17.848Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-30T14:09:14.860Z"},"basePath":"..","book":{"language":"en"}});
+            gitbook.page.hasChanged({"page":{"title":"3.1 Spiking neural networks","level":"1.4.1","depth":2,"next":{"title":"3.2 Firing rate networks","level":"1.4.2","depth":2,"path":"networks/rate_models.md","ref":"networks/rate_models.md","articles":[]},"previous":{"title":"3. Network models","level":"1.4","depth":1,"path":"networks.md","ref":"networks.md","articles":[{"title":"3.1 Spiking neural networks","level":"1.4.1","depth":2,"path":"networks/spiking_neural_networks.md","ref":"networks/spiking_neural_networks.md","articles":[]},{"title":"3.2 Firing rate networks","level":"1.4.2","depth":2,"path":"networks/rate_models.md","ref":"networks/rate_models.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["katex","code","splitter","-lunr","-search","search-pro"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"katex":{},"code":{"copyButtons":true},"splitter":{},"search-pro":{},"highlight":{},"sharing":{"all":["facebook","google","twitter","weibo","instapaper"],"facebook":true,"google":false,"instapaper":false,"twitter":true,"vk":false,"weibo":false},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageBreaksBefore":"/","headerTemplate":"_TITLE_","paperSize":"a4","margin":{"right":62,"left":62,"top":56,"bottom":56},"fontSize":12,"fontFamily":"Arial","footerTemplate":null,"chapterMark":"pagebreak","pageNumbers":true},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"BrainPy Handbook","language":"en","gitbook":"*","description":"A Handbook introducing how to implement brain models by BrainPy for computational neuroscience."},"file":{"path":"networks/spiking_neural_networks.md","mtime":"2021-05-05T03:10:16.498Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-05T05:39:29.321Z"},"basePath":"..","book":{"language":"en"}});
         });
     </script>
 </div>
@@ -471,19 +471,15 @@ f_B \sim N(\mu_B, \delta^2)
         
     
         
-        <script src="../../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        <script src="../../gitbook/gitbook-plugin-search-pro/jquery.mark.min.js"></script>
         
     
         
-        <script src="../../gitbook/gitbook-plugin-search/search.js"></script>
+        <script src="../../gitbook/gitbook-plugin-search-pro/search.js"></script>
         
     
         
-        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        <script src="../../gitbook/gitbook-plugin-sharing/buttons.js"></script>
         
     
         
