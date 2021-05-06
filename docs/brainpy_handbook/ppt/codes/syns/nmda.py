@@ -52,9 +52,9 @@ class NMDA(bp.TwoEndConn):
             g_inf_exp = bp.ops.exp(-self.alpha * self.post.V[post_id])
             g_inf = 1 + g_inf_exp * self.cc_Mg / self.beta
 
-            self.g.push(i, self.g_max * self.s[i])
+            self.g.push(i, self.g_max * self.s[i] / g_inf)
 
-            I_syn = self.g.pull(i) * (self.post.V[post_id] - self.E) / g_inf
+            I_syn = self.g.pull(i) * (self.post.V[post_id] - self.E)
             self.post.input[post_id] -= I_syn
 
 
