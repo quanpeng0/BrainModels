@@ -51,8 +51,6 @@ $$
 
 下面我们来看看如何用BrainPy去实现这样一个模型。首先，我们要定义一个类，因为突触是连接两个神经元的，所以这个类继承自``bp.TwoEndConn``。在这个类中，和神经元模型一样，我们用一个``derivative``函数来实现上述微分方程，并在后面的``__init__``函数中初始化这个函数，指定用``bp.odeint``来解这个方程，并指定数值积分方法。由于这微分方程是线性的，我们选用``exponential_euler``方法。
 
-> 首先，在突触中，我们需要``pre``和``post``来分别表示这个突触所连接的突触前神经元与突触后神经元。需要注意的是，``pre``和``post``都是向量，代表两群神经元，因此，我们还需要指定两群神经元具体链接情况的``conn``。在这里，我们可以从``conn``中获得连接矩阵``conn_mat``。
-
 <img src="../../figs/codes/ampa_init.png" style="width:100%">
 
 然后我们在``update``函数中更新$$s$$。
@@ -140,7 +138,20 @@ $$[R]$$的动力学类似于AMPA模型中$$s$$，受神经递质浓度$$[T]$$影
 
 <img src="../../figs/codes/gabab_update.png" style="width:100%">
 
-由于GABA<sub>B</sub>也是非常缓慢的模型，这里我们不再用前面写的只有30ms模拟的``run_syn``，而是先给20ms的输入，接着看剩余1000ms在没有外界输入情况下的衰减。
+由于GABA<sub>B</sub>也是非常缓慢的模型，这里我们不再用前面写的只有30ms模拟的``run_syn``函数，而是先给20ms的输入，接着看剩余1000ms在没有外界输入情况下的衰减。
+
+``` python
+neu1 = bm.neurons.LIF(2, monitors=['V'])
+neu2 = bm.neurons.LIF(3, monitors=['V'])
+syn = GABAb(pre=neu1, post=neu2, conn=bp.connect.All2All(), monitors=['s'])
+net = bp.Network(neu1, syn, neu2)
+
+# input
+I, dur = bp.inputs.constant_current([(25, 20), (0, 1000)])
+net.run(dur, inputs=(neu1, 'input', I))
+
+bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
+```
 
 ![png](../../figs/out/output_gabab.png)
 
