@@ -182,7 +182,7 @@ $$
 I_{ext} = A\exp\left[-\frac{|x-z(t)|^2}{4a^2}\right]
 $$
 
-While implementing with BrainPy, we create a class of ``CANN1D`` by inheriting ``bp.NeuGroup``, and initialize it with ``__init__`` function like neuron models.
+While implementing with BrainPy, we create a class of ``CANN1D`` by inheriting ``bp.NeuGroup``.
 
 ![cann_init](../../figs/codes/cann_init.png)
 
@@ -208,6 +208,7 @@ Then lets plot an animation by calling the ``bp.visualize.animate_1D`` function.
 
 
 ```python
+# define function
 def plot_animate(frame_step=5, frame_delay=50):
     bp.visualize.animate_1D(dynamical_vars=[{'ys': cann.mon.u, 'xs': cann.x,
                                              'legend': 'u'}, {'ys': Iext,
@@ -215,6 +216,8 @@ def plot_animate(frame_step=5, frame_delay=50):
                             frame_step=frame_step, frame_delay=frame_delay,
                             show=True)
 
+
+# call the function
 plot_animate(frame_step=1, frame_delay=100)
 ```
 

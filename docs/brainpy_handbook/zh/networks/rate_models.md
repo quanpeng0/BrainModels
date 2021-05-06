@@ -1,13 +1,19 @@
-## 发放率网络 Firing rate networks
+## 3.2 发放率神经网络
 
-### 决择模型
+### 3.2.1 决择模型
 
-除了脉冲模型以外，BrainPy同样也可以实现发放率模型（Firing rate models）。我们首先来看看前述抉择模型的简化版本的实现。该模型由研究者（Wong & Wang, 2006）通过平均场方法（mean-field approach）等一系列手段简化得出，最终只剩下两个变量，$$S_1$$和$$S_2$$，分别表示两群神经元的状态，同时也分别对应着两个选项。
+我们在上一节中介绍了Wang（2002）提出的抉择模型，现在来介绍他们后续做的一个基于发放率（firing rate）的简化模型（Wong & Wang, 2006[^1]）。该模型的实验背景与上一节的相同，在脉冲神经网络模型的基础上，他们使用平均场近似（mean-field approach）等方法，使用一群神经元的发放率来表示整个神经元群的状态，而不再关注每个神经元的脉冲。他们拟合出输入-输出函数（input-output function）来表示给一群神经元一个外界输入电流$$I$$时，这群神经元的发放率$$r$$如何改变，即$$r=f(I)$$。经过这样的简化后，我们就可以很方便地对其进行动力学分析。
 
-<img src="../../figs/decision.png">
 
-公式如下：
 
+<div align="center">
+  <img src="../../figs/decision.png" width="300">
+  <br>
+  <strong>图3-1 简化的抉择模型</strong> (引自 <cite>Wong & Wang, 2006 <sup><a href="#fn_1">1</a></sup></cite>)
+</div>
+<div><br></div>
+
+基于发放率的抉择模型如图3-1所示，$$S_1$$（蓝色）和$$S_2$$（红色）分别表示两群神经元的状态，同时也分别对应着两个选项。他们都由兴奋性的神经元组成，且各自都有一个循环（recurrent）连接。而同时它们都会给对方一个抑制性的输入，以此形成相互竞争的关系。该模型的动力学方程如下：
 $$
 \frac{dS_1} {dt} = -\frac {S_1} \tau + (1-S_1) \gamma r_1
 $$
@@ -16,7 +22,7 @@ $$
 \frac{dS_2} {dt} = -\frac {S_2} \tau + (1-S_2) \gamma r_2
 $$
 
-其中 $$r_1$$ 和 $$r_2$$ 分别为两群神经元的发放率，由输入-输出函数（input-output function）给出，为：
+其中$$\tau$$为时间常数，$$\gamma$$为拟合得到的常数， $$r_1$$ 和 $$r_2$$ 分别为两群神经元的发放率，其输入-输出函数为：
 
 $$
 r_i = f(I_{syn, i})
@@ -26,7 +32,7 @@ $$
 f(I)= \frac {aI-b} {1- \exp [-d(aI-b)]}
 $$
 
-$$I_{syn, i}$$ 的公式由模型结构给出，为自身的循环（recurrent）连接减去对方传来的抑制电流，并加上背景电流及外界输入，可得：
+$$I_{syn, i}$$ 的公式由图3-1的模型结构给出：
 
 $$
 I_{syn, 1} = J_{11} S_1 - J_{12} S_2 + I_0 + I_1
@@ -37,7 +43,7 @@ I_{syn, 2} = J_{22} S_2 - J_{21} S_1 + I_0 + I_2
 $$
 
 
-而外界输入 $$I_1, I_2$$ 则由总输入的强度 $$\mu_0$$ 及一致性（coherence） $$c'$$ 决定。一致性越高，则越明确$$S_1$$是正确答案，而一致性越低则表示越随机。公式如下：
+其中$$I_0$$为背景电流，外界输入 $$I_1, I_2$$ 则由总输入的强度 $$\mu_0$$ 及一致性（coherence） $$c'$$ 决定。一致性越高，则越明确$$S_1$$是正确答案，而一致性越低则表示越随机。公式如下：
 
 $$
 I_1 = J_{\text{A, ext}} \mu_0 (1+\frac {c'}{100\%})
@@ -49,89 +55,25 @@ $$
 
 
 
-代码实现如下，我们可以创建一个神经元群的类（``bp.NeuGroup``），并用$$S_1$$及$$S_2$$分别储存这群神经元的两个状态。该模型的动力学部分可以由一个``derivative``函数实现，以便进行动力学分析。
+接下来，我们将继承``bp.NeuGroup``类，并用BrainPy提供的相平面分析方法``bp.analysis.PhasePlane``进行动力学分析。首先，我们把上面的动力学公式写到一个``derivative``函数中，定义一个Decision类。
+
+![decision01](../../figs/codes/decision01.png)
+
+![decision02](../../figs/codes/decision02.png)
+
+
+
+接下来，我们想要看模型在不同输入情况下的动力学，因此，我们先定义一个对抉择模型做相平面分析的方法，可以让我们改变``I``（即外界输入强度$$\mu_0$$）和``coh``（即输入的一致性$$c'$$），而固定了参数的值等。
+
+![decision_run](../../figs/codes/decision_run.png)
+
+
+
+现在让我们来看看当没有外界输入，即$$\mu_0 = 0$$时的动力学。
 
 
 ```python
-class Decision(bp.NeuGroup):
-    target_backend = 'general'
-
-    @staticmethod
-    def derivative(s1, s2, t, I, coh, JAext, J_rec, J_inh, I_0, b, d, a, tau_s, gamma):
-        I1 = JAext * I * (1. + coh)
-        I2 = JAext * I * (1. - coh)
-
-        I_syn1 = J_rec * s1 - J_inh * s2 + I_0 + I1
-        r1 = (a * I_syn1 - b) / (1. - bp.ops.exp(-d * (a * I_syn1 - b)))
-        ds1dt = - s1 / tau_s + (1. - s1) * gamma * r1
-
-        I_syn2 = J_rec * s2 - J_inh * s1 + I_0 + I2
-        r2 = (a * I_syn2 - b) / (1. - bp.ops.exp(-d * (a * I_syn2 - b)))
-        ds2dt = - s2 / tau_s + (1. - s2) * gamma * r2
-
-        return ds1dt, ds2dt
-
-    def __init__(self, size, coh, tau_s=.06, gamma=0.641,
-                 J_rec=.3725, J_inh=.1137,
-                 I_0=.3297, JAext=.00117,
-                 a=270., b=108., d=0.154,
-                 **kwargs):
-        # parameters
-        self.coh = coh
-        self.tau_s = tau_s
-        self.gamma = gamma
-        self.J_rec = J_rec
-        self.J_inh = J_inh
-        self.I0 = I_0
-        self.JAext = JAext
-        self.a = a
-        self.b = b
-        self.d = d
-
-        # variables
-        self.s1 = bp.ops.ones(size) * .06
-        self.s2 = bp.ops.ones(size) * .06
-        self.input = bp.ops.zeros(size)
-
-        self.integral = bp.odeint(f=self.derivative, method='rk4', dt=0.01)
-
-        super(Decision, self).__init__(size=size, **kwargs)
-
-    def update(self, _t):
-        for i in prange(self.size):
-            self.s1[i], self.s2[i] = self.integral(self.s1[i], self.s2[i], _t,
-                                                   self.input[i], self.coh, self.JAext, self.J_rec,
-                                                   self.J_inh, self.I0, self.b, self.d,
-                                                   self.a, self.tau_s, self.gamma)
-            self.input[i] = 0.
-```
-
-相平面分析的代码如下。让我们来看看当没有外界输入，即$$\mu_0 = 0$$时的动力学。
-
-
-```python
-from collections import OrderedDict
-
-pars = dict(tau_s=.06, gamma=0.641,
-            J_rec=.3725, J_inh=.1137,
-            I_0=.3297, JAext=.00117,
-            b=108., d=0.154, a=270.)
-
-pars['I'] = 0.
-pars['coh'] = 0.
-
-decision = Decision(1, coh=pars['coh'])
-
-phase = bp.analysis.PhasePlane(decision.integral,
-                               target_vars=OrderedDict(s2=[0., 1.], s1=[0., 1.]),
-                               fixed_vars=None,
-                               pars_update=pars,
-                               numerical_resolution=.001,
-                               options={'escape_sympy_solver': True})
-
-phase.plot_nullcline()
-phase.plot_fixed_point()
-phase.plot_vector_field(show=True)
+phase_analyze(I=0., coh=0.)
 ```
 
     plot nullcline ...
@@ -157,57 +99,16 @@ phase.plot_vector_field(show=True)
 
 ```python
 # coherence = 0%
-pars['I'] = 30.
-pars['coh'] = 0.
-
-decision = Decision(1, coh=pars['coh'])
-
-phase = bp.analysis.PhasePlane(decision.integral,
-                               target_vars=OrderedDict(s2=[0., 1.], s1=[0., 1.]),
-                               fixed_vars=None,
-                               pars_update=pars,
-                               numerical_resolution=.001,
-                               options={'escape_sympy_solver': True})
-
 print("coherence = 0%")
-phase.plot_nullcline()
-phase.plot_fixed_point()
-phase.plot_vector_field(show=True)
+phase_analyze(I=30., coh=0.)
 
 # coherence = 51.2%
-pars['coh'] = 0.512
-
-decision = Decision(1, coh=pars['coh'])
-
-phase = bp.analysis.PhasePlane(decision.integral,
-                               target_vars=OrderedDict(s2=[0., 1.], s1=[0., 1.]),
-                               fixed_vars=None,
-                               pars_update=pars,
-                               numerical_resolution=.001,
-                               options={'escape_sympy_solver': True})
-
 print("coherence = 51.2%")
-phase.plot_nullcline()
-phase.plot_fixed_point()
-phase.plot_vector_field(show=True)
-
+phase_analyze(I=30., coh=0.512)
 
 # coherence = 100%
-pars['coh'] = 1.
-
-decision = Decision(1, coh=pars['coh'])
-
-phase = bp.analysis.PhasePlane(decision.integral,
-                               target_vars=OrderedDict(s2=[0., 1.], s1=[0., 1.]),
-                               fixed_vars=None,
-                               pars_update=pars,
-                               numerical_resolution=.001,
-                               options={'escape_sympy_solver': True})
-
 print("coherence = 100%")
-phase.plot_nullcline()
-phase.plot_fixed_point()
-phase.plot_vector_field(show=True)
+phase_analyze(I=30., coh=1.)
 ```
 
     coherence = 0%
@@ -247,19 +148,23 @@ phase.plot_vector_field(show=True)
 ![png](../../figs/out/output_79_5.png)
 
 
-### 连续吸引子模型（CANN）
+### 3.2.2 连续吸引子模型（CANN）
 
-让我们看看发放率模型（firing rate model）的另一个例子——连续吸引子神经网络（CANN）。一维CANN的结构如下：
+这里我们将介绍发放率模型的另一个例子——连续吸引子神经网络（CANN）。一维CANN的结构如下：
 
-<img src="../../figs/cann.png">
+<div align="center">
+  <img src="../../figs/cann.png" width="300">
+  <br>
+  <strong>图3-2 连续吸引子神经网络</strong> (引自 <cite>Wu et al., 2008 <sup><a href="#fn_2">2</a></sup></cite>)
+</div>
+<div><br></div>
 
 神经元群的突触总输入$$u$$的动力学方程如下：
-
 $$
 \tau \frac{du(x,t)}{dt} = -u(x,t) + \rho \int dx' J(x,x') r(x',t)+I_{ext}
 $$
 
-其中x表示神经元群的参数空间位点，$$r(x', t)$$是神经元群(x')的发放率，由以下公式给出:
+其中x表示神经元群的参数空间位点，$$r(x', t)$$为神经元群(x')的发放率，由以下公式给出:
 
 $$
 r(x,t) = \frac{u(x,t)^2}{1 + k \rho \int dx' u(x',t)^2}
@@ -277,77 +182,17 @@ $$
 I_{ext} = A\exp\left[-\frac{|x-z(t)|^2}{4a^2}\right]
 $$
 
+用BrainPy实现的代码如下，我们通过继承``bp.NeuGroup``来创建一个``CANN1D``的类。
 
-在BrainPy的实现上，我们通过继承``bp.NeuGroup``来创建一个``CANN1D``的类：
+![cann_init](../../figs/codes/cann_init.png)
+
+![cann_f](../../figs/codes/cann_f.png)
 
 
-```python
-class CANN1D(bp.NeuGroup):
-    target_backend = ['numpy', 'numba']
 
-    @staticmethod
-    def derivative(u, t, conn, k, tau, Iext):
-        r1 = np.square(u)
-        r2 = 1.0 + k * np.sum(r1)
-        r = r1 / r2
-        Irec = np.dot(conn, r)
-        du = (-u + Irec + Iext) / tau
-        return du
-    
-    def __init__(self, num, tau=1., k=8.1, a=0.5, A=10., J0=4.,
-                 z_min=-np.pi, z_max=np.pi, **kwargs):
-        # parameters
-        self.tau = tau  # The synaptic time constant
-        self.k = k  # Degree of the rescaled inhibition
-        self.a = a  # Half-width of the range of excitatory connections
-        self.A = A  # Magnitude of the external input
-        self.J0 = J0  # maximum connection value
+> 其中函数``dist``与``make_conn``用来计算两群神经元之间的连接强度$$J$$。在``make_conn``函数中，我们首先计算每两个$$x$$之间的距离矩阵。由于神经元群是环状排列的，$$x$$的值介于$$-\pi$$到$$\pi$$之间，所以$$x-x'$$的范围为$$2\pi$$，且$$-\pi$$和$$\pi$$是同一个点（实际最远是$$\pi$$，即0.5*``z_range``，超出的距离需要减去一个``z_range``）。我们用``dist``函数来处理环上的距离。
 
-        # feature space
-        self.z_min = z_min
-        self.z_max = z_max
-        self.z_range = z_max - z_min
-        self.x = np.linspace(z_min, z_max, num)  # The encoded feature values
-
-        # variables
-        self.u = np.zeros(num)
-        self.input = np.zeros(num)
-
-        # The connection matrix
-        self.conn_mat = self.make_conn(self.x)
-
-        self.int_u = bp.odeint(f=self.derivative, method='rk4', dt=0.05)
-        
-        super(CANN1D, self).__init__(size=num, **kwargs)
-
-        self.rho = num / self.z_range  # The neural density
-        self.dx = self.z_range / num  # The stimulus density
-
-    def dist(self, d):
-        d = np.remainder(d, self.z_range)
-        d = np.where(d > 0.5 * self.z_range, d - self.z_range, d)
-        return d
-
-    def make_conn(self, x):
-        assert np.ndim(x) == 1
-        x_left = np.reshape(x, (-1, 1))
-        x_right = np.repeat(x.reshape((1, -1)), len(x), axis=0)
-        d = self.dist(x_left - x_right)
-        Jxx = self.J0 * np.exp(-0.5 * np.square(d / self.a)) / (np.sqrt(2 * np.pi) * self.a)
-        return Jxx
-
-    def get_stimulus_by_pos(self, pos):
-        return self.A * np.exp(-0.25 * np.square(self.dist(self.x - pos) / self.a))
-
-    def update(self, _t):
-        self.u = self.int_u(self.u, _t, self.conn_mat, self.k, self.tau, self.input)
-        self.input[:] = 0.
-
-```
-
-其中函数``dist``与``make_conn``用来计算两群神经元之间的连接强度$$J$$。在``make_conn``函数中，我们首先计算每两个$$x$$之间的距离矩阵。由于神经元群是环状排列的，$$x$$的值介于$$-\pi$$到$$\pi$$之间，所以$$x-x'$$的范围为$$2\pi$$，且$$-\pi$$和$$\pi$$是同一个点（实际最远是$$\pi$$，即0.5*``z_range``，超出的距离需要减去一个``z_range``）。我们用``dist``函数来处理环上的距离。
-
-而``get_stimulus_by_pos``函数则是根据参数空间位点``pos``处理外界输入，可供用户在使用时调用获取所需的输入电流大小。例如在简单的群编码（population coding）中，我们给一个``pos=0``的外界输入，并按以下方式运行：
+> 而``get_stimulus_by_pos``函数则是根据参数空间位点``pos``处理外界输入，可供用户在使用时调用获取所需的输入电流大小。例如在简单的群编码（population coding）中，我们给一个``pos=0``的外界输入，并按以下方式运行：
 
 
 ```python
@@ -356,16 +201,25 @@ cann = CANN1D(num=512, k=0.1, monitors=['u'])
 I1 = cann.get_stimulus_by_pos(0.)
 Iext, duration = bp.inputs.constant_current([(0., 1.), (I1, 8.), (0., 8.)])
 cann.run(duration=duration, inputs=('input', Iext))
-
-bp.visualize.animate_1D(
-    dynamical_vars=[{'ys': cann.mon.u, 'xs': cann.x, 'legend': 'u'},
-                    {'ys': Iext, 'xs': cann.x, 'legend': 'Iext'}],
-    frame_step=1,
-    frame_delay=100,
-    show=True,
-    save_path='figs/CANN-encoding.gif'
-)
 ```
+
+由于在之后的运行中，画结果图的代码是一样的，我们写一个``plot_animate``的函数来调用``bp.visualize.animate_1D``。
+
+``` python
+# 定义函数
+def plot_animate(frame_step=5, frame_delay=50):
+    bp.visualize.animate_1D(dynamical_vars=[{'ys': cann.mon.u, 'xs': cann.x,
+                                             'legend': 'u'}, {'ys': Iext,
+                                             'xs': cann.x, 'legend': 'Iext'}],
+                            frame_step=frame_step, frame_delay=frame_delay,
+                            show=True)
+
+# 调用函数
+plot_animate(frame_step=1, frame_delay=100)
+```
+
+
+
 
 <img src="../../figs/CANN-encoding.gif">
 
@@ -387,14 +241,7 @@ Iext[num1:num1 + num2] = cann.get_stimulus_by_pos(0.)
 Iext[num1:num1 + num2] += 0.1 * cann.A * np.random.randn(num2, *cann.size)
 cann.run(duration=dur1 + dur2 + dur3, inputs=('input', Iext))
 
-bp.visualize.animate_1D(
-    dynamical_vars=[{'ys': cann.mon.u, 'xs': cann.x, 'legend': 'u'},
-                    {'ys': Iext, 'xs': cann.x, 'legend': 'Iext'}],
-    frame_step=5,
-    frame_delay=50,
-    show=True,
-    save_path='figs/CANN-decoding.gif'
-)
+plot_animate()
 ```
 
 <img src="../../figs/CANN-decoding.gif">
@@ -418,14 +265,16 @@ position = position.reshape((-1, 1))
 Iext = cann.get_stimulus_by_pos(position)
 cann.run(duration=dur1 + dur2 + dur3, inputs=('input', Iext))
 
-bp.visualize.animate_1D(
-    dynamical_vars=[{'ys': cann.mon.u, 'xs': cann.x, 'legend': 'u'},
-                    {'ys': Iext, 'xs': cann.x, 'legend': 'Iext'}],
-    frame_step=5,
-    frame_delay=50,
-    show=True,
-    save_path='figs/CANN-tracking.gif'
-)
+plot_animate()
 ```
 
 <img src="../../figs/CANN-tracking.gif">
+
+
+
+
+
+### 参考资料
+
+[^1]: Wong, K.-F. & Wang, X.-J. A Recurrent Network Mechanism of Time Integration in Perceptual Decisions.  J. Neurosci. 26, 1314–1328 (2006).
+[^2]: Si Wu, Kosuke Hamaguchi, and Shun-ichi Amari. "Dynamics and computation of continuous attractors." Neural computation 20.4 (2008): 994-1025.
