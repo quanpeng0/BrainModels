@@ -300,7 +300,7 @@ $$
 <div style="text-align:center">
   <img src="../../figs/bcm.png" width="300">
   <br>
-    <strong> 图2-4 BCM法则</strong> (改编自 <cite>Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
+    <strong> 图2-4 BCM法则</strong> (引自 <cite>Gerstner et al., 2014 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
 <div><br></div>
 

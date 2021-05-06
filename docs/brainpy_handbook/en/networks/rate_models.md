@@ -7,7 +7,7 @@ In addition to spiking models, BrainPy can also implement Firing rate models. Le
 <div align="center">
   <img src="../../figs/decision.png" width="300">
   <br>
-  <strong>Fig. 3-1 Reduced decision model.</strong> (Adaptive from <cite>Wong & Wang, 2006 <sup><a href="#fn_1">1</a></sup></cite>)
+  <strong>Fig. 3-1 Reduced decision model.</strong> (From <cite>Wong & Wang, 2006 <sup><a href="#fn_1">1</a></sup></cite>)
 </div>
 <div><br></div>
 
@@ -155,7 +155,7 @@ Let's see another example of firing rate model, a continuous attractor neural ne
 <div align="center">
   <img src="../../figs/cann.png" width="300">
   <br>
-  <strong>Fig. 3-2 Structure of CANN.</strong> (Adaptive from <cite>Wu et al., 2008 <sup><a href="#fn_2">2</a></sup></cite>)
+  <strong>Fig. 3-2 Structure of CANN.</strong> (From <cite>Wu et al., 2008 <sup><a href="#fn_2">2</a></sup></cite>)
 </div>
 <div><br></div>
 

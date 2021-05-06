@@ -37,10 +37,8 @@
 <div style="text-align:center">
   <img src="../../figs/markov.png" width="170"> 
   <br>	
-  <strong> Fig. 2-2 离子通道动力学的马尔可夫过程 </strong>
+  <strong> 图2-2 离子通道动力学的马尔可夫过程 </strong>
 </div>
-
-
 <div><br></div>
 
 把该过程用微分方程描述，得到以下式子。
@@ -296,14 +294,10 @@ $$
       </div>
     </div>
   <br>
-  <strong> Fig. 2-3 (a)</strong> 神经元间的缝隙连接. 
+  <strong> 图2-3 (a)</strong> 神经元间的缝隙连接. 
   <strong>(b)</strong> 等效模型. 
-  <br>(修改自 <cite  id="reffn_2">Sterratt et al., 2011 <sup><a href="#fn_2">2</a></sup></cite>)
+  <br>(引自 <cite  id="reffn_2">Sterratt et al., 2011 <sup><a href="#fn_2">2</a></sup></cite>)
 </div>
-
-
-
-
 <div><br></div>
 
 如图2-3a所示，两个神经元通过连接通道（junction channels）相连，可以直接导电，这种连接又称为缝隙连接（gap junction）。因此，可以看作是两个神经元由一个常数电阻连起来，如图2-3b所示。
