@@ -78,20 +78,20 @@ post = bm.neurons.LIF(1, monitors=['spike'])
 
 # pre before post
 duration = 300.
-(I_pre, _) = bp.inputs.constant_current([(0, 5), (30, 15),      #5 (pre>)
-                                         (0, 5), (30, 15),      #25 (pre>)
-                                         (0, 10), (30, 15),
-                                         (0, 93), (30, 15),
-                                         (0, 20), (30, 15),
+(I_pre, _) = bp.inputs.constant_current([(0, 5), (30, 15),    #t_pre=5
                                          (0, 15), (30, 15),
-                                         (0, duration-223-15)])
-(I_post, _) = bp.inputs.constant_current([(0, 10), (30, 15),    #10
-                                          (0, 5), (30, 15),     #30
-                                          (0, 20), (30, 15),
-                                          (0, 75), (30, 15),    # post>pre
-                                          (0, 20), (30, 15),
+                                         (0, 15), (30, 15),
+                                         (0, 98), (30, 15),   #t_pre=(t_post)+3
+                                         (0, 15), (30, 15),
+                                         (0, 15), (30, 15),
+                                         (0, duration-155-98)])
+(I_post, _) = bp.inputs.constant_current([(0, 10), (30, 15),  #t_post=t_pre+5
                                           (0, 15), (30, 15),
-                                          (0, duration-220-15)])
+                                          (0, 15), (30, 15),
+                                          (0, 90), (30, 15),  #t_post=(t_pre)-3
+                                          (0, 15), (30, 15),
+                                          (0, 15), (30, 15),
+                                          (0, duration-160-90)])
 
 syn = STDP(pre=pre, post=post, conn=bp.connect.All2All(), monitors=['s', 'w'])
 net = bp.Network(pre, syn, post)
@@ -126,6 +126,7 @@ hide_spines(ax2)
 
 ax3=fig.add_subplot(gs[3, 0])
 plt.plot(net.ts, syn.mon.w[:, 0], label="w")
+plt.legend()
 # hide spines
 plt.yticks([])
 ax3.spines['left'].set_visible(False)
