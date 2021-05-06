@@ -157,7 +157,7 @@ bp.visualize.line_plot(net.ts, syn.mon.s, ylabel='s', show=True)
 
 从结果可以看到，GABA<sub>B</sub>的衰减确实非常慢，在移除外界输入之后几百ms内都还在衰减。
 
-> （抑制性 -> E, I）
+<!--（抑制性 -> E, I）-->
 
 
 

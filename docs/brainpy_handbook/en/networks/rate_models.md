@@ -145,7 +145,7 @@ phase_analyze(I=30., coh=1.)
 
 
 
-![png](../../figs/out/output_79_5.png)
+<img src="../../figs/out/output_79_5.png" alt="output: c'=100%" />
 
 
 ### 3.2.2 CANN
@@ -194,7 +194,7 @@ Then we define the functions.
 
 Where the functions ``dist`` and ``make_conn`` are designed to get the connection strength $$J$$ between each of the two neuron groups. In the ``make_conn`` function, we first calculate the distance matrix between each of the two $$x$$. Because neurons are arranged in rings, the value of $$x$$ is between $$-\pi$$ and $$\pi$$, so the range of $$|x-x'|$$ is $$2\pi$$, and -$$\pi$$ and $$\pi$$ are the same points (the actual maximum value is $$\pi$$, that is, half of ``z_range``, the distance exceeded needs to be subtracted from a ``z_range``). We use the ``dist`` function to handle the distance on the ring.
 
-The ``get_stimulus_by_pos`` function processes external inputs based on position ``pos``, which allows users to get input current by setting target positions. For example, in a simple population coding, we give an external input of ``pos=0``, and we run in this way:
+<!--modify this???-->The ``get_stimulus_by_pos`` function processes external inputs based on position ``pos``, which allows users to get input current by setting target positions. For example, in a simple population coding, we give an external input of ``pos=0``, and we run in this way:
 
 ``` python
 cann = CANN1D(num=512, k=0.1, monitors=['u'])
