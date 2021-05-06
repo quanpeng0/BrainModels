@@ -53,7 +53,7 @@ where the dynamics of the synaptic current $$I$$ can be one of the dynamics we i
 
 In this model, $$u$$ contributes to the short-term facilitation (STF) by increasing from 0 whenever there is a spike on the presynaptic neuron; while $$x$$ contributes to the short-term depression (STD) by decreasing from 1 after the  presynaptic spike. The two directions of facilitation and depression occur simultaneously, and the value of $$\tau_f$$ and $$\tau_d$$ determines which direction of plasticity plays a dominant role.
 
-The code implemented with BrainPy is as follows:
+Now let's see how to implement the STP model with BrainPy. We can see that the plasticity also occurs in synapses, so we will define the class by inheriting from the ``bp.TwoEndConn`` class like synaptic models. The code is as follows:
 
 ![stp_init](../../figs/codes/stp_init.png)
 

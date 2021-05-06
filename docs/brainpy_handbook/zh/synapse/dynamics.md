@@ -101,7 +101,9 @@ $$
 
 接下来我们用BrainPy来实现NMDA模型，代码如下。
 
-<img src="../../figs/codes/nmda.png" style="width:100%">
+<img src="../../figs/codes/nmda_init.png" style="width:100%">
+
+<img src="../../figs/codes/nmda_update.png" style="width:100%">
 
 由于前面我们已经定义了``run_syn``函数，在这里我们可以直接调用：
 
@@ -111,7 +113,7 @@ run_syn(NMDA)
 
 ![png](../../figs/out/output_nmda.png)
 
-由图可以看出，NMDA的上升和衰减过程都比AMPA模型更加缓慢。
+由图可以看出，NMDA的衰减过程非常缓慢，第一个突触前神经元的动作电位引起的$$s$$增加后还没怎么衰减，第二个的值就加上去了，由于我们这里只跑了30ms的模拟，还看不到NMDA衰退的过程。
 
 
 
@@ -134,9 +136,15 @@ $$[R]$$的动力学类似于AMPA模型中$$s$$，受神经递质浓度$$[T]$$影
 
 用BrainPy实现的代码如下。
 
-<img src="../../figs/codes/gabab.png" style="width:100%">
+<img src="../../figs/codes/gabab_init.png" style="width:100%">
+
+<img src="../../figs/codes/gabab_update.png" style="width:100%">
+
+由于GABA<sub>B</sub>也是非常缓慢的模型，这里我们不再用前面写的只有30ms模拟的``run_syn``，而是先给20ms的输入，接着看剩余1000ms在没有外界输入情况下的衰减。
 
 ![png](../../figs/out/output_gabab.png)
+
+从结果可以看到，GABA<sub>B</sub>的衰减确实非常慢，在移除外界输入之后几百ms内都还在衰减。
 
 > （抑制性 -> E, I）
 

@@ -1,6 +1,6 @@
-# (Appendix) More Chemical Synapse Models
+## (Appendix) More Chemical Synapse Models
 
-### NMDA
+#### NMDA synapse
 
 The dynamics of NMDA is given by:
 
@@ -21,7 +21,7 @@ $$
 g(t) = \bar{g}_{syn} \cdot g_{\infty}  s 
 $$
 
-Where $E=0$.
+Where $$E=0$$.
 
 The implementation in BrainPy is as follows:
 
@@ -231,5 +231,5 @@ plt.show()
 ```
 
 
-![png](/home/nipcora/Documents/Brain-Models-book/figs/out/output_103_0.png)
+![png](../../figs/out/output_103_0.png)
 
