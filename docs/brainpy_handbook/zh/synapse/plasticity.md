@@ -278,7 +278,7 @@ $$
 
 
 
-![png](../../figs/out/output_61_0.png)
+![png](../../figs/out/output_oja.png)
 
 从结果可以看到，在前100ms内，$$j_1$$和$$j_2$$均与$$i$$同步发放，他们对应的$$w_1$$和$$w_2$$也同步增加，显示出LTP。而100ms后，$$j_1$$（蓝色）不再发放，只有$$j_2$$（红色）与$$i$$同步发放，因此$$w_1$$不再增加，$$w_2$$则持续增加。该结果符合赫布学习律。
 
@@ -309,42 +309,36 @@ $$
 定义了BCM类以后，我们可以跑模拟了。
 
 ```python
-n_post = 1
-n_pre = 20
+# create input
+group1, _ = bp.inputs.constant_current(([1.5, 1],
+                                        [0, 1]) * 10)
+group2, duration = bp.inputs.constant_current(([0, 1],
+                                               [1., 1]) * 10)
+group1 = np.vstack(((group1,) * 10))
+group2 = np.vstack(((group2,) * 10))
+input_r = np.vstack((group1, group2))
 
-# group selection
-group1, duration = bp.inputs.constant_current(([1.5, 1], [0, 1]) * 20)
-group2, duration = bp.inputs.constant_current(([0, 1], [1., 1]) * 20)
-group1 = bp.ops.vstack(((group1,)*10))
-group2 = bp.ops.vstack(((group2,)*10))
-input_r = bp.ops.vstack((group1, group2))
-
-pre = neu(n_pre, monitors=['r'])
-post = neu(n_post, monitors=['r'])
-bcm = BCM(pre=pre, post=post,conn=bp.connect.All2All(),
+# simulate
+pre = neu(20, monitors=['r'])
+post = neu(1, monitors=['r'])
+bcm = BCM(pre=pre, post=post, conn=bp.connect.All2All(),
           monitors=['w'])
-
 net = bp.Network(pre, bcm, post)
 net.run(duration, inputs=(pre, 'r', input_r.T, "="))
 
-w1 = bp.ops.mean(bcm.mon.w[:, :10, 0], 1)
-w2 = bp.ops.mean(bcm.mon.w[:, 10:, 0], 1)
-
-r1 = bp.ops.mean(pre.mon.r[:, :10], 1)
-r2 = bp.ops.mean(pre.mon.r[:, 10:], 1)
-
-fig, gs = bp.visualize.get_figure(2, 1, 3, 12)
-fig.add_subplot(gs[1, 0], xlim=(0, duration), ylim=(0, w_max))
-plt.plot(net.ts, w1, 'b', label='w1')
-plt.plot(net.ts, w2, 'r', label='w2')
+# plot
+fig, gs = bp.visualize.get_figure(2, 1)
+fig.add_subplot(gs[1, 0], xlim=(0, duration), ylim=(0, bcm.w_max))
+plt.plot(net.ts, bcm.mon.w[:, 0], 'b', label='w1')
+plt.plot(net.ts, bcm.mon.w[:, 11], 'r', label='w2')
 plt.title("weights")
 plt.ylabel("weights")
 plt.xlabel("t")
 plt.legend()
 
 fig.add_subplot(gs[0, 0], xlim=(0, duration))
-plt.plot(net.ts, r1, 'b', label='r1')
-plt.plot(net.ts, r2, 'r', label='r2')
+plt.plot(net.ts, pre.mon.r[:, 0], 'b', label='r1')
+plt.plot(net.ts, pre.mon.r[:, 11], 'r', label='r2')
 plt.title("inputs")
 plt.ylabel("firing rate")
 plt.xlabel("t")
@@ -354,7 +348,7 @@ plt.show()
 ```
 
 
-![png](../../figs/out/output_66_0.png)
+![png](../../figs/out/output_bcm.png)
 
 结果显示，每次发放率都比较高的$$j_1$$（蓝色），其对应的$$w_1$$持续增加，显示出LTP。而$$w_2$$则呈现出LTD，这个结果显示出BCM法则的选择功能。
 

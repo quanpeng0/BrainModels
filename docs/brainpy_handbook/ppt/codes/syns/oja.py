@@ -15,9 +15,7 @@ class Oja(bp.TwoEndConn):
     dwdt = gamma * (r_post * r_pre - r_post * r_post * w)
     return dwdt
 
-  def __init__(self, pre, post, conn, delay=0.,
-               gamma=0.005, w_max=1., w_min=0.,
-               **kwargs):
+  def __init__(self, pre, post, conn, gamma=.005, w_max=1., w_min=0., **kwargs):
     # params
     self.gamma = gamma
     self.w_max = w_max
@@ -42,9 +40,8 @@ class Oja(bp.TwoEndConn):
       post_id = self.post_ids[i]
       add = self.w[i] * self.pre.r[pre_id]
       post_r[post_id] += add
-      self.w[i] = self.integral(
-        self.w[i], _t, self.gamma,
-        self.pre.r[pre_id], self.post.r[post_id])
+      self.w[i] = self.integral(self.w[i], _t, self.gamma, self.pre.r[pre_id],
+                                self.post.r[post_id])
     self.post.r = post_r
 
 

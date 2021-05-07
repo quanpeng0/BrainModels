@@ -14,9 +14,7 @@ class Oja(bp.TwoEndConn):
     dwdt = gamma * (r_post * r_pre - r_post * r_post * w)
     return dwdt
 
-  def __init__(self, pre, post, conn, delay=0.,
-               gamma=0.005, w_max=1., w_min=0.,
-               **kwargs):
+  def __init__(self, pre, post, conn, gamma=.005, w_max=1., w_min=0., **kwargs):
     # params
     self.gamma = gamma
     self.w_max = w_max
@@ -58,8 +56,8 @@ class neu(bp.NeuGroup):
 
 
 # create input
-current1, _ = bp.inputs.constant_current(
-  [(2., 20.), (0., 20.)] * 3 + [(0., 20.), (0., 20.)] * 2)
+current1, _ = bp.inputs.constant_current([(2., 20.), (0., 20.)] * 3 +
+                                         [(0., 20.), (0., 20.)] * 2)
 current2, _ = bp.inputs.constant_current([(2., 20.), (0., 20.)] * 5)
 current3, _ = bp.inputs.constant_current([(2., 20.), (0., 20.)] * 5)
 current_pre = np.vstack((current1, current2))

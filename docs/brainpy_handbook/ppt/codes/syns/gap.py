@@ -39,8 +39,7 @@ class Gap_junction(bp.TwoEndConn):
 
       out = self.spikelet.pull(i)
       if self.post_has_refractory:
-        self.post.V[post_id] += out * (1. -
-                                       self.post.refractory[post_id])
+        self.post.V[post_id] += out * (1. - self.post.refractory[post_id])
       else:
         self.post.V[post_id] += out
 
