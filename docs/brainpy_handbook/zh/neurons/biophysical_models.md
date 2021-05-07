@@ -4,7 +4,7 @@
 
 Hodgkin和Huxley（1952）在枪乌贼的巨轴突上用膜片钳技术记录了动作电位的产生，并提出了经典的神经元模型**Hodgkin-Huxley模型**（**HH模型**）。
 
-上一节我们已经介绍了细胞膜的一般性模板。Hodgkin和Huxley将神经元细胞膜建模为等效电路，如下图所示。
+上一节我们已经介绍了细胞膜的一般性模板。HH模型中将神经元细胞膜建模为等效电路，如下图所示。
 
 <center><img src="../../figs/neus/1-2.png">	</center>
 
@@ -56,7 +56,7 @@ $$
 
 ![png](../../figs/neus/codes/HH2.png)
 
-*在我们的github仓库中运行代码:：https://github.com/PKU-NIP-Lab/BrainModels（如无特殊说明，下同）*
+*在我们的github仓库中运行代码：https://github.com/PKU-NIP-Lab/BrainModels（如无特殊说明，下同）*
 
 BrainPy仿真的HH模型的V-t图如下所示。真实神经元产生动作电位的三个阶段，去极化、复极化和不应期都可以对应到下图中。另外在去极化时，HH模型的膜电位先是缓慢积累外部输入，一旦其值高于某个特定值，膜电位就转为快速增长，这也复现了真实动作电位的形状。
 

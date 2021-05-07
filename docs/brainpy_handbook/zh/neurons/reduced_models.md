@@ -2,8 +2,6 @@
 
 启发自生理实验的Hodgkin-Huxley模型准确但昂贵。研究者们提出了简化模型，希望能降低仿真的运行时间和计算资源的消耗。
 
-These models are simple and easy to compute, while they can still reproduce the main pattern of neuron behaviors. Although their representation capabilities are not as good as biophysical models, such a loss of accuracy is sometimes acceptable considering their simplicity.
-
 简化模型简单、易于计算，并且他们仍然能够复现神经元发放的主要特征。尽管它们的表示能力不如生理模型，但和它们的简便相比，在特定场景下研究者们有时也可以接受一定的精度损失。
 
 ### 1.3.1 泄漏积分-发放模型
