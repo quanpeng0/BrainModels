@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-from numba import prange
 
 __all__ = [
     'QuaIF'
@@ -45,16 +44,13 @@ class QuaIF(bp.NeuGroup):
     mode          'scalar'       \        Data structure of ST members.
     ============= ============== ======== ========================================================================================================================    
     
-    Returns:
-        bp.Neutype: return description of QuaIF model.
+    **Neuron Variables**
 
-    **Neuron State**
+    An object of neuron class record those variables for each synapse:
 
-    ST refers to neuron state, members of ST are listed below:
-    
-    =============== ================= =========================================================
-    **Member name** **Initial Value** **Explanation**
-    --------------- ----------------- ---------------------------------------------------------
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     V               0.                Membrane potential.
     
     input           0.                External and synaptic input current.
@@ -70,9 +66,6 @@ class QuaIF(bp.NeuGroup):
     t_last_spike    -1e7              Last spike time stamp.
     =============== ================= =========================================================
     
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-        
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
                neurons to networks and models of cognition. Cambridge 

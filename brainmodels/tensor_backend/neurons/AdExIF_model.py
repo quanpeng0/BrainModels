@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-from numba import prange
 
 __all__ = [
     'AdExIF'
@@ -48,16 +47,13 @@ class AdExIF(bp.NeuGroup):
     noise         0.             \        the noise fluctuation.
     ============= ============== ======== ========================================================================================================================
 
-    Returns:
-        bp.Neutype: return description of the AdExIF model.
+    **Neuron Variables**
 
-    **Neuron State**
+    An object of neuron class record those variables for each synapse:
 
-    ST refers to neuron state, members of ST are listed below:
-    
-    =============== ================= =========================================================
-    **Member name** **Initial Value** **Explanation**
-    --------------- ----------------- ---------------------------------------------------------
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     V               0.                Membrane potential.
 
     w               0.                Adaptation current.
@@ -74,9 +70,6 @@ class AdExIF(bp.NeuGroup):
                              
     t_last_spike    -1e7              Last spike time stamp.
     =============== ================= =========================================================
-    
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).  
     
     References:
         .. [1] Fourcaud-Trocmé, Nicolas, et al. "How spike generation 

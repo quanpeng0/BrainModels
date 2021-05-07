@@ -52,25 +52,20 @@ class NMDA(bp.TwoEndConn):
     ============= ============== =============== ================================================    
     
     
-    Returns:
-        bp.Syntype: return description of the NMDA synapse model.
+    **Synapse Variables**
 
-    **Synapse State**
+    An object of synapse class record those variables for each synapse:
 
-    ST refers to the synapse state, items in ST are listed below:
-    
-    =============== ================== =========================================================
-    **Member name** **Initial values** **Explanation**
-    --------------- ------------------ --------------------------------------------------------- 
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     s               0                     Gating variable.
     
     g               0                     Synapse conductance.
 
     x               0                     Gating variable.
     =============== ================== =========================================================
-    
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
+
         
     References:
         .. [1] Brunel N, Wang X J. Effects of neuromodulation in a 

@@ -48,13 +48,13 @@ class QuaIF(bp.NeuGroup):
     Returns:
         bp.Neutype: return description of QuaIF model.
 
-    **Neuron State**
+    **Neuron Variables**
 
-    ST refers to neuron state, members of ST are listed below:
-    
-    =============== ================= =========================================================
-    **Member name** **Initial Value** **Explanation**
-    --------------- ----------------- ---------------------------------------------------------
+    An object of neuron class record those variables for each synapse:
+
+	================== ================= =========================================================
+    **Variables name** **Initial Value** **Explanation**
+    ------------------ ----------------- ---------------------------------------------------------
     V               0.                Membrane potential.
     
     input           0.                External and synaptic input current.
@@ -70,9 +70,6 @@ class QuaIF(bp.NeuGroup):
     t_last_spike    -1e7              Last spike time stamp.
     =============== ================= =========================================================
     
-    Note that all ST members are saved as floating point type in BrainPy, 
-    though some of them represent other data types (such as boolean).
-        
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
                neurons to networks and models of cognition. Cambridge 
