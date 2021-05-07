@@ -6,59 +6,62 @@ import matplotlib.pyplot as plt
 bp.backend.set(backend='numba', dt=0.1)
 bm.set_backend(backend='numba')
 
+
 class Oja(bp.TwoEndConn):
-    target_backend = ['numpy', 'numba']
+  target_backend = ['numpy', 'numba']
 
-    @staticmethod
-    def derivative(w, t, gamma, r_pre, r_post):
-        dwdt = gamma * (r_post * r_pre - r_post * r_post * w)
-        return dwdt
+  @staticmethod
+  def derivative(w, t, gamma, r_pre, r_post):
+    dwdt = gamma * (r_post * r_pre - r_post * r_post * w)
+    return dwdt
 
-    def __init__(self, pre, post, conn, delay=0.,
-                 gamma=0.005, w_max=1., w_min=0.,
-                 **kwargs):
-        # params
-        self.gamma = gamma
-        self.w_max = w_max
-        self.w_min = w_min
-        # no delay in firing rate models
+  def __init__(self, pre, post, conn, delay=0.,
+               gamma=0.005, w_max=1., w_min=0.,
+               **kwargs):
+    # params
+    self.gamma = gamma
+    self.w_max = w_max
+    self.w_min = w_min
+    # no delay in firing rate models
 
-        # conns
-        self.conn = conn(pre.size, post.size)
-        self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-        self.size = len(self.pre_ids)
+    # conns
+    self.conn = conn(pre.size, post.size)
+    self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
+    self.size = len(self.pre_ids)
 
-        # data
-        self.w = bp.ops.ones(self.size) * 0.05
+    # data
+    self.w = bp.ops.ones(self.size) * 0.05
 
-        self.integral = bp.odeint(f=self.derivative)
-        super(Oja, self).__init__(pre=pre, post=post, **kwargs)
+    self.integral = bp.odeint(f=self.derivative)
+    super(Oja, self).__init__(pre=pre, post=post, **kwargs)
 
-    def update(self, _t):
-        post_r = bp.ops.zeros(self.post.size[0])
-        for i in range(self.size):
-            pre_id = self.pre_ids[i]
-            post_id = self.post_ids[i]
-            add = self.w[i] * self.pre.r[pre_id]
-            post_r[post_id] += add
-            self.w[i] = self.integral(
-                self.w[i], _t, self.gamma,
-                self.pre.r[pre_id], self.post.r[post_id])
-        self.post.r = post_r
+  def update(self, _t):
+    post_r = bp.ops.zeros(self.post.size[0])
+    for i in range(self.size):
+      pre_id = self.pre_ids[i]
+      post_id = self.post_ids[i]
+      add = self.w[i] * self.pre.r[pre_id]
+      post_r[post_id] += add
+      self.w[i] = self.integral(
+        self.w[i], _t, self.gamma,
+        self.pre.r[pre_id], self.post.r[post_id])
+    self.post.r = post_r
+
 
 class neu(bp.NeuGroup):
-    target_backend = ['numpy', 'numba']
+  target_backend = ['numpy', 'numba']
 
-    def __init__(self, size, **kwargs):
-        self.r = bp.ops.zeros(size)
-        super(neu, self).__init__(size=size, **kwargs)
+  def __init__(self, size, **kwargs):
+    self.r = bp.ops.zeros(size)
+    super(neu, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
-        self.r = self.r
+  def update(self, _t):
+    self.r = self.r
+
 
 # create input
 current1, _ = bp.inputs.constant_current(
-                        [(2., 20.), (0., 20.)] * 3 + [(0., 20.), (0., 20.)] * 2)
+  [(2., 20.), (0., 20.)] * 3 + [(0., 20.), (0., 20.)] * 2)
 current2, _ = bp.inputs.constant_current([(2., 20.), (0., 20.)] * 5)
 current3, _ = bp.inputs.constant_current([(2., 20.), (0., 20.)] * 5)
 current_pre = np.vstack((current1, current2))

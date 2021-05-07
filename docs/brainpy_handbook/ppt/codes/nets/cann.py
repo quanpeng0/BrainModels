@@ -3,75 +3,75 @@ import numpy as np
 bp.backend.set(backend='numpy', dt=0.1)
 
 class CANN1D(bp.NeuGroup):
-    target_backend = ['numpy', 'numba']
+  target_backend = ['numpy', 'numba']
 
-    def __init__(self, num, tau=1., k=8.1, a=0.5, A=10., J0=4.,
-                 z_min=-np.pi, z_max=np.pi, **kwargs):
-        # parameters
-        self.tau = tau  # The synaptic time constant
-        self.k = k      # Degree of the rescaled inhibition
-        self.a = a      # Half-width of the range of excitatory connections
-        self.A = A      # Magnitude of the external input
-        self.J0 = J0    # maximum connection value
+  def __init__(self, num, tau=1., k=8.1, a=0.5, A=10., J0=4.,
+               z_min=-np.pi, z_max=np.pi, **kwargs):
+    # parameters
+    self.tau = tau  # The synaptic time constant
+    self.k = k      # Degree of the rescaled inhibition
+    self.a = a      # Half-width of the range of excitatory connections
+    self.A = A      # Magnitude of the external input
+    self.J0 = J0    # maximum connection value
 
-        # feature space
-        self.z_min = z_min
-        self.z_max = z_max
-        self.z_range = z_max - z_min
-        self.x = np.linspace(z_min, z_max, num)  # The encoded feature values
+    # feature space
+    self.z_min = z_min
+    self.z_max = z_max
+    self.z_range = z_max - z_min
+    self.x = np.linspace(z_min, z_max, num)  # The encoded feature values
 
-        # variables
-        self.u = np.zeros(num)
-        self.input = np.zeros(num)
+    # variables
+    self.u = np.zeros(num)
+    self.input = np.zeros(num)
 
-        # The connection matrix
-        self.conn_mat = self.make_conn(self.x)
+    # The connection matrix
+    self.conn_mat = self.make_conn(self.x)
 
-        super(CANN1D, self).__init__(size=num, **kwargs)
+    super(CANN1D, self).__init__(size=num, **kwargs)
 
-        self.rho = num / self.z_range   # The neural density
-        self.dx = self.z_range / num    # The stimulus density
+    self.rho = num / self.z_range   # The neural density
+    self.dx = self.z_range / num    # The stimulus density
 
-    @staticmethod
-    @bp.odeint(method='rk4', dt=0.05)
-    def int_u(u, t, conn, k, tau, Iext):
-        r1 = np.square(u)
-        r2 = 1.0 + k * np.sum(r1)
-        r = r1 / r2
-        Irec = np.dot(conn, r)
-        du = (-u + Irec + Iext) / tau
-        return du
+  @staticmethod
+  @bp.odeint(method='rk4', dt=0.05)
+  def int_u(u, t, conn, k, tau, Iext):
+    r1 = np.square(u)
+    r2 = 1.0 + k * np.sum(r1)
+    r = r1 / r2
+    Irec = np.dot(conn, r)
+    du = (-u + Irec + Iext) / tau
+    return du
 
-    def dist(self, d):
-        d = np.remainder(d, self.z_range)
-        d = np.where(d > 0.5 * self.z_range, d - self.z_range, d)
-        return d
+  def dist(self, d):
+    d = np.remainder(d, self.z_range)
+    d = np.where(d > 0.5 * self.z_range, d - self.z_range, d)
+    return d
 
-    def make_conn(self, x):
-        assert np.ndim(x) == 1
-        x_left = np.reshape(x, (-1, 1))
-        x_right = np.repeat(x.reshape((1, -1)), len(x), axis=0)
-        d = self.dist(x_left - x_right)
-        Jxx = self.J0 * np.exp(-0.5 * np.square(d / self.a)) / (
-                                              np.sqrt(2 * np.pi) * self.a)
-        return Jxx
+  def make_conn(self, x):
+    assert np.ndim(x) == 1
+    x_left = np.reshape(x, (-1, 1))
+    x_right = np.repeat(x.reshape((1, -1)), len(x), axis=0)
+    d = self.dist(x_left - x_right)
+    Jxx = self.J0 * np.exp(-0.5 * np.square(d / self.a)) / (
+            np.sqrt(2 * np.pi) * self.a)
+    return Jxx
 
-    def get_stimulus_by_pos(self, pos):
-        return self.A * np.exp(-0.25 * np.square(self.dist(self.x -
-                                                           pos) / self.a))
+  def get_stimulus_by_pos(self, pos):
+    return self.A * np.exp(-0.25 * np.square(self.dist(self.x -
+                                                       pos) / self.a))
 
-    def update(self, _t):
-        self.u = self.int_u(self.u, _t, self.conn_mat, self.k, self.tau,
-                            self.input)
-        self.input[:] = 0.
+  def update(self, _t):
+    self.u = self.int_u(self.u, _t, self.conn_mat, self.k, self.tau,
+                        self.input)
+    self.input[:] = 0.
 
 
 def plot_animate(frame_step=5, frame_delay=50):
-    bp.visualize.animate_1D(dynamical_vars=[{'ys': cann.mon.u, 'xs': cann.x,
-                                             'legend': 'u'}, {'ys': Iext,
-                                             'xs': cann.x, 'legend': 'Iext'}],
-                            frame_step=frame_step, frame_delay=frame_delay,
-                            show=True)
+  bp.visualize.animate_1D(dynamical_vars=[{'ys': cann.mon.u, 'xs': cann.x,
+                                           'legend': 'u'}, {'ys': Iext,
+                                                            'xs': cann.x, 'legend': 'Iext'}],
+                          frame_step=frame_step, frame_delay=frame_delay,
+                          show=True)
 
 cann = CANN1D(num=512, k=0.1, monitors=['u'])
 I1 = cann.get_stimulus_by_pos(0.)

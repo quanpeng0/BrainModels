@@ -8,64 +8,64 @@ bm.set_backend(backend='numpy')
 
 
 class BCM(bp.TwoEndConn):
-    target_backend = ['numpy', 'numba']
+  target_backend = ['numpy', 'numba']
 
-    @staticmethod
-    def derivative(w, t, lr, r_pre, r_post, r_th):
-        dwdt = lr * r_post * (r_post - r_th) * r_pre
-        return dwdt
+  @staticmethod
+  def derivative(w, t, lr, r_pre, r_post, r_th):
+    dwdt = lr * r_post * (r_post - r_th) * r_pre
+    return dwdt
 
-    def __init__(self, pre, post, conn, lr=0.005, w_max=1., w_min=0., **kwargs):
-        # parameters
-        self.lr = lr
-        self.w_max = w_max
-        self.w_min = w_min
-        self.dt = bp.backend._dt
+  def __init__(self, pre, post, conn, lr=0.005, w_max=1., w_min=0., **kwargs):
+    # parameters
+    self.lr = lr
+    self.w_max = w_max
+    self.w_min = w_min
+    self.dt = bp.backend._dt
 
-        # connections
-        self.conn = conn(pre.size, post.size)
-        self.conn_mat = conn.requires('conn_mat')
-        self.size = bp.ops.shape(self.conn_mat)
+    # connections
+    self.conn = conn(pre.size, post.size)
+    self.conn_mat = conn.requires('conn_mat')
+    self.size = bp.ops.shape(self.conn_mat)
 
-        # variables
-        self.w = bp.ops.ones(self.size) * .5
-        self.sum_post_r = bp.ops.zeros(post.size[0])
-        self.r_th = bp.ops.zeros(post.size[0])
+    # variables
+    self.w = bp.ops.ones(self.size) * .5
+    self.sum_post_r = bp.ops.zeros(post.size[0])
+    self.r_th = bp.ops.zeros(post.size[0])
 
-        self.int_w = bp.odeint(f=self.derivative, method='rk4')
+    self.int_w = bp.odeint(f=self.derivative, method='rk4')
 
-        super(BCM, self).__init__(pre=pre, post=post, **kwargs)
+    super(BCM, self).__init__(pre=pre, post=post, **kwargs)
 
-    def update(self, _t):
-        # update threshold
-        self.sum_post_r += self.post.r
-        r_th = self.sum_post_r / (_t / self.dt + 1)
-        self.r_th = r_th
+  def update(self, _t):
+    # update threshold
+    self.sum_post_r += self.post.r
+    r_th = self.sum_post_r / (_t / self.dt + 1)
+    self.r_th = r_th
 
-        # resize to matrix
-        w = self.w * self.conn_mat
-        dim = self.size
-        r_th = np.vstack((r_th,) * dim[0])
-        r_post = np.vstack((self.post.r,) * dim[0])
-        r_pre = np.vstack((self.pre.r,) * dim[1]).T
+    # resize to matrix
+    w = self.w * self.conn_mat
+    dim = self.size
+    r_th = np.vstack((r_th,) * dim[0])
+    r_post = np.vstack((self.post.r,) * dim[0])
+    r_pre = np.vstack((self.pre.r,) * dim[1]).T
 
-        # update w
-        w = self.int_w(w, _t, self.lr, r_pre, r_post, r_th)
-        self.w = np.clip(w, self.w_min, self.w_max)
+    # update w
+    w = self.int_w(w, _t, self.lr, r_pre, r_post, r_th)
+    self.w = np.clip(w, self.w_min, self.w_max)
 
-        # output
-        self.post.r = np.sum(w.T * self.pre.r, axis=1)
+    # output
+    self.post.r = np.sum(w.T * self.pre.r, axis=1)
 
 
 class neu(bp.NeuGroup):
-    target_backend = ['numpy', 'numba']
+  target_backend = ['numpy', 'numba']
 
-    def __init__(self, size, **kwargs):
-        self.r = np.zeros(size)
-        super(neu, self).__init__(size=size, **kwargs)
+  def __init__(self, size, **kwargs):
+    self.r = np.zeros(size)
+    super(neu, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
-        self.r = self.r
+  def update(self, _t):
+    self.r = self.r
 
 
 # create input
