@@ -22,27 +22,24 @@ $$
 
 <center><b>Fig1-4 Equivalent circuit of LIF model</b></center>
 
-尽管LIF模型可以产生动作电位，但没有建模动作电位的形状，即在发放一个峰电位之前，LIF神经元的膜电位不会骤增。并且在原始模型中，不应期也被忽视了。为了仿真模拟不应期，必须再补充一个条件判断：
+尽管LIF模型可以产生动作电位，但没有建模动作电位的形状。在发放动作电位前，LIF神经元膜电位的增长速度将逐渐降低，而并非像真实神经元那样先缓慢增长，在跨过阈值电位之后转为迅速增长。
 
-如果
-$$
-t-t_{last spike}<=refractory period
-$$
-则神经元处在不应期中，膜电位$$V$$不再更新。
+原始LIF模型还忽略了不应期。要模拟不应期，必须再补充一个条件判断：如果当前时刻距离上次发放的时间小于不应期时长，则神经元处于不应期，膜电位$$V$$不再更新。
 
 <center><img src="../../figs/neus/codes/LIF.PNG"></center>
 
+<center><img src="../../figs/neus/out/output_37_0.png"></center>
 
-![png](../../figs/neus/out/output_37_0.png)
+------
 
 ### 1.3.2 二次积分-发放模型
 
-为了追求更强的表示能力，Latham等人（2000）提出了**二次积分-发放模型**（Quadratic Integrate-and-Fire model，**QuaIF model**），他们在微分方程的右侧添加了一个二阶项，使得神经元能产生更好的动作电位。
+LIF模型固然简洁，但像上一节末尾所讲的那样，有着诸多限制。为了弥补它在表示能力上的缺陷，Latham等人（2000）提出了**二次积分-发放模型**（Quadratic Integrate-and-Fire model，**QuaIF model**）。在QuaIF模型中，微分方程右侧的二阶项使得神经元能产生和真实神经元更“像”的动作电位。
 $$
 \tau\frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) + RI(t)
 $$
 
-在上式中，$$a_0$$是控制着膜电位发放前的斜率的参数，$$V_c$$是动作电位初始化的临界值。当低于 $$V_C$$时，膜电位 $$V$$缓慢增长，一旦越过 $$V_C$$， $$V$$就转为迅速增长。
+在上式中，$$a_0$$和$$V_C$$共同控制着动作电位的初始化，其中，$$a_0$$控制着发放前膜电位的增长速度，也即膜电位相对时间变化的斜率；$$V_c$$是动作电位初始化的临界值，当膜电位$$V$$低于 $$V_C$$时，$$V$$缓慢增长，一旦越过 $$V_C$$， $$V$$就转为迅速增长。
 
 <center><img src="../../figs/neus/codes/QuaIF1.PNG"></center>
 
@@ -51,14 +48,16 @@ $$
 
 ![png](../../figs/neus/out/output_41_0.png)
 
+------
 
 ### 1.3.3 指数积分-发放模型
-**指数积分发放模型**（Exponential Integrate-and-Fire model,  **ExpIF model**）（Fourcaud-Trocme et al., 2003）的表示能力比QuaIF模型更强。ExpIF模型在微分方程右侧增加了指数项，使得模型现在可以产生更加真实的动作电位。
+
+**指数积分-发放模型**（Exponential Integrate-and-Fire model,  **ExpIF model**）（Fourcaud-Trocme et al., 2003）在QuaIF模型的基础上更上一层，进一步提升了模型生成的动作电位的真实度。
 $$
 \tau \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} + R I(t)
 $$
 
-在指数项中$$V_T$$是动作电位初始化的临界值，在其下$$V$$缓慢增长，其上$$V$$迅速增长。$$\Delta_T$$是ExpIF模型中动作电位的斜率。当$$\Delta_T\to 0$$时，ExpIF模型中动作电位的形状将等同于$$V_{th} = V_T$$的LIF模型（Fourcaud-Trocme et al.，2003）。
+在指数项中$$V_T$$是动作电位初始化的临界值，在其下$$V$$缓慢增长，其上$$V$$迅速增长。$$\Delta_T$$是ExpIF模型中动作电位的斜率。当$$\Delta_T\to 0$$时，ExpIF模型中动作电位的形状将趋近于$$V_{th} = V_T$$的LIF模型（Fourcaud-Trocme et al.，2003）。
 
 <center><img src="../../figs/neus/codes/ExpIF1.PNG"></center>
 
@@ -67,11 +66,19 @@ $$
 
 ![png](../../figs/neus/out/output_45_0.png)
 
+在上图中可以看到，ExpIF模型中膜电位相对于时间的斜率在每次上升到$$V_T$$值（-59.9mV）附近时，都发生了一个明显的转变，这是由于微分方程中指数项的调控。比起QuaIF模型，这种转变显得更加自然。
+
+------
+
 ### 1.3.4 适应性指数积分-发放模型
 
-当面对恒定的外部刺激时，神经元一开始高频发放，随后发放率逐渐降低，最终稳定在一个较小值，这种现象生物上称为**适应**。
+在以上诸积分-发放模型中，建模了神经元的标准动作电位，但尚有许多神经元的行为未被涉及。
 
-为了复现神经元的适应行为，研究者们在已有的积分-发放模型，如LIF、QuaIF和ExpIF模型上增加了权重变量w。这里我们介绍其中一个经典模型，**适应性指数积分-发放模型**（Adaptive Exponential Integrate-and-Fire model，**AdExIF model**）（Gerstner et al.，2014）。
+让我们稍稍离题，请读者做这样一种想象：你独自一人来到夜晚的海边，一开始，你闻到海风里的腥味，忍不住深吸一口气（或者捂住鼻子）。但过了一会儿，不管主观上想要亲近还是远离大海，你再也闻不见这种腥气——或者至少是以为自己闻不见了。这是因为你的嗅觉系统习惯了这种刺激，不再无休无止地提醒你的大脑附近存在着异味了。
+
+上面这个例子中，对鱼腥味发生**适应**的是整个嗅觉感知系统。不过，在单神经元尺度上，也存在类似的行为。当特定类型的神经元面对恒定的外部刺激时，一开始神经元高频发放，随后发放率逐渐降低，最终稳定在一个较小值，这就是神经元的适应行为。
+
+为了复现这种行为，研究者们在已有的积分-发放模型（如LIF、QuaIF和ExpIF模型等）上增加了权重变量$$w$$。这里我们介绍其中的**适应性指数积分-发放模型**（Adaptive Exponential Integrate-and-Fire model，**AdExIF model**）（Gerstner et al.，2014）。
 $$
 \tau_m \frac{dV}{dt} = - (V - V_{rest}) + \Delta_T e^{\frac{V - V_T}{\Delta_T}} - R w + R I(t)
 $$
@@ -80,11 +87,11 @@ $$
 \tau_w \frac{dw}{dt} = a(V - V_{rest})- w + b \tau_w \sum \delta(t - t^f))
 $$
 
-就如它的名字所示，AdExIF模型的第一个微分方程和我们上面介绍的ExpIF模型非常相似，不同的是适应项，即方程中$$-Rw$$这一项。
+如其名所示，AdExIF模型的第一个微分方程和我们上面介绍的ExpIF模型非常相似，唯一区别是方程右侧增加了控制神经元适应行为的权重项，即$$-Rw$$一项。
 
-权重项$$w$$受到第二个微分方程的调控。$$a$$描述了权重变量$$w$$对$$V$$的下阈值波动的敏感性，$$b$$表示$$w$$在一次发放后的增长值，并且$$w$$也会随时间衰减。
+权重项中$$w$$受到第二个微分方程的调控。$$a$$描述了权重变量$$w$$对$$V$$的下阈值波动的敏感性，$$b$$表示$$w$$在一次发放后的增长值，另外，$$w$$也随时间衰减。
 
-给神经元一个恒定输入，在连续发放几个动作电位之后，$$w$$的值将会上升到一个高点，减慢$$V$$的增长速度，从而降低神经元的发放率。
+在这样的一个动力学系统中，给神经元一个恒定输入，在连续数次发放后，$$w$$的值将会上升到一个高点，减慢$$V$$的增长速度，从而降低神经元的发放率。
 
 <center><img src="../../figs/neus/codes/AdExIF1.PNG"></center>
 
@@ -92,9 +99,13 @@ $$
 
 <center><img src = "../../figs/neus/out/output_51_0.png"></center>
 
+------
+
 ### 1.3.5 Hindmarsh-Rose模型
 
-为了模拟神经元中的**爆发式发放**（bursting，即在短时间内的连续发放），Hindmarsh和Rose（1984）提出了**Hindmarsh-Rose模型**，引入了第三个模型变量$$z$$作为慢变量来控制神经元的爆发。
+神经元的行为并不总是符合标准模板的。比如，不是所有神经元都在每次发放后等待一整个不应期才进行第二次发放。有时，部分神经元面对特定类型的输入，能够产生短时间内的连续发放。和以上所有模型产生的**脉冲式发放**相对地，我们称这种发放模式为**爆发**（brusting），或**爆发式发放**（bursting firing）。
+
+为了模拟神经元的爆发，Hindmarsh和Rose（1984）提出了**Hindmarsh-Rose模型**，引入了第三个模型变量$$z$$作为慢变量控制爆发。
 $$
 \frac{d V}{d t} = y - a V^3 + b V^2 - z + I
 $$
@@ -107,42 +118,40 @@ $$
 \frac{d z}{d t} = r (s (V - V_{rest}) - z)
 $$
 
-The $$V$$ variable refers to membrane potential, and $$y$$, $$z$$ are two gating variables. The parameter $$b$$ in $$\frac{dV}{dt}$$ equation allows the model to switch between spiking and bursting states, and controls the spiking frequency. $$r$$ controls slow variable $$z$$'s variation speed, affects the number of spikes per burst when bursting, and governs the spiking frequency together with $$b$$. The parameter $$s$$ governs adaptation, and other parameters are fitted by firing patterns.
-
-变量$$V$$表示膜电位，$$y$$和$$z$$是两个门控变量。在$$dV/dt$$方程中的参数$$b$$允许模型在发放和爆发两个状态之间切换，并且控制着发放的频率。参数$$r$$控制着慢变量$$z$$的变化速度，影响着神经元爆发式发放时，每次爆发包含的动作电位个数，并且和$$b$$一起统筹控制发放频率，参数$$s$$控制着适应行为。其它参数根据发放模式拟合得到。
+式中，变量$$V$$表示膜电位，$$y$$和$$z$$是两个门控变量。在$$dV/dt$$方程中的参数$$b$$允许模型在脉冲式发放和爆发式发放之间切换，并控制脉冲式发放的频率。$$dz/dt$$方程中，参数$$r$$控制慢变量$$z$$的变化速率，影响神经元爆发式发放时，每次爆发包含的动作电位个数，并和参数$$b$$共同控制脉冲式发放的频率；参数$$s$$控制着神经元的适应行为。其它参数根据发放模式拟合得到。
 
 <center><img src="../../figs/neus/codes/HindmarshRose.PNG">	</center>
 
 ![png](../../figs/neus/out/output_58_1.png)
 
-在下图中，画出了三个变量随时间的变化，可以看到慢变量$$z$$的改变要慢于$$V$$和$$y$$。而且，$$V$$和$$y$$在仿真过程中呈周期性变化。
+下图中画出了$$V$$、$$y$$、$$z$$三个变量随时间的变化。可以看到，慢变量$$z$$的变化速率确实慢于$$V$$和$$y$$。而且，$$V$$和$$y$$在仿真过程中呈近似周期性的变化。
 
 ![png](../../figs/neus/out/output_60_1.png)
 
-利用BrainPy的理论分析模块`analysis`，我们可以分析出这种周期性的产生原因。在模型的相图中，$$V$$和$$y$$的轨迹趋近于一个极限环，因此他们的值会沿着极限环发生周期性的改变。
+利用BrainPy的理论分析模块`analysis`，我们可以找出这种周期性的产生原因。将慢变量$$z$$近似为常数，则Hindmarsh-Rose模型的二维相图中，变量$$V$$和$$y$$的轨迹趋近于一个极限环。因此，这两个变量的值会沿极限环周期性变化。
 
 <center><img src="../../figs/neus/codes/HindmarshRose2.PNG" ></center>
 
 <center><img src="../../figs/neus/1-16.png"></center>
 
+------
+
 ### 1.3.6 归纳积分-发放模型
 
-**归纳积分-发放模型**（Generalized Integrate-and-Fire model，**GeneralizedIF model**）（Mihalaş et al.，2009）整合了多种发放模式。该模型拥有四个模型变量，能产生多于20种发放模式，并可以通过调整参数在各模式之间切换。
-
-
+**归纳积分-发放模型**（Generalized Integrate-and-Fire model，**GeneralizedIF model**）（Mihalaş et al.，2009）整合了多种发放模式。该模型包括四个变量，能产生二十种发放模式，并通过调参在各模式之间切换。
 $$
-\frac{d I_j}{d t} = - k_j I_j, j = {1, 2}
-$$
-
-$$
-\tau \frac{d V}{d t} = ( - (V - V_{rest}) + R\sum_{j}I_j + RI)
+\tau \frac{d V}{d t} =  - (V - V_{rest}) + R\sum_{j}I_j + RI
 $$
 
 $$
 \frac{d V_{th}}{d t} = a(V - V_{rest}) - b(V_{th} - V_{th\infty})
 $$
 
-当$$V$$达到$$V_{th}$$时，GeneralizedIF模型发放：
+$$
+\frac{d I_j}{d t} = - k_j I_j, j = {1, 2}
+$$
+
+当$$V$$达到$$V_{th}$$时，神经元发放：
 $$
 I_j \leftarrow R_j I_j + A_j
 $$
@@ -157,9 +166,9 @@ $$
 
 在$$dV/dt$$的方程中，和所有积分-发放模型一样，$$\tau$$表示时间常数，$$V$$表示膜电位，$$V_{rest}$$表示静息电位，$$R$$为电阻，而$$I$$为外部输入。 
 
-不过，在GIF模型中，数目可变的内部电流被加入到方程中，写作$$\sum_j I_j$$一项。每一个$$I_j$$都代表神经元中的一个内部电流，并以速率$$k_j$$衰减。$$R_j$$和$$A_j$$是自由参数，$$R_j$$描述了$$I_j$$的重置值对发放前的$$I_j$$的值的依赖，$$A_j$$是在发放后加到$$I_j$$上的一个常数值。
+不过，在GIF模型中，数目可变的内部电流被加入到方程中，写作$$\sum_j I_j$$一项。每一个$$I_j$$都代表神经元中的一个内部电流，并以速率$$k_j$$衰减。$$R_j$$和$$A_j$$是自由参数，$$R_j$$描述$$I_j$$重置值对发放前$$I_j$$值的依赖，$$A_j$$则是发放后加到$$I_j$$上的一个常数。
 
-可变的阈值电位$$V_{th}$$受两个参数的调控：$$a$$ 描述了$$V_{th}$$对膜电位$$V$$ 的依赖，$$b$$描述了$$V_{th}$$接近阈值电位在时间趋近于无穷大时的值$$V_{th_{\infty}}$$的速率。$$V_{th_{reset}}$$是当神经元发放时，阈值电位被重置到的值。
+阈值电位$$V_{th}$$也是可变的，受两个参数的调控：$$a$$ 描述了$$V_{th}$$对膜电位$$V$$ 的依赖，$$b$$描述了$$V_{th}$$接近阈值电位在时间趋近于无穷大时的值$$V_{th_{\infty}}$$的速率。$$V_{th_{reset}}$$是当神经元发放时，阈值电位被重置到的值。
 
 <center><img src="../../figs/neus/codes/GIF1.PNG">	</center>
 
