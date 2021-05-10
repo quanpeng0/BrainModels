@@ -293,7 +293,7 @@ The simulation code is as follows.
 
 
 
-![png](../../figs/out/output_61_0.png)
+![png](../../figs/out/output_oja.png)
 
 It can be seen from the results that at the beginning, when the two groups of neurons were given input at the same time, their weights increased simultaneously, and the response of post became stronger and stronger, showing LTP. After 100ms, the blue group is no longer fire together, only the red group still fire together, and only the weights of the red group are increased. The results accord with the "fire together, wire together" of Hebbian learning.
 
@@ -371,7 +371,7 @@ plt.show()
 ```
 
 
-![png](../../figs/out/output_66_0.png)
+![png](../../figs/out/output_bcm.png)
 
 
 The results show that the blue group with stronger input demonstrating LTP, while the red group with weaker input showing LTD, so the blue group is being chosen.

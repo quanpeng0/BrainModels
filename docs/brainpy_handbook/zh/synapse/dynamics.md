@@ -338,15 +338,14 @@ $$
 
 ```python
 import matplotlib.pyplot as plt
-import numpy as np
 
-neu0 = bm.neurons.LIF(2, monitors=['V'], t_refractory=0)
-neu0.V = np.ones(neu0.V.shape) * -10.
-neu1 = bm.neurons.LIF(3, monitors=['V'], t_refractory=0)
-neu1.V = np.ones(neu1.V.shape) * -10.
+neu0 = bm.neurons.LIF(1, monitors=['V'], t_refractory=0)
+neu0.V = bp.ops.ones(neu0.V.shape) * -10.
+neu1 = bm.neurons.LIF(1, monitors=['V'], t_refractory=0)
+neu1.V = bp.ops.ones(neu1.V.shape) * -10.
 syn = Gap_junction(pre=neu0, post=neu1, conn=bp.connect.All2All(),
-                    k_spikelet=5.)
-syn.w = np.ones(syn.w.shape) * .5
+                   k_spikelet=5.)
+syn.w = bp.ops.ones(syn.w.shape) * .5
 
 net = bp.Network(neu0, neu1, syn)
 net.run(100., inputs=(neu0, 'input', 30.))
