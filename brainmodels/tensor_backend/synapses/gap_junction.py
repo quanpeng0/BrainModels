@@ -22,7 +22,7 @@ class Gap_junction(bp.TwoEndConn):
 	================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    w                0.                Synapse weights.
+    w                   0.                Synapse weights.
     ================== ================= =========================================================
 
     Reference:
@@ -68,9 +68,9 @@ class Gap_junction_lif(bp.TwoEndConn):
 	================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    w                0.                Synapse weights.
+    w                   0.                Synapse weights.
     
-    spikelet         0.                conductance for post-synaptic neuron
+    spikelet            0.                conductance for post-synaptic neuron
 	================== ================= =========================================================
 
     References:

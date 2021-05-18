@@ -54,22 +54,22 @@ class AdExIF(bp.NeuGroup):
 	================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    V               0.                Membrane potential.
+    V                   0.                Membrane potential.
 
-    w               0.                Adaptation current.
+    w                   0.                Adaptation current.
        
-    input           0.                External and synaptic input current.
+    input               0.                External and synaptic input current.
     
-    spike           0.                Flag to mark whether the neuron is spiking. 
-    
-                                      Can be seen as bool.
-                             
-    refractory      0.                Flag to mark whether the neuron is in refractory period. 
+    spike               0.                Flag to mark whether the neuron is spiking. 
      
-                                      Can be seen as bool.
+                                          Can be seen as bool.
                              
-    t_last_spike    -1e7              Last spike time stamp.
-    =============== ================= =========================================================
+    refractory          0.                Flag to mark whether the neuron is in refractory period. 
+     
+                                          Can be seen as bool.
+                             
+    t_last_spike        -1e7              Last spike time stamp.
+	================== ================= =========================================================
     
     References:
         .. [1] Fourcaud-Trocmé, Nicolas, et al. "How spike generation 
