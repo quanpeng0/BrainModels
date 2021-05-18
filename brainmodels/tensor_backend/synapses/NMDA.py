@@ -59,11 +59,12 @@ class NMDA(bp.TwoEndConn):
 	================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    s                  0                  Gating variable.
-    
-    g                  0                  Synapse conductance.
+    s                  0                 Gating variable.
 
-    x                  0                  Gating variable.
+    g                  0                 Synapse conductance.
+
+    x                  0                 Gating variable.
+
 	================== ================= =========================================================
 
         

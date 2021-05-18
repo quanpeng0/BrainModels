@@ -24,7 +24,6 @@ class Voltage_jump(bp.TwoEndConn):
     s                  0.                Gating variable of the post-synaptic neuron.
 
     w                  0.                Synaptic weights.
-
 	================== ================= =========================================================
 
     
