@@ -62,7 +62,7 @@ class Two_exponentials(bp.TwoEndConn):
     s                  0                  Gating variable.
 
     x                  0                  Gating variable.                              
-    ================ ================== =========================================================
+    ================= ================== =========================================================
     
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 

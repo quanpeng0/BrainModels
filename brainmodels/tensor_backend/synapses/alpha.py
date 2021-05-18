@@ -53,10 +53,11 @@ class Alpha(bp.TwoEndConn):
 
     ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
-    ------------------ ----------------- ---------------------------------------------------------    g                  0                  Synapse conductance on the post-synaptic neuron.
+    ------------------ ----------------- ---------------------------------------------------------
+    g                  0                  Synapse conductance on the post-synaptic neuron.
     s                  0                  Gating variable.
     x                  0                  Gating variable.  
-    ================ ================== =========================================================
+    ================== ================= =========================================================
 
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 

@@ -48,7 +48,7 @@ class Exponential(bp.TwoEndConn):
 
     w                  0                  Synaptic weights.
                              
-    ================ ================== =========================================================
+	================== ================= =========================================================
 
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 
