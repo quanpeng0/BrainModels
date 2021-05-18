@@ -11,24 +11,10 @@ class Alpha(bp.TwoEndConn):
     Alpha synapse.
 
     .. math::
-
         \\frac {ds} {dt} &= x
 
         \\tau^2 \\frac {dx} {dt} = - 2 \\tau x & - s + \\sum_f \\delta(t-t^f)
 
-
-    For conductance-based (co-base=True):
-
-    .. math::
-
-        I_{syn}(t) = g_{syn} (t) (V(t)-E_{syn})
-
-
-    For current-based (co-base=False):
-
-    .. math::
-
-        I(t) = \\bar{g} s (t)
 
     **Synapse Parameters**
 

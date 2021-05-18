@@ -76,7 +76,7 @@ class HH(bp.NeuGroup):
 
     spike                     0          Flag to mark whether the neuron is spiking.
                                          Can be seen as bool.
-    =============== ==================  =========================================================
+	================== ================= =========================================================
 
     References:
         .. [1] Hodgkin, Alan L., and Andrew F. Huxley. "A quantitative description

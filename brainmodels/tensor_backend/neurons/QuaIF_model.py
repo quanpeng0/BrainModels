@@ -48,23 +48,23 @@ class QuaIF(bp.NeuGroup):
 
     An object of neuron class record those variables for each synapse:
 
-	================== ================= =========================================================
+	================== ================= ===========================================================
     **Variables name** **Initial Value** **Explanation**
-    ------------------ ----------------- ---------------------------------------------------------
-    V               0.                Membrane potential.
+    ------------------ ----------------- -----------------------------------------------------------
+    V                  0.                Membrane potential.
     
-    input           0.                External and synaptic input current.
+    input              0.                External and synaptic input current.
     
-    spike           0.                Flag to mark whether the neuron is spiking. 
+    spike              0.                Flag to mark whether the neuron is spiking. 
     
-                                      Can be seen as bool.
+                                         Can be seen as bool.
                              
-    refractory      0.                Flag to mark whether the neuron is in refractory period. 
+    refractory         0.                Flag to mark whether the neuron is in refractory period. 
      
-                                      Can be seen as bool.
+                                         Can be seen as bool.
                              
-    t_last_spike    -1e7              Last spike time stamp.
-    =============== ================= =========================================================
+    t_last_spike       -1e7              Last spike time stamp.
+	================== ================= ===========================================================
     
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 

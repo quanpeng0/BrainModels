@@ -18,19 +18,6 @@ class Two_exponentials(bp.TwoEndConn):
         -s + \\sum \\delta(t-t^f)
 
 
-    For conductance-based (co-base=True):
-
-    .. math::
-    
-        I_{syn}(t) = g_{syn} (t) (V(t)-E_{syn})
-
-
-    For current-based (co-base=False):
-
-    .. math::
-    
-        I(t) = \\bar{g} s (t)
-
 
  **Synapse Parameters**
     

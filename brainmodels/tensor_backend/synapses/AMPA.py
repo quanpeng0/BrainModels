@@ -123,11 +123,11 @@ class AMPA2(bp.TwoEndConn):
     ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    s                 0                 Gating variable.
+    s                  0                 Gating variable.
     
-    g                 0                 Synapse conductance.
+    g                  0                 Synapse conductance.
 
-    t_last_pre_spike  -1e7              Last spike time stamp of the pre-synaptic neuron.
+    t_last_pre_spike   -1e7              Last spike time stamp of the pre-synaptic neuron.
 
     ================== ================= =========================================================
 
