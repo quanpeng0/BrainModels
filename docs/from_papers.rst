@@ -47,6 +47,7 @@ Gap Junction Models
    :maxdepth: 1
 
    from_papers/Sherman_1992_gj_antisynchrony.ipynb
+   from_papers/Wang_2020_GJ_for_Topology.ipynb
 
 Working Memory
 ==============
