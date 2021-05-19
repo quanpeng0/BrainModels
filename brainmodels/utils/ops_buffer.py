@@ -11,8 +11,10 @@ bp.ops.set_buffer('numpy', {'mean': np.mean})
 try:
     import torch
 
-    bp.ops.set_buffer('pytorch', {'clip': torch.clamp})
-    bp.ops.set_buffer('pytorch', {'mean': torch.mean})
+    try:
+        bp.ops.set_buffer('pytorch', clip=torch.clamp, mean=torch.mean)
+    except AttributeError:
+        pass
 
 except ModuleNotFoundError:
     pass
@@ -22,8 +24,10 @@ except ModuleNotFoundError:
 try:
     import tensorflow as tf
 
-    bp.ops.set_buffer('tensorflow', {'clip': tf.clip_by_value})
-    bp.ops.set_buffer('tensorflow', {'mean': tf.mean})
+    try:
+        bp.ops.set_buffer('tensorflow', clip=tf.clip_by_value, mean=tf.mean)
+    except AttributeError:
+        pass
 
 except ModuleNotFoundError:
     pass
@@ -39,9 +43,8 @@ try:
         x = np.minimum(x, x_max)
         return x
 
-    bp.ops.set_buffer('numba', {'clip': nb_clip})
-    bp.ops.set_buffer('numba-parallel', {'clip': nb_clip})
-    bp.ops.set_buffer('numba', {'mean': np.mean})
+    bp.ops.set_buffer('numba', clip=nb_clip, mean=np.mean)
+    bp.ops.set_buffer('numba-parallel', clip=nb_clip, mean=np.mean)
 
 except ModuleNotFoundError:
     pass

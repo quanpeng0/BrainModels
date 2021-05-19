@@ -2,7 +2,7 @@ numpy>=1.15
 sympy>=1.5
 numba>=0.52
 matplotlib>=3.3
-brainpy-simulator>=1.0.0b1
+brainpy-simulator>=1.0.0
 
 # document building requirements
 docutils==0.16.0
