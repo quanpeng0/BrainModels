@@ -22,8 +22,9 @@ class Gap_junction(bp.TwoEndConn):
 	================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    w                0.                Synapse weights.
-    =============== ================= =========================================================
+    w                  0.                Synapse weights.
+
+    ================== ================= =========================================================
 
     Reference:
         .. [1] Chow, Carson C., and Nancy Kopell. 
@@ -58,7 +59,6 @@ class Gap_junction_lif(bp.TwoEndConn):
     synapse with gap junction.
 
     .. math::
-
         I_{syn} = w (V_{pre} - V_{post})
 
     **Synapse Variables**
@@ -68,10 +68,11 @@ class Gap_junction_lif(bp.TwoEndConn):
 	================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    w                0.                Synapse weights.
-    
-    spikelet         0.                conductance for post-synaptic neuron
-    =============== ================= =========================================================
+    w                  0.                Synapse weights.
+
+    spikelet           0.                conductance for post-synaptic neuron
+
+	================== ================= =========================================================
 
     References:
         .. [1] Chow, Carson C., and Nancy Kopell. 

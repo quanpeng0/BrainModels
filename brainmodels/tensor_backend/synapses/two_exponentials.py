@@ -18,21 +18,8 @@ class Two_exponentials(bp.TwoEndConn):
         -s + \\sum \\delta(t-t^f)
 
 
-    For conductance-based (co-base=True):
 
-    .. math::
-    
-        I_{syn}(t) = g_{syn} (t) (V(t)-E_{syn})
-
-
-    For current-based (co-base=False):
-
-    .. math::
-    
-        I(t) = \\bar{g} s (t)
-
-
- **Synapse Parameters**
+    **Synapse Parameters**
     
     ============= ============== ======== ===================================================================================
     **Parameter** **Init Value** **Unit** **Explanation**
@@ -62,7 +49,7 @@ class Two_exponentials(bp.TwoEndConn):
     s                  0                  Gating variable.
 
     x                  0                  Gating variable.                              
-    ================ ================== =========================================================
+	================== ================= =========================================================
     
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 

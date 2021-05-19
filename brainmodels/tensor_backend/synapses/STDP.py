@@ -70,14 +70,14 @@ class STDP(bp.TwoEndConn):
 	================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    A_s              0.                Source neuron trace.
+    A_s                0.                Source neuron trace.
 
-    A_t              0.                Target neuron trace.
+    A_t                0.                Target neuron trace.
 
-    s                0.                Gating variable on post-synaptic neuron.
+    s                  0.                Gating variable on post-synaptic neuron.
 
-    w                0.                Synapse weight.
-    ================ ================= =========================================================
+    w                  0.                Synapse weight.
+	================== ================= =========================================================
 
 
     References:

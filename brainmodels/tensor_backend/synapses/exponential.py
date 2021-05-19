@@ -11,21 +11,7 @@ class Exponential(bp.TwoEndConn):
     Single Exponential decay synapse model.
 
     .. math::
-
-         \\frac{d s}{d t} = -\\frac{s}{\\tau_{decay}}+\\sum_{k} \\delta(t-t_{j}^{k})
-
-    For conductance-based (co-base=True):
-
-    .. math::
-    
-        I_{syn}(t) = g_{syn} (t) (V(t)-E_{syn})
-
-
-    For current-based (co-base=False):
-
-    .. math::
-    
-        I(t) = \\bar{g} s (t)
+        \\frac{d s}{d t} = -\\frac{s}{\\tau_{decay}}+\\sum_{k} \\delta(t-t_{j}^{k})
 
 
     **Synapse Parameters**
@@ -48,7 +34,7 @@ class Exponential(bp.TwoEndConn):
 
     w                  0                  Synaptic weights.
                              
-    ================ ================== =========================================================
+	================== ================= =========================================================
 
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 

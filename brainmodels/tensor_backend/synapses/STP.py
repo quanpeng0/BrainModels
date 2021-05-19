@@ -53,14 +53,14 @@ class STP(bp.TwoEndConn):
 	================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    u                 0                 Release probability of the neurotransmitters.
+    u                  0                 Release probability of the neurotransmitters.
 
-    x                 1                 A Normalized variable denoting the fraction of remain neurotransmitters.
+    x                  1                 A Normalized variable denoting the fraction of remain neurotransmitters.
 
-    w                 1                 Synapse weight.
+    w                  1                 Synapse weight.
 
-    g                 0                 Synapse conductance.
-    =============== ================== =====================================================================
+    g                  0                 Synapse conductance.
+	================== ================= =========================================================
     
 
     References:

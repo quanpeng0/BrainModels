@@ -55,18 +55,18 @@ class Izhikevich(bp.NeuGroup):
     ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    V                  float            -65        Membrane potential.
+    V                          -65        Membrane potential.
 
-    u                  float            1          Recovery variable.
+    u                          1          Recovery variable.
 
-    input              float            0          External and synaptic input current.
+    input                      0          External and synaptic input current.
 
-    spike              float            0          Flag to mark whether the neuron is spiking.
+    spike                      0          Flag to mark whether the neuron is spiking.
 
-                                                   Can be seen as bool.
+                                          Can be seen as bool.
 
-    t_last_spike       float            -1e7       Last spike time stamp.
-    ================== ======== ================== ===========================================
+    t_last_spike               -1e7       Last spike time stamp.
+    ================== ================= =========================================================
 
     References:
         .. [1] Izhikevich, Eugene M. "Simple model of spiking neurons." IEEE

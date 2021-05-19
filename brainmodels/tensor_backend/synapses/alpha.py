@@ -11,24 +11,10 @@ class Alpha(bp.TwoEndConn):
     Alpha synapse.
 
     .. math::
-
         \\frac {ds} {dt} &= x
 
         \\tau^2 \\frac {dx} {dt} = - 2 \\tau x & - s + \\sum_f \\delta(t-t^f)
 
-
-    For conductance-based (co-base=True):
-
-    .. math::
-
-        I_{syn}(t) = g_{syn} (t) (V(t)-E_{syn})
-
-
-    For current-based (co-base=False):
-
-    .. math::
-
-        I(t) = \\bar{g} s (t)
 
     **Synapse Parameters**
 
@@ -53,10 +39,11 @@ class Alpha(bp.TwoEndConn):
 
     ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
-    ------------------ ----------------- ---------------------------------------------------------    g                  0                  Synapse conductance on the post-synaptic neuron.
+    ------------------ ----------------- ---------------------------------------------------------
+    g                  0                  Synapse conductance on the post-synaptic neuron.
     s                  0                  Gating variable.
     x                  0                  Gating variable.  
-    ================ ================== =========================================================
+    ================== ================= =========================================================
 
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 
