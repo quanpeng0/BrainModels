@@ -1,5 +1,5 @@
-brainmodels.neurons
-===================
+brainmodels.tensor_backend.neurons
+==================================
 
 
 .. currentmodule:: brainmodels.tensor_backend.neurons
@@ -36,7 +36,7 @@ brainmodels.neurons
 
 .. autoclass:: Izhikevich
    :members:
-   
+
 .. autoclass:: AdQuaIF
    :members:
 

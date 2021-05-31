@@ -30,8 +30,8 @@ with other BrainPy users.
    :maxdepth: 2
    :caption: API documentation
 
-   apis/neurons
-   apis/synapses
+   apis/neurons_on_tensors
+   apis/synapses_on_tensors
 
 
 Indices and tables
