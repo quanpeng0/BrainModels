@@ -1,9 +1,9 @@
-brainmodels.tensor_backend.neurons
-==================================
+brainmodels.on_tensor.neurons
+=============================
 
 
-.. currentmodule:: brainmodels.tensor_backend.neurons
-.. automodule:: brainmodels.tensor_backend.neurons
+.. currentmodule:: brainmodels.on_tensor.neurons
+.. automodule:: brainmodels.on_tensor.neurons
 
 .. autosummary::
     :toctree: _autosummary

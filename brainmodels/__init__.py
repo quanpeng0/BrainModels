@@ -1,29 +1,69 @@
 # -*- coding: utf-8 -*-
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
+import brainpy as bp
+import numpy as np
+
+from . import on_numba
+from . import on_tensor
+
+# NumPy
+
+bp.ops.set_buffer('numpy', clip=np.clip, mean=np.mean)
+
+# PyTorch
 try:
-    from . import numba_backend
+    import torch
+
+    try:
+        all_ops = dict(
+            clip=torch.clamp,
+            mean=torch.mean
+        )
+    except AttributeError:
+        all_ops = dict()
+
+    bp.ops.set_buffer('pytorch', **all_ops)
+
 except ModuleNotFoundError:
     pass
 
-from . import tensor_backend
-from .tensor_backend import neurons
-from .tensor_backend import synapses
-from .utils import ops_buffer
+# TensorFlow
+try:
+    import tensorflow as tf
+
+    try:
+        all_ops = dict(
+            clip=tf.clip_by_value,
+            mean=tf.mean
+        )
+    except AttributeError:
+        all_ops = dict()
+    bp.ops.set_buffer('tensorflow', **all_ops)
+
+except ModuleNotFoundError:
+    pass
+
+# Numba
+try:
+    import numba as nb
 
 
-def set_backend(backend):
-    global neurons
-    global synapses
+    @nb.njit
+    def nb_clip(x, x_min, x_max):
+        x = np.maximum(x, x_min)
+        x = np.minimum(x, x_max)
+        return x
 
-    if backend in ['tensor', 'numpy', 'pytorch', 'tensorflow', 'jax']:
-        neurons = tensor_backend.neurons
-        synapses = tensor_backend.synapses
 
-    elif backend in ['numba', 'numba-parallel', 'numba-cuda']:
-        neurons = numba_backend.neurons
-        synapses = numba_backend.synapses
+    all_ops = dict(
+        clip=nb_clip,
+        mean=np.mean,
+    )
 
-    else:
-        raise ValueError(f'Unknown backend "{backend}".')
+    bp.ops.set_buffer('numba', **all_ops)
+    bp.ops.set_buffer('numba-parallel', **all_ops)
+
+except ModuleNotFoundError:
+    pass

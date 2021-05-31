@@ -1,8 +1,8 @@
-brainmodels.tensor_backend.synapses
-===================================
+brainmodels.on_tensor.synapses
+==============================
 
-.. currentmodule:: brainmodels.tensor_backend.synapses
-.. automodule:: brainmodels.tensor_backend.synapses
+.. currentmodule:: brainmodels.on_tensor.synapses
+.. automodule:: brainmodels.on_tensor.synapses
 
 
 .. autosummary::
