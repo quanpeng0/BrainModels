@@ -51,7 +51,7 @@ class AdExIF(bp.NeuGroup):
 
     An object of neuron class record those variables for each synapse:
 
-	================== ================= ===========================================================
+    ================== ================= ===========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- -----------------------------------------------------------
     V                   0.                Membrane potential.
@@ -69,7 +69,7 @@ class AdExIF(bp.NeuGroup):
                                           Can be seen as bool.
                              
     t_last_spike        -1e7              Last spike time stamp.
-	================== ================= ===========================================================
+    ================== ================= ===========================================================
     
     References:
         .. [1] Fourcaud-Trocmé, Nicolas, et al. "How spike generation 

@@ -41,7 +41,7 @@ class Two_exponentials(bp.TwoEndConn):
 
     An object of synapse class record those variables for each synapse:
 
-	================== ================= =========================================================
+    ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
     g                  0                  Synapse conductance on the post-synaptic neuron.
@@ -49,7 +49,7 @@ class Two_exponentials(bp.TwoEndConn):
     s                  0                  Gating variable.
 
     x                  0                  Gating variable.                              
-	================== ================= =========================================================
+    ================== ================= =========================================================
     
     References:
         .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw. 

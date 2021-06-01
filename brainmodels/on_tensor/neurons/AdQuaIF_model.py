@@ -53,7 +53,7 @@ class AdQuaIF(bp.NeuGroup):
 
     An object of neuron class record those variables for each synapse:
 
-	================== ================= ==========================================================
+    ================== ================= ==========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ----------------------------------------------------------
     V                  0.                Membrane potential.
@@ -72,7 +72,7 @@ class AdQuaIF(bp.NeuGroup):
                              
     t_last_spike       -1e7              Last spike time stamp.
 
-	================== ================= ==========================================================
+    ================== ================= ==========================================================
     
     References:
         .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
