@@ -61,7 +61,7 @@ class HH(bp.NeuGroup):
 
     An object of neuron class record those variables for each synapse:
 
-	================== ================= =========================================================
+    ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
     V                        -65         Membrane potential.
@@ -76,7 +76,7 @@ class HH(bp.NeuGroup):
 
     spike                     0          Flag to mark whether the neuron is spiking.
                                          Can be seen as bool.
-	================== ================= =========================================================
+    ================== ================= =========================================================
 
     References:
         .. [1] Hodgkin, Alan L., and Andrew F. Huxley. "A quantitative description

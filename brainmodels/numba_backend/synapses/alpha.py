@@ -51,7 +51,7 @@ class Alpha(bp.TwoEndConn):
 
     An object of synapse class record those variables for each synapse:
 
-	================== ================= =========================================================
+    ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
     g                  0                  Synapse conductance on the post-synaptic neuron.

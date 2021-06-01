@@ -52,27 +52,26 @@ class NMDA(bp.TwoEndConn):
     ============= ============== =============== ================================================    
     
     
-    **Synapse Variables**
+    **Synapse Variables**    
 
     An object of synapse class record those variables for each synapse:
 
-	================== ================= =========================================================
+    ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
     ------------------ ----------------- ---------------------------------------------------------
-    s                  0                 Gating variable.
+    s                  0.                Gating variable.
 
-    g                  0                 Synapse conductance.
+    g                  0.                Synapse conductance on post-synaptic neuron.
 
-    x                  0                 Gating variable.
+    x                  0.                Gating variable.
 
-	================== ================= =========================================================
+    ================== ================= =========================================================
 
-        
     References:
-        .. [1] Brunel N, Wang X J. Effects of neuromodulation in a 
-               cortical network model of object working memory dominated 
-               by recurrent inhibition[J]. 
-               Journal of computational neuroscience, 2001, 11(1): 63-85.
+        .. [1] Brunel, Nicolas, and Xiao-Jing Wang. 
+                "Effects of neuromodulation in a cortical network model 
+                of object working memory dominated by recurrent inhibition." 
+                Journal of computational neuroscience 11.1 (2001): 63-85.
     
     """
 
