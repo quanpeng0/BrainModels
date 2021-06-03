@@ -11,6 +11,12 @@ class Alpha(bp.TwoEndConn):
     Alpha synapse.
 
     .. math::
+
+        s = \\frac{t - t_s}{\\tau} \\exp(-\\frac{t - t_s}{\\tau})
+
+    We implement the following differential equation form:
+
+    .. math::
         \\frac {ds} {dt} &= x
 
         \\tau^2 \\frac {dx} {dt} = - 2 \\tau x & - s + \\sum_f \\delta(t-t^f)

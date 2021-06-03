@@ -12,6 +12,13 @@ class Two_exponentials(bp.TwoEndConn):
 
     .. math::
 
+        s = \\frac {\\tau_1 \\tau_2}{\\tau_1 - \\tau_2} (\\exp(-\\frac{t - t_s}{\\tau_1})
+            - \\exp(-\\frac{t - t_s}{\\tau_2}))
+
+    We implement the following differential equation form:
+
+    .. math::
+
         &\\frac {ds} {dt} = x
         
         \\tau_{1} \\tau_{2} \\frac {dx}{dt} = - & (\\tau_{1}+\\tau_{2})x 
