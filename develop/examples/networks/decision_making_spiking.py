@@ -414,11 +414,11 @@ for i in [syn_A2A_AMPA, syn_A2B_AMPA, syn_A2non_AMPA,
           syn_non2A_AMPA, syn_non2B_AMPA, syn_non2non_AMPA]:
     i.E = E_AMPA
     i.tau_decay = tau_decay_AMPA
-    i.E = E_NMDA
 
 for i in [syn_A2A_NMDA, syn_A2B_NMDA, syn_A2non_NMDA,
           syn_B2A_NMDA, syn_B2B_NMDA, syn_B2non_NMDA,
           syn_non2A_NMDA, syn_non2B_NMDA, syn_non2non_NMDA]:
+    i.E = E_NMDA
     i.alpha = alpha_NMDA
     i.beta = beta_NMDA
     i.cc_Mg = cc_Mg_NMDA

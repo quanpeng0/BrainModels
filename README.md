@@ -10,19 +10,19 @@ through our [GitHub](https://github.com/PKU-NIP-Lab/BrainModels) homepage. In su
 Currently, we provide the following models:
 
 
-| Neuron models                                                | Synapse models                                               | Learning rules                                               |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [Leaky integrate-and-fire model](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.LIF.html) | [Alpha Synapse](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.Alpha.html) | [STDP](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.learning_rules.STDP1.html) |
-| [Hodgkin-Huxley model](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.HH.html) | [AMPA](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.AMPA1.html) / [NMDA](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.NMDA.html) | [BCM rule](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.learning_rules.BCM.html) |
-| [Izhikevich model](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.Izhikevich.html) | [GABA_A](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.GABAa1.html) / [GABA_B](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.GABAb1.html) | [Oja\'s rule](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.learning_rules.Oja.html) |
-| [Morris-Lecar model](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.MorrisLecar.html) | [Exponential Decay Synapse](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.Exponential.html) |                                                              |
-| [Generalized integrate-and-fire](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.GeneralizedIF.html) | [Difference of Two Exponentials](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.Two_exponentials.html) |                                                              |
-| [Exponential integrate-and-fire](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.ExpIF.html) | [Short-term plasticity](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.STP.html) |                                                              |
-| [Quadratic integrate-and-fire](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.QuaIF.html) | [Gap junction](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.Gap_junction.html) |                                                              |
-| [adaptive Exponential IF](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.AdExIF.html) | [Voltage jump](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.synapses.Voltage_jump.html) |                                                              |
-| [adaptive Quadratic IF](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.AdQuaIF.html) |                                                              |                                                              |
-| [Hindmarsh-Rose model](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.HindmarshRose.html) |                                                              |                                                              |
-| [Wilson-Cowan model](https://brainmodels.readthedocs.io/en/latest/apis/_autosummary/brainmodels.tensor_backend.neurons.WilsonCowan.html) |                                                              |                                                              |
+| Neuron models                  | Synapse models                 | Learning rules |
+| ------------------------------ | ------------------------------ | -------------- |
+| Leaky integrate-and-fire model | Alpha Synapse                  | STDP           |
+| Hodgkin-Huxley model           | AMPA / NMDA                    | BCM rule       |
+| Izhikevich model               | GABA_A / GABA_B                | Oja\'s rule    |
+| Morris-Lecar model             | Exponential Decay Synapse      |                |
+| Generalized integrate-and-fire | Difference of Two Exponentials |                |
+| Exponential integrate-and-fire | Short-term plasticity          |                |
+| Quadratic integrate-and-fire   | Gap junction                   |                |
+| adaptive Exponential IF        | Voltage jump                   |                |
+| adaptive Quadratic IF          |                                |                |
+| Hindmarsh-Rose model           |                                |                |
+| Wilson-Cowan model             |                                |                |
 
 
 
