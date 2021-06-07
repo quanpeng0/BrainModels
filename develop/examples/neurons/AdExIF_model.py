@@ -3,14 +3,13 @@ import brainmodels
 
 backend = 'numpy'
 bp.backend.set(backend=backend, dt=.005)
-brainmodels.set_backend(backend=backend)
 
 duration = 200
 I_ext = 65
-neu = brainmodels.neurons.AdExIF(size=1, monitors=['V', 'spike', 'refractory'],
-                                 a=.5, b=7, R=.5, tau=9.9, tau_w=100,
-                                 V_reset=-70, V_rest=-70, V_th=-30,
-                                 V_T=-50, delta_T=2., t_refractory=5.)
+neu = brainmodels.on_tensor.AdExIF(size=1, monitors=['V', 'spike', 'refractory'],
+                                   a=.5, b=7, R=.5, tau=9.9, tau_w=100,
+                                   V_reset=-70, V_rest=-70, V_th=-30,
+                                   V_T=-50, delta_T=2., t_refractory=5.)
 
 neu.run(duration, inputs=('input', I_ext))
 fig, gs = bp.visualize.get_figure(3, 1, 4, 10)

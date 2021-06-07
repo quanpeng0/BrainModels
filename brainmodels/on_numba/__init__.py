@@ -2,3 +2,6 @@
 
 from . import neurons
 from . import synapses
+
+from .neurons import *
+from .synapses import *

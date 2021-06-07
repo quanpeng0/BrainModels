@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 import brainpy as bp
 import numpy as np
 
 from . import on_numba
 from . import on_tensor
+
 
 # NumPy
 
