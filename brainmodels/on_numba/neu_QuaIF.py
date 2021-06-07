@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-from numba import prange
 
 __all__ = [
     'QuaIF'
@@ -9,15 +8,14 @@ __all__ = [
 
 
 class QuaIF(bp.NeuGroup):
-    """Quadratic Integrate-and-Fire neuron model.
+    """Quadratic Integrate-and-Fire neuron model [1]_.
         
     .. math::
 
         \\tau \\frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) + RI(t)
     
     where the parameters are taken to be :math:`a_0` =0.07, and
-    :math:`V_c = -50 mV` (Latham et al., 2000 [2]_).
-    
+    :math:`V_c = -50 mV` (Latham et al., 2000 [1]_).
 
     **Neuron Parameters**
     
@@ -41,16 +39,11 @@ class QuaIF(bp.NeuGroup):
     t_refractory  0              ms       Refractory period length.
 
     noise         0.             \        the noise fluctuation.
-
-    mode          'scalar'       \        Data structure of ST members.
-    ============= ============== ======== ========================================================================================================================    
-    
-    Returns:
-        bp.Neutype: return description of QuaIF model.
+    ============= ============== ======== ========================================================================================================================
 
     **Neuron Variables**
 
-    An object of neuron class record those variables for each synapse:
+    An object of neuron class record those variables:
 
     ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
@@ -70,16 +63,15 @@ class QuaIF(bp.NeuGroup):
     t_last_spike    -1e7              Last spike time stamp.
     =============== ================= =========================================================
     
-    References:
-        .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
-               neurons to networks and models of cognition. Cambridge 
-               University Press, 2014.
-        .. [2]  P. E. Latham, B.J. Richmond, P. Nelson and S. Nirenberg 
-                (2000) Intrinsic dynamics in neuronal networks. I. Theory. 
-                J. Neurophysiology 83, pp. 808–827. 
+    References
+    ----------
+
+    .. [1]  P. E. Latham, B.J. Richmond, P. Nelson and S. Nirenberg
+            (2000) Intrinsic dynamics in neuronal networks. I. Theory.
+            J. Neurophysiology 83, pp. 808–827.
     """
 
-    target_backend = 'general'
+    target_backend = ['numpy', 'numba']
 
     @staticmethod
     def derivative(V, t, I_ext, V_rest, V_c, R, tau, a_0):  # integrate u(t)
@@ -89,6 +81,7 @@ class QuaIF(bp.NeuGroup):
     def __init__(self, size, V_rest=-65., V_reset=-68.,
                  V_th=-30., V_c=-50.0, a_0=.07,
                  R=1., tau=10., t_refractory=0., **kwargs):
+        super(QuaIF, self).__init__(size=size, **kwargs)
 
         # parameters
         self.V_rest = V_rest
@@ -101,20 +94,17 @@ class QuaIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        num = bp.size2len(size)
-        self.V = bp.ops.ones(num) * V_reset
-        self.input = bp.ops.zeros(num)
-        self.spike = bp.ops.zeros(num, dtype=bool)
-        self.refractory = bp.ops.zeros(num, dtype=bool)
-        self.t_last_spike = bp.ops.ones(num) * -1e7
+        self.V = bp.ops.ones(self.num) * V_reset
+        self.input = bp.ops.zeros(self.num)
+        self.spike = bp.ops.zeros(self.num, dtype=bool)
+        self.refractory = bp.ops.zeros(self.num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(self.num) * -1e7
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
-        super(QuaIF, self).__init__(size=size, **kwargs)
-
-    def update(self, _t):
-        for i in prange(self.size[0]):
-            spike = 0.
+    def update(self, _t, _i, _dt):
+        for i in range(self.num):
+            spike = False
             refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
             if not refractory:
                 V = self.integral(self.V[i], _t, self.input[i],
@@ -124,7 +114,8 @@ class QuaIF(bp.NeuGroup):
                 if spike:
                     V = self.V_rest
                     self.t_last_spike[i] = _t
+                    refractory = True
                 self.V[i] = V
             self.spike[i] = spike
-            self.refractory[i] = refractory or spike
-            self.input[i] = 0.  # reset input here or it will be brought to next step
+            self.refractory[i] = refractory
+            self.input[i] = 0.

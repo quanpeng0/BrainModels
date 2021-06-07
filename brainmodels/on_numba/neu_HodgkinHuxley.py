@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
+
 import brainpy as bp
-from numba import prange
 
 __all__ = [
     'HH'
@@ -9,14 +9,18 @@ __all__ = [
 
 
 class HH(bp.NeuGroup):
-    """Hodgkin–Huxley neuron model.
+    """Hodgkin–Huxley neuron model [1]_.
+
+    Alan Hodgkin and Andrew Huxley described the model in 1952 [1]_ to explain
+    the ionic mechanisms underlying the initiation and propagation of action
+    potentials in the squid giant axon.
 
     .. math::
 
         C \\frac {dV} {dt} = -(\\bar{g}_{Na} m^3 h (V &-E_{Na})
         + \\bar{g}_K n^4 (V-E_K) + g_{leak} (V - E_{leak})) + I(t)
 
-        \\frac {dx} {dt} &= \\alpha_x (1-x)  - \\beta_x, \\quad x\\in {\\rm{\\{Na, K, leak\\}}}
+        \\frac {dx} {dt} &= \\alpha_x (1-x)  - \\beta_x, \\quad x\\in {\\rm{\\{m, h, n\\}}}
 
         &\\alpha_m(V) = \\frac {0.1(V+40)}{1-exp(\\frac{-(V + 40)} {10})}
 
@@ -53,13 +57,11 @@ class HH(bp.NeuGroup):
     g_leak        .03            msiemens conductance of unspecific channels.
 
     noise         0.             \        the noise fluctuation.
-
-    mode          'vector'       \        Data structure of ST members.
     ============= ============== ======== ====================================
 
     **Neuron Variables**
 
-    An object of neuron class record those variables for each synapse:
+    An object of neuron class record those variables:
 
     ================== ================= =========================================================
     **Variables name** **Initial Value** **Explanation**
@@ -74,18 +76,21 @@ class HH(bp.NeuGroup):
 
     input                     0          External and synaptic input current.
 
-    spike                     0          Flag to mark whether the neuron is spiking.
-                                         Can be seen as bool.
-    =============== ==================  =========================================================
+    spike                    False       Flag to mark whether the neuron is spiking.
 
-    References:
-        .. [1] Hodgkin, Alan L., and Andrew F. Huxley. "A quantitative description
-               of membrane current and its application to conduction and excitation
-               in nerve." The Journal of physiology 117.4 (1952): 500.
+    t_last_spike       -1e7               Last spike time stamp.
+    ================== ================= =========================================================
+
+    References
+    ----------
+
+    .. [1] Hodgkin, Alan L., and Andrew F. Huxley. "A quantitative description
+           of membrane current and its application to conduction and excitation
+           in nerve." The Journal of physiology 117.4 (1952): 500.
 
     """
 
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
+    target_backend = ['numpy', 'numba']
 
     @staticmethod
     def derivative(V, m, h, n, t, C, gNa, ENa, gK, EK, gL, EL, Iext):
@@ -110,6 +115,8 @@ class HH(bp.NeuGroup):
 
     def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36.,
                  EL=-54.387, gL=0.03, V_th=20., C=1.0, **kwargs):
+        super(HH, self).__init__(size=size, **kwargs)
+
         # parameters
         self.ENa = ENa
         self.EK = EK
@@ -121,24 +128,26 @@ class HH(bp.NeuGroup):
         self.V_th = V_th
 
         # variables
-        num = bp.size2len(size)
-        self.V = -65. * bp.ops.ones(num)
-        self.m = 0.5 * bp.ops.ones(num)
-        self.h = 0.6 * bp.ops.ones(num)
-        self.n = 0.32 * bp.ops.ones(num)
-        self.spike = bp.ops.zeros(num, dtype=bool)
-        self.input = bp.ops.zeros(num)
+        self.V = -65. * bp.ops.ones(self.num)
+        self.m = 0.5 * bp.ops.ones(self.num)
+        self.h = 0.6 * bp.ops.ones(self.num)
+        self.n = 0.32 * bp.ops.ones(self.num)
+        self.input = bp.ops.zeros(self.num)
+        self.spike = bp.ops.zeros(self.num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(self.num) * -1e7
 
         # numerical solver
         self.integral = bp.odeint(f=self.derivative, method='exponential_euler')
-        super(HH, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
-        for i in prange(self.num):
+    def update(self, _t, _i, _dt):
+        for i in range(self.num):
             V, m, h, n = self.integral(self.V[i], self.m[i], self.h[i], self.n[i],
                                        _t, self.C, self.gNa, self.ENa, self.gK,
                                        self.EK, self.gL, self.EL, self.input[i])
-            self.spike[i] = (self.V[i] < self.V_th) * (V >= self.V_th)
+            spike = (self.V[i] < self.V_th) and (V >= self.V_th)
+            self.spike[i] = spike
+            if spike:
+                self.t_last_spike[i] = _t
             self.V[i] = V
             self.m[i] = m
             self.h[i] = h

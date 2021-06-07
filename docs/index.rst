@@ -27,11 +27,12 @@ with other BrainPy users.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: API documentation
 
-   apis/neurons_on_tensors
-   apis/synapses_on_tensors
+   apis/on_numba_learning_rules
+   apis/on_numba_neurons
+   apis/on_numba_synapses
 
 
 Indices and tables

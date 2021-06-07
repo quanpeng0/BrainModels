@@ -9,8 +9,7 @@ __all__ = [
 
 
 class LIF(bp.NeuGroup):
-    """
-    Leaky Integrate-and-Fire neuron model.
+    """Leaky Integrate-and-Fire neuron model [1]_.
 
     .. math::
 
@@ -29,7 +28,7 @@ class LIF(bp.NeuGroup):
 
     R             1.             \        Membrane resistance.
 
-    tau           10.            \        Membrane time constant. Compute by R * C.
+    tau           10.            ms       Membrane time constant. Compute by R * C.
 
     t_refractory  5.             ms       Refractory period length.(ms)
     ============= ============== ======== =========================================
@@ -47,8 +46,6 @@ class LIF(bp.NeuGroup):
 
     spike              0.                Flag to mark whether the neuron is spiking.
 
-                                         Can be seen as bool.
-
     refractory         0.                Flag to mark whether the neuron is in refractory period.
 
                                          Can be seen as bool.
@@ -56,13 +53,15 @@ class LIF(bp.NeuGroup):
     t_last_spike       -1e7              Last spike time stamp.
     ================== ================= =========================================================
 
-    References:
-        .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single
-               neurons to networks and models of cognition. Cambridge
-               University Press, 2014.
+    References
+    ----------
+
+    .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single
+           neurons to networks and models of cognition. Cambridge
+           University Press, 2014.
     """
 
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
+    target_backend = ['numpy', 'numba']
 
     @staticmethod
     def derivative(V, t, Iext, V_rest, R, tau):
@@ -71,6 +70,8 @@ class LIF(bp.NeuGroup):
 
     def __init__(self, size, t_refractory=1., V_rest=0.,
                  V_reset=-5., V_th=20., R=1., tau=10., **kwargs):
+        super(LIF, self).__init__(size=size, **kwargs)
+
         # parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
@@ -80,17 +81,15 @@ class LIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        num = bp.size2len(size)
-        self.t_last_spike = bp.ops.ones(num) * -1e7
-        self.input = bp.ops.zeros(num)
-        self.refractory = bp.ops.zeros(num, dtype=bool)
-        self.spike = bp.ops.zeros(num, dtype=bool)
-        self.V = bp.ops.ones(num) * V_rest
+        self.t_last_spike = bp.ops.ones(self.num) * -1e7
+        self.input = bp.ops.zeros(self.num)
+        self.refractory = bp.ops.zeros(self.num, dtype=bool)
+        self.spike = bp.ops.zeros(self.num, dtype=bool)
+        self.V = bp.ops.ones(self.num) * V_rest
 
         self.integral = bp.odeint(self.derivative)
-        super(LIF, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
+    def update(self, _t, _i, _dt):
         for i in prange(self.size[0]):
             spike = 0.
             refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
@@ -100,7 +99,8 @@ class LIF(bp.NeuGroup):
                 if spike:
                     V = self.V_reset
                     self.t_last_spike[i] = _t
+                    refractory = True
                 self.V[i] = V
             self.spike[i] = spike
-            self.refractory[i] = refractory or spike
+            self.refractory[i] = refractory
             self.input[i] = 0.

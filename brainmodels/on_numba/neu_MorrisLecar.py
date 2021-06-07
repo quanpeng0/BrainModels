@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-from numba import prange
 import numpy as np
 
 __all__ = [
@@ -11,7 +10,7 @@ __all__ = [
 
 class MorrisLecar(bp.NeuGroup):
     """
-    The Morris-Lecar neuron model. (Also known as :math:`I_{Ca}+I_K`-model.)
+    The Morris-Lecar neuron model [1]_. (Also known as :math:`I_{Ca}+I_K`-model.)
 
     .. math::
 
@@ -37,7 +36,7 @@ class MorrisLecar(bp.NeuGroup):
     V3            2.             \        Potential at which W_inf = 0.5.(mV)
     V4            30.            \        Reciprocal of slope of voltage dependence of W_inf.(mV)
     phi           0.04           \        A temperature factor.(1/s)
-    mode          'vector'       \        Data structure of ST members.
+    V_th          10.            mV       the spike threshold.
     ============= ============== ======== =======================================================
 
     **Neuron Variables**
@@ -53,15 +52,21 @@ class MorrisLecar(bp.NeuGroup):
                                          opened K+ channels.
 
     input              0.                External and synaptic input current.
+
+    spike              0.                Flag to mark whether the neuron is spiking.
+
+    t_last_spike       -1e7              Last spike time stamp.
     ================== ================= =========================================================
 
-    References:
-        .. [1] Meier, Stephen R., Jarrett L. Lancaster, and Joseph M. Starobin.
-               "Bursting regimes in a reaction-diffusion system with action
-               potential-dependent equilibrium." PloS one 10.3 (2015):
-               e0122401.
+    References
+    ----------
+
+    .. [1] Meier, Stephen R., Jarrett L. Lancaster, and Joseph M. Starobin.
+           "Bursting regimes in a reaction-diffusion system with action
+           potential-dependent equilibrium." PloS one 10.3 (2015):
+           e0122401.
     """
-    target_backend = ['numpy', 'numba', 'numba-parallel', 'numba-cuda']
+    target_backend = ['numpy', 'numba']
 
     @staticmethod
     def derivative(V, W, t,
@@ -80,7 +85,9 @@ class MorrisLecar(bp.NeuGroup):
 
     def __init__(self, size, V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8.,
                  V_leak=-60., g_leak=2., C=20., V1=-1.2, V2=18.,
-                 V3=2., V4=30., phi=0.04, **kwargs):
+                 V3=2., V4=30., phi=0.04, V_th=10., **kwargs):
+        super(MorrisLecar, self).__init__(size=size, **kwargs)
+
         # params
         self.V_Ca = V_Ca
         self.g_Ca = g_Ca
@@ -94,22 +101,29 @@ class MorrisLecar(bp.NeuGroup):
         self.V3 = V3
         self.V4 = V4
         self.phi = phi
+        self.V_th = V_th
 
         # vars
-        num = bp.size2len(size)
-        self.input = bp.ops.zeros(num)
-        self.V = bp.ops.ones(num) * -20.
-        self.W = bp.ops.ones(num) * 0.02
+        self.input = bp.ops.zeros(self.num)
+        self.V = bp.ops.ones(self.num) * -20.
+        self.W = bp.ops.ones(self.num) * 0.02
+        self.spike = bp.ops.zeros(self.num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(self.num) * -1e7
 
         self.integral = bp.odeint(f=self.derivative)
-        super(MorrisLecar, self).__init__(size=size, **kwargs)
 
-    def update(self, _t):
-        for i in prange(self.size[0]):
-            self.V[i], self.W[i] = self.integral(
+    def update(self, _t, _i, _dt):
+        for i in range(self.num):
+            V, W = self.integral(
                 self.V[i], self.W[i], _t, self.V1, self.V2,
                 self.g_Ca, self.V_Ca, self.g_K, self.V_K,
                 self.g_leak, self.V_leak, self.C, self.input[i],
                 self.phi, self.V3, self.V4
             )
+            spike = (self.V[i] < self.V_th) and (V >= self.V_th)
+            self.V[i] = V
+            self.W[i] = W
+            self.spike[i] = spike
+            if spike:
+                self.t_last_spike[i] = _t
             self.input[i] = 0.

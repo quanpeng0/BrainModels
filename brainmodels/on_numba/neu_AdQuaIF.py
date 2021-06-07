@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-from numba import prange
 
 __all__ = [
     'AdQuaIF'
@@ -9,7 +8,7 @@ __all__ = [
 
 
 class AdQuaIF(bp.NeuGroup):
-    """Adaptive Quadratic Integrate-and-Fire neuron model.
+    """Adaptive Quadratic Integrate-and-Fire neuron model [1]_.
         
     .. math::
 
@@ -52,34 +51,32 @@ class AdQuaIF(bp.NeuGroup):
     
     **Neuron Variables**
 
-    An object of neuron class record those variables for each synapse:
+    An object of neuron class record those variables:
 
-    ================== ================= =========================================================
+    ================== ================= ==========================================================
     **Variables name** **Initial Value** **Explanation**
-    ------------------ ----------------- ---------------------------------------------------------
-    V               0.                Membrane potential.
+    ------------------ ----------------- ----------------------------------------------------------
+    V                   0.                Membrane potential.
 
-    w               0.                Adaptation current.
-    
-    input           0.                External and synaptic input current.
-    
-    spike           0.                Flag to mark whether the neuron is spiking. 
-    
-                                      Can be seen as bool.
-                             
-    refractory      0.                Flag to mark whether the neuron is in refractory period. 
-     
-                                      Can be seen as bool.
-                             
-    t_last_spike    -1e7              Last spike time stamp.
-    =============== ================= =========================================================
-    
-    References:
-        .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single 
-               neurons to networks and models of cognition. Cambridge 
-               University Press, 2014.
+    w                   0.                Adaptation current.
+
+    input               0.                External and synaptic input current.
+
+    spike               0.                Flag to mark whether the neuron is spiking.
+
+    refractory          0.                Flag to mark whether the neuron is in refractory period.
+
+    t_last_spike        -1e7              Last spike time stamp.
+    ================== ================= ==========================================================
+
+    References
+    ----------
+
+    .. [1] Gerstner, Wulfram, et al. Neuronal dynamics: From single
+           neurons to networks and models of cognition. Cambridge
+           University Press, 2014.
     """
-    target_backend = 'general'
+    target_backend = ['numpy', 'numba']
 
     @staticmethod
     def derivative(V, w, t, I_ext, V_rest, V_c, R, tau, tau_w, a, a_0):
@@ -91,6 +88,7 @@ class AdQuaIF(bp.NeuGroup):
                  V_th=-30., V_c=-50.0, a_0=.07,
                  a=1., b=.1, R=1., tau=10., tau_w=10.,
                  t_refractory=0., **kwargs):
+        super(AdQuaIF, self).__init__(size=size, **kwargs)
 
         # parameters
         self.V_rest = V_rest
@@ -106,21 +104,18 @@ class AdQuaIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        num = bp.size2len(size)
-        self.V = bp.ops.ones(num) * V_reset
-        self.w = bp.ops.zeros(size)
-        self.input = bp.ops.zeros(num)
-        self.spike = bp.ops.zeros(num, dtype=bool)
-        self.refractory = bp.ops.zeros(num, dtype=bool)
-        self.t_last_spike = bp.ops.ones(num) * -1e7
+        self.V = bp.ops.ones(self.num) * V_reset
+        self.w = bp.ops.zeros(self.num)
+        self.input = bp.ops.zeros(self.num)
+        self.spike = bp.ops.zeros(self.num, dtype=bool)
+        self.refractory = bp.ops.zeros(self.num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(self.num) * -1e7
 
         self.integral = bp.odeint(f=self.derivative, method='euler')
 
-        super(AdQuaIF, self).__init__(size=size, **kwargs)
-
-    def update(self, _t):
-        for i in prange(self.size[0]):
-            spike = 0.
+    def update(self, _t, _i, _dt):
+        for i in range(self.num):
+            spike = False
             refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
             if not refractory:
                 V, w = self.integral(self.V[i], self.w[i], _t, self.input[i],
@@ -131,8 +126,9 @@ class AdQuaIF(bp.NeuGroup):
                     V = self.V_rest
                     w += self.b
                     self.t_last_spike[i] = _t
+                    refractory = True
                 self.V[i] = V
                 self.w[i] = w
             self.spike[i] = spike
-            self.refractory[i] = refractory or spike
-            self.input[i] = 0.  # reset input here or it will be brought to next step
+            self.refractory[i] = refractory
+            self.input[i] = 0.

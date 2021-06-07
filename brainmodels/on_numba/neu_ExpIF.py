@@ -3,6 +3,7 @@
 import brainpy as bp
 from numba import prange
 
+
 class ExpIF(bp.NeuGroup):
     """Exponential Integrate-and-Fire neuron model.
 
@@ -61,21 +62,20 @@ class ExpIF(bp.NeuGroup):
                mechanisms determine the neuronal response to fluctuating 
                inputs." Journal of Neuroscience 23.37 (2003): 11628-11640.
     """
-    target_backend = 'general'
+    target_backend = ['numpy', 'numba']
 
     @staticmethod
-    def derivative(V, t, I_ext, V_rest, delta_T, V_T, R, tau):  # integrate u(t)
-        dvdt = (- (V - V_rest) \
-                + delta_T * bp.ops.exp((V - V_T) / delta_T) \
-                + R * I_ext) \
-               / tau
+    def derivative(V, t, I_ext, V_rest, delta_T, V_T, R, tau):
+        exp_v = delta_T * bp.ops.exp((V - V_T) / delta_T)
+        dvdt = (- (V - V_rest) + exp_v + R * I_ext) / tau
         return dvdt
 
-    def __init__(self, size, V_rest=-65., V_reset=-68., 
-                 V_th=-30., V_T=-59.9, delta_T=3.48, 
-                 R=10., C=1., tau=10., t_refractory=1.7, 
+    def __init__(self, size, V_rest=-65., V_reset=-68.,
+                 V_th=-30., V_T=-59.9, delta_T=3.48,
+                 R=10., C=1., tau=10., t_refractory=1.7,
                  **kwargs):
-        
+        super(ExpIF, self).__init__(size=size, **kwargs)
+
         # parameters
         self.V_rest = V_rest
         self.V_reset = V_reset
@@ -88,29 +88,29 @@ class ExpIF(bp.NeuGroup):
         self.t_refractory = t_refractory
 
         # variables
-        self.V = bp.ops.ones(size) * V_rest
-        self.input = bp.ops.zeros(size)
-        self.spike = bp.ops.zeros(size, dtype = bool)
-        self.refractory = bp.ops.zeros(size, dtype = bool)
-        self.t_last_spike = bp.ops.ones(size) * -1e7
+        self.V = bp.ops.ones(self.num) * V_rest
+        self.input = bp.ops.zeros(self.num)
+        self.spike = bp.ops.zeros(self.num, dtype=bool)
+        self.refractory = bp.ops.zeros(self.num, dtype=bool)
+        self.t_last_spike = bp.ops.ones(self.num) * -1e7
 
         self.integral = bp.odeint(self.derivative)
-        super(ExpIF, self).__init__(size = size, **kwargs)
 
-    def update(self, _t):            
+    def update(self, _t, _i, _dt):
         for i in prange(self.num):
-            spike = 0.
+            spike = False
             refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
             if not refractory:
                 V = self.integral(
-                    self.V[i], _t, self.input[i], self.V_rest, 
+                    self.V[i], _t, self.input[i], self.V_rest,
                     self.delta_T, self.V_T, self.R, self.tau
                 )
                 spike = (V >= self.V_th)
                 if spike:
                     V = self.V_reset
                     self.t_last_spike[i] = _t
+                    refractory = True
                 self.V[i] = V
             self.spike[i] = spike
-            self.refractory[i] = refractory or spike
-        self.input[:] = 0.
+            self.refractory[i] = refractory
+            self.input[i] = 0.

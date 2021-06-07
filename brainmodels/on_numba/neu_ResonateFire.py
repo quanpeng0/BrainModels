@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-from numba import prange
+
 
 class ResonateandFire(bp.NeuGroup):
-    """Resonate-and-fire neuron model.
+    """Resonate-and-fire neuron model [1]_.
 
     .. math::
 
@@ -71,13 +71,15 @@ class ResonateandFire(bp.NeuGroup):
     t_last_spike       -1e7              Last spike time stamp.
     ================== ================= =========================================================
 
-    References:
-        .. [1] Izhikevich, Eugene M. "Resonate-and-fire neurons." 
-               Neural networks 14.6-7 (2001): 883-894.
+    References
+    ----------
+
+    .. [1] Izhikevich, Eugene M. "Resonate-and-fire neurons."
+           Neural networks 14.6-7 (2001): 883-894.
 
     """
 
-    target_backend = 'general'
+    target_backend = ['numpy', 'numba']
 
     @staticmethod
     def derivative(V, x, t, b, omega):
@@ -85,33 +87,34 @@ class ResonateandFire(bp.NeuGroup):
         dxdt = b * x - omega * V
         return dVdt, dxdt
 
-    def __init__(self, size, b=-1., omega=10., 
+    def __init__(self, size, b=-1., omega=10.,
                  V_th=1., V_reset=1., x_reset=0.,
                  **kwargs):
-        #parameters
+        super(ResonateandFire, self).__init__(size=size, **kwargs)
+
+        # parameters
         self.b = b
         self.omega = omega
         self.V_th = V_th
         self.V_reset = V_reset
         self.x_reset = x_reset
 
-        #variables
+        # variables
         self.V = bp.ops.zeros(size)
         self.x = bp.ops.zeros(size)
         self.input = bp.ops.zeros(size)
-        self.spike = bp.ops.zeros(size, dtype = bool)
+        self.spike = bp.ops.zeros(size, dtype=bool)
 
         self.integral = bp.odeint(self.derivative)
-        super(ResonateandFire, self).__init__(size = size, **kwargs)
 
-    def update(self, _t):
-        for i in prange(self.size[0]):
+    def update(self, _t, _i, _dt):
+        for i in range(self.size[0]):
             x = self.x[i] + self.input[i]
             V, x = self.integral(self.V[i], x, _t, self.b, self.omega)
-            self.spike[i]= (V > self.V_th)
+            self.spike[i] = (V > self.V_th)
             if self.spike[i]:
                 V = self.V_reset
                 x = self.x_reset
             self.V[i] = V
             self.x[i] = x
-        self.input[:] = 0
+            self.input[i] = 0
