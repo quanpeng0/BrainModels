@@ -27,15 +27,17 @@ setup(
     author='PKU-NIP-LAB',
     author_email='adaduo@outlook.com',
     packages=find_packages(),
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     install_requires=[
         'brainpy-simulator',
-        'matplotlib',
         'numpy',
     ],
-    url='https://github.com/PKU-NIP-Lab/BrainPy-Models',
+    url='https://github.com/PKU-NIP-Lab/BrainModels',
     keywords='computational neuroscience, '
-             'brain-inspired computation',
+             'brain-inspired computation, '
+             'neurons, '
+             'synapses, '
+             'learning rules',
     classifiers=[
         'Natural Language :: English',
         'Intended Audience :: Science/Research',
