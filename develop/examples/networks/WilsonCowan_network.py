@@ -107,33 +107,14 @@ def plot_EP(net, I_sval, I_eval, step_num, fig, label, show):
     if show==True:
         plt.show()
 
+# input_e increase
 neu.a_e = -0.02
 I_sval = -0.6
 I_eval = 0.6
 fig, gs = bp.visualize.get_figure(1, 1, 4, 4)
 plot_EP(net, I_sval, I_eval, step_num, fig, label="raising", show=False)
+# input_e decrease
 neu.a_e = 0.48
 I_sval = 0.6
 I_eval = -0.6
 plot_EP(net, I_sval, I_eval, step_num, fig, label="falling", show=True)
-
-'''
-phase = bp.analysis.PhasePlane(
-    FiringRateUnit.integral,
-    target_vars={'a_e': [-0.1, 0.5],
-                 'a_i': [-0.1, 0.5]},
-    fixed_vars=None,
-    pars_update={
-        'c1': 12., 'c2': 4., 'c3': 13., 'c4': 11.,
-        'slope_e': 1.2, 'theta_e': 2.8,
-        'slope_i': 1., 'theta_i': 4.,
-        'r_e': 1., 'r_i': 1.,
-        'k_e': 1., 'k_i': 1., 'tau_e': 1., 'tau_i': 1.,
-        'I_ext_e': 0., 'I_ext_i': 0.
-    }
-)
-phase.plot_nullcline()
-phase.plot_fixed_point(show=True)
-# phase.plot_trajectory(initials={'V': -1, 'w': 1}, duration=100.)
-# phase.plot_vector_field(show=True)
-'''
