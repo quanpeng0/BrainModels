@@ -140,8 +140,8 @@ class GIF(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'nploop':
-      self.update = self._nploop_update
+    if update_type == 'loop':
+      self.update = self._loop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -157,7 +157,7 @@ class GIF(bp.NeuGroup):
     dVdt = (- (V - self.V_rest) + self.R * Iext + self.R * I1 + self.R * I2) / self.tau
     return dI1dt, dI2dt, dVthdt, dVdt
 
-  def _nploop_update(self, _t, _dt):
+  def _loop_update(self, _t, _dt):
     for i in range(self.num):
       I1, I2, V_th, V = self.integral(self.I1[i], self.I2[i], self.V_th[i],
                                       self.V[i], _t, self.input[i], dt=_dt)

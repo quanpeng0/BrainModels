@@ -48,21 +48,21 @@ class QuaIF(bp.NeuGroup):
   ================== ================= =========================================================
   **Variables name** **Initial Value** **Explanation**
   ------------------ ----------------- ---------------------------------------------------------
-  V               0.                Membrane potential.
-  
-  input           0.                External and synaptic input current.
-  
-  spike           0.                Flag to mark whether the neuron is spiking. 
-  
-                                    Can be seen as bool.
-                           
-  refractory      0.                Flag to mark whether the neuron is in refractory period. 
-   
-                                    Can be seen as bool.
-                           
-  t_last_spike    -1e7              Last spike time stamp.
-  =============== ================= =========================================================
-  
+  V                   0.                Membrane potential.
+
+  input               0.                External and synaptic input current.
+
+  spike               0.                Flag to mark whether the neuron is spiking.
+
+                                        Can be seen as bool.
+
+  refractory          0.                Flag to mark whether the neuron is in refractory period.
+
+                                        Can be seen as bool.
+
+  t_last_spike       -1e7               Last spike time stamp.
+  ================== ================= =========================================================
+
   References
   ----------
 
@@ -94,8 +94,8 @@ class QuaIF(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'nploop':
-      self.update = self._nploop_update
+    if update_type == 'loop':
+      self.update = self._loop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -108,7 +108,7 @@ class QuaIF(bp.NeuGroup):
     dVdt = (self.a_0 * (V - self.V_rest) * (V - self.V_c) + self.R * Iext) / self.tau
     return dVdt
 
-  def _nploop_update(self, _t, _dt):
+  def _loop_update(self, _t, _dt):
     for i in range(self.num):
       spike = False
       refractory = (_t - self.t_last_spike[i] <= self.t_refractory)

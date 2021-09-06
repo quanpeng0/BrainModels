@@ -115,8 +115,8 @@ class HH(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'nploop':
-      self.update = self._nploop_update
+    if update_type == 'loop':
+      self.update = self._loop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -145,7 +145,7 @@ class HH(bp.NeuGroup):
 
     return dVdt, dmdt, dhdt, dndt
 
-  def _nploop_update(self, _t, _dt):
+  def _loop_update(self, _t, _dt):
     for i in range(self.num):
       V, m, h, n = self.integral(self.V[i], self.m[i], self.h[i], self.n[i],
                                  _t, self.input[i], dt=_dt)

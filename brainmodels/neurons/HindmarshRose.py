@@ -37,29 +37,29 @@ class HindmarshRose(bp.NeuGroup):
   ------------- -------------- --------- ------------------------------------------------------------
   a             1.             \         Model parameter.
 
-                                        Fixed to a value best fit neuron activity.
+                                         Fixed to a value best fit neuron activity.
 
   b             3.             \         Model parameter.
 
-                                        Allows the model to switch between bursting
+                                         Allows the model to switch between bursting
 
-                                        and spiking, controls the spiking frequency.
+                                         and spiking, controls the spiking frequency.
 
   c             1.             \         Model parameter.
 
-                                        Fixed to a value best fit neuron activity.
+                                         Fixed to a value best fit neuron activity.
 
   d             5.             \         Model parameter.
 
-                                        Fixed to a value best fit neuron activity.
+                                         Fixed to a value best fit neuron activity.
 
   r             0.01           \         Model parameter.
 
-                                        Controls slow variable z's variation speed.
+                                         Controls slow variable z's variation speed.
 
-                                        Governs spiking frequency when spiking, and affects the
+                                         Governs spiking frequency when spiking, and affects the
 
-                                        number of spikes per burst when bursting.
+                                         number of spikes per burst when bursting.
 
   s             4.             \         Model parameter. Governs adaption.
 
@@ -81,7 +81,7 @@ class HindmarshRose(bp.NeuGroup):
 
   input           0.                External and synaptic input current.
 
-  t_last_spike       -1e7               Last spike time stamp.
+  t_last_spike       -1e7           Last spike time stamp.
   =============== ================= =====================================
 
   References
@@ -121,8 +121,8 @@ class HindmarshRose(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'nploop':
-      self.update = self._nploop_update
+    if update_type == 'loop':
+      self.update = self._loop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -137,7 +137,7 @@ class HindmarshRose(bp.NeuGroup):
     dzdt = self.r * (self.s * (V - self.V_rest) - z)
     return dVdt, dydt, dzdt
 
-  def _nploop_update(self, _t, _dt):
+  def _loop_update(self, _t, _dt):
     for i in range(self.num):
       V, self.y[i], self.z[i] = self.integral(self.V[i], self.y[i], self.z[i], _t, self.input[i], dt=_dt)
       spike = bp.math.logical_and(V > self.V_th, V <= self.V_th)

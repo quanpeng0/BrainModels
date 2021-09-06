@@ -40,7 +40,7 @@ class FHN(bp.NeuGroup):
 
   tau           10             ms       Membrane time constant.
 
-  V_th          1.           mV       Threshold potential of spike.
+  V_th          1.             mV       Threshold potential of spike.
   ============= ============== ======== ========================
 
 
@@ -91,8 +91,8 @@ class FHN(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'nploop':
-      self.update = self._nploop_update
+    if update_type == 'loop':
+      self.update = self._loop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -106,7 +106,7 @@ class FHN(bp.NeuGroup):
     dV = V - V * V * V / 3 - w + Iext
     return dV, dw
 
-  def _nploop_update(self, _t, _dt):
+  def _loop_update(self, _t, _dt):
     for i in range(self.num):
       V, w = self.integral(self.V[i], self.w[i], _t, self.input[i], dt=_dt)
       spike = (V >= self.Vth) and (self.V[i] < self.Vth)

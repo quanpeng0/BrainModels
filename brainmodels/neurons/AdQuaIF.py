@@ -104,8 +104,8 @@ class AdQuaIF(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'nploop':
-      self.update = self._nploop_update
+    if update_type == 'loop':
+      self.update = self._loop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -115,7 +115,8 @@ class AdQuaIF(bp.NeuGroup):
 
   @bp.odeint
   def int_V(self, V, t, w, Iext):
-    dVdt = (self.a_0 * (V - self.V_rest) * (V - self.V_c) - self.R * w + self.R * Iext) / self.tau
+    dVdt = (self.a_0 * (V - self.V_rest) * (V - self.V_c) - 
+            self.R * w + self.R * Iext) / self.tau
     return dVdt
 
   @bp.odeint(method='exponential_euler')
@@ -123,7 +124,7 @@ class AdQuaIF(bp.NeuGroup):
     dwdt = (self.a * (V - self.V_rest) - w) / self.tau_w
     return dwdt
 
-  def _nploop_update(self, _t, _dt):
+  def _loop_update(self, _t, _dt):
     for i in range(self.num):
       spike = False
       refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
