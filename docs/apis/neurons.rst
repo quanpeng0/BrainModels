@@ -2,59 +2,63 @@ brainmodels.neurons
 ===================
 
 
-.. currentmodule:: brainmodels.tensor_backend.neurons
-.. automodule:: brainmodels.tensor_backend.neurons
+.. currentmodule:: brainmodels.neurons
+.. automodule:: brainmodels.neurons
 
 .. autosummary::
-    :toctree: _autosummary
+    :toctree: generated/
 
-    HH
-    LIF
-    QuaIF
-    ExpIF
-    Izhikevich
-    AdQuaIF
     AdExIF
-    GeneralizedIF
-    ResonateandFire
+    AdQuaIF
+    ExpIF
+    FHN
+    HH
     HindmarshRose
+    Izhikevich
+    LIF
     MorrisLecar
-    FitzHughNagumo
+    QuaIF
+
+
+
+.. autoclass:: AdExIF
+   :members:
+
+
+.. autoclass:: AdQuaIF
+   :members:
+
+
+.. autoclass:: ExpIF
+   :members:
+
+
+.. autoclass:: FHN
+   :members:
 
 
 .. autoclass:: HH
    :members:
 
-.. autoclass:: LIF
-   :members:
-
-.. autoclass:: QuaLIF
-   :members:
-
-.. autoclass:: ExpIF
-   :members:
-
-.. autoclass:: Izhikevich
-   :members:
-   
-.. autoclass:: AdQuaIF
-   :members:
-
-.. autoclass:: AdExIF
-   :members:
-
-.. autoclass:: GeneralizedIF
-   :members:
-
-.. autoclass:: ResonateandFire
-   :members:
 
 .. autoclass:: HindmarshRose
    :members:
 
+
+.. autoclass:: Izhikevich
+   :members:
+
+
+.. autoclass:: LIF
+   :members:
+
+
 .. autoclass:: MorrisLecar
    :members:
 
-.. autoclass:: FitzHughNagumo
+
+.. autoclass:: QuaIF
    :members:
+
+
 

@@ -13,8 +13,6 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('../brainmodels/'))
-sys.path.insert(0, os.path.abspath('../../'))
 
 import brainmodels
 
@@ -23,7 +21,7 @@ import brainmodels
 
 project = 'BrainModels'
 copyright = '2021, BrainModels'
-author = 'BrainModels authors'
+author = 'BrainPy team'
 
 # The full version, including alpha/beta/rc tags
 release = brainmodels.__version__
