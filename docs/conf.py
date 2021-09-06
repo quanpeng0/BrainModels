@@ -21,7 +21,7 @@ import brainmodels
 
 project = 'BrainModels'
 copyright = '2021, BrainModels'
-author = 'BrainModels authors'
+author = 'BrainPy team'
 
 # The full version, including alpha/beta/rc tags
 release = brainmodels.__version__

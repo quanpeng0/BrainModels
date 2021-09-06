@@ -12,12 +12,11 @@ with other BrainPy users.
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API documentation
 
-   apis/on_numba_learning_rules
-   apis/on_numba_neurons
-   apis/on_numba_synapses
+   apis/neurons
+   apis/synapses
 
 
 .. toctree::
@@ -28,6 +27,7 @@ with other BrainPy users.
    examples/EI_nets/_index
    examples/gj_nets/_index
    examples/oscillation_synchronization/_index
+   examples/working_memory/_index
 
 
 

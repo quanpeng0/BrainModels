@@ -8,13 +8,13 @@ __all__ = [
 
 
 class AdQuaIF(bp.NeuGroup):
-  """Adaptive Quadratic Integrate-and-Fire neuron model [1]_.
+  r"""Adaptive Quadratic Integrate-and-Fire neuron model [1]_.
 
   .. math::
 
-      \\tau_m \\frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) - R w + RI(t)
+      \tau_m \frac{d V}{d t}=a_0(V-V_{rest})(V-V_c) - R w + RI(t)
 
-      \\tau_w \\frac{d w}{d t}=a(V-V_{rest}) - w + b \\tau_w \\sum \\delta (t-t^f)
+      \tau_w \frac{d w}{d t}=a(V-V_{rest}) - w + b \tau_w \sum \delta (t-t^f)
 
 
   **Neuron Parameters**
