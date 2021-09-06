@@ -95,8 +95,8 @@ class MorrisLecar(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'forloop':
-      self.update = self._forloop_update
+    if update_type == 'nploop':
+      self.update = self._nploop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -117,7 +117,7 @@ class MorrisLecar(bp.NeuGroup):
     dWdt = (W_inf - W) / tau_W
     return dVdt, dWdt
 
-  def _forloop_update(self, _t, _dt):
+  def _nploop_update(self, _t, _dt):
     for i in range(self.num):
       V, W = self.integral(self.V[i], self.W[i], _t, self.input[i], dt=_dt)
       spike = bp.math.logical_and(self.V[i] < self.V_th, V >= self.V_th)

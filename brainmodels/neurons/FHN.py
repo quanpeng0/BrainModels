@@ -91,8 +91,8 @@ class FHN(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'forloop':
-      self.update = self._forloop_update
+    if update_type == 'nploop':
+      self.update = self._nploop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -106,7 +106,7 @@ class FHN(bp.NeuGroup):
     dV = V - V * V * V / 3 - w + Iext
     return dV, dw
 
-  def _forloop_update(self, _t, _dt):
+  def _nploop_update(self, _t, _dt):
     for i in range(self.num):
       V, w = self.integral(self.V[i], self.w[i], _t, self.input[i], dt=_dt)
       spike = (V >= self.Vth) and (self.V[i] < self.Vth)

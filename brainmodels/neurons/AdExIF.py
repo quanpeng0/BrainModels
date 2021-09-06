@@ -103,8 +103,8 @@ class AdExIF(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'forloop':
-      self.update = self._forloop_update
+    if update_type == 'nploop':
+      self.update = self._nploop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -124,7 +124,7 @@ class AdExIF(bp.NeuGroup):
     dwdt = (self.a * (V - self.V_rest) - w) / self.tau_w
     return dwdt
 
-  def _forloop_update(self, _t, _dt):
+  def _nploop_update(self, _t, _dt):
     for i in range(self.num):
       spike = False
       w = self.int_w(self.w[i], _t, self.V[i], dt=_dt)

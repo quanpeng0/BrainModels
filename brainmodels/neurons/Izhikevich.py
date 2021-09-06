@@ -113,8 +113,8 @@ class Izhikevich(bp.NeuGroup):
 
     # update method
     self.update_type = update_type
-    if update_type == 'forloop':
-      self.update = self._forloop_update
+    if update_type == 'nploop':
+      self.update = self._nploop_update
       self.target_backend = 'numpy'
     elif update_type == 'vector':
       self.update = self._vector_update
@@ -132,7 +132,7 @@ class Izhikevich(bp.NeuGroup):
     dudt = self.a * (self.b * V - u)
     return dudt
 
-  def _forloop_update(self, _t, _dt):
+  def _nploop_update(self, _t, _dt):
     for i in range(self.num):
       spike = False
       refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
