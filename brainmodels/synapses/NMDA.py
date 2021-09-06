@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
-from numba import prange
 
 __all__ = [
   'NMDA'
@@ -127,7 +126,7 @@ class NMDA(bp.TwoEndConn):
   def _loop_update(self, _t, _dt):
     delayed_g = self.g.pull()
     self.s[:], self.x[:] = self.integral(self.s, self.x, _t, dt=_dt)
-    for i in prange(self.size):
+    for i in range(self.size):
       pre_id, post_id = self.pre_ids[i], self.post_ids[i]
       self.x[i] += self.pre.spike[pre_id]
       g_inf = 1 + self.cc_Mg / self.beta * bp.math.exp(-self.alpha * self.post.V[post_id])
