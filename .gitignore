@@ -3,7 +3,9 @@
 *.pyc
 .DS_Store
 docs/_autosummary
+docs/generated
 docs/apis/_autosummary
+docs/apis/generated
 docs/_build
 dist/
 build/

@@ -24,20 +24,16 @@ setup(
     description='BrainModels: Brain models implemented with BrainPy',
     long_description=README,
     long_description_content_type="text/markdown",
-    author='PKU-NIP-LAB',
-    author_email='adaduo@outlook.com',
+    author='BrainPy team',
+    author_email='chao.brain@qq.com',
     packages=find_packages(),
     python_requires='>=3.6',
     install_requires=[
-        'brainpy-simulator',
-        'numpy',
+        'brain-py',
     ],
     url='https://github.com/PKU-NIP-Lab/BrainModels',
     keywords='computational neuroscience, '
-             'brain-inspired computation, '
-             'neurons, '
-             'synapses, '
-             'learning rules',
+             'brain-inspired computation, ',
     classifiers=[
         'Natural Language :: English',
         'Intended Audience :: Science/Research',

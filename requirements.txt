@@ -1,2 +1,1 @@
-numpy>=1.15
-brainpy-simulator>=1.0.0
+brain-py>=1.1.0
