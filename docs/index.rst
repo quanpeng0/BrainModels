@@ -10,21 +10,6 @@ In such a way, once your new model is created, it can be easily shared
 with other BrainPy users.
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Tutorials
-
-   tutorials/neurons
-   tutorials/synapses
-   tutorials/dynamics_analysis
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Examples
-
-   from_papers
-
 
 .. toctree::
    :maxdepth: 1
@@ -33,6 +18,27 @@ with other BrainPy users.
    apis/on_numba_learning_rules
    apis/on_numba_neurons
    apis/on_numba_synapses
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples from paper
+
+   examples/CANN/_index
+   examples/EI_nets/_index
+   examples/gj_nets/_index
+   examples/oscillation_synchronization/_index
+
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tutorials
+
+   tutorials/neurons
+   tutorials/synapses
+   tutorials/dynamics_analysis
+
 
 
 Indices and tables
