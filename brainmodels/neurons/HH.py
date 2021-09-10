@@ -9,7 +9,7 @@ __all__ = [
 
 
 class HH(bp.NeuGroup):
-  """Hodgkin–Huxley neuron model [1]_.
+  r"""Hodgkin–Huxley neuron model [1]_.
 
   Alan Hodgkin and Andrew Huxley described the model in 1952 [1]_ to explain
   the ionic mechanisms underlying the initiation and propagation of action
@@ -17,25 +17,26 @@ class HH(bp.NeuGroup):
 
   .. math::
 
-      C \\frac {dV} {dt} = -(\\bar{g}_{Na} m^3 h (V &-E_{Na})
-      + \\bar{g}_K n^4 (V-E_K) + g_{leak} (V - E_{leak})) + I(t)
+      C \frac {dV} {dt} = -(\bar{g}_{Na} m^3 h (V &-E_{Na})
+      + \bar{g}_K n^4 (V-E_K) + g_{leak} (V - E_{leak})) + I(t)
 
-      \\frac {dx} {dt} &= \\alpha_x (1-x)  - \\beta_x, \\quad x\\in {\\rm{\\{m, h, n\\}}}
+      \frac {dx} {dt} &= \alpha_x (1-x)  - \beta_x, \quad x\in {\rm{\{m, h, n\}}}
 
-      &\\alpha_m(V) = \\frac {0.1(V+40)}{1-exp(\\frac{-(V + 40)} {10})}
+      &\alpha_m(V) = \frac {0.1(V+40)}{1-exp(\frac{-(V + 40)} {10})}
 
-      &\\beta_m(V) = 4.0 exp(\\frac{-(V + 65)} {18})
+      &\beta_m(V) = 4.0 exp(\frac{-(V + 65)} {18})
 
-      &\\alpha_h(V) = 0.07 exp(\\frac{-(V+65)}{20})
+      &\alpha_h(V) = 0.07 exp(\frac{-(V+65)}{20})
 
-      &\\beta_h(V) = \\frac 1 {1 + exp(\\frac{-(V + 35)} {10})}
+      &\beta_h(V) = \frac 1 {1 + exp(\frac{-(V + 35)} {10})}
 
-      &\\alpha_n(V) = \\frac {0.01(V+55)}{1-exp(-(V+55)/10)}
+      &\alpha_n(V) = \frac {0.01(V+55)}{1-exp(-(V+55)/10)}
 
-      &\\beta_n(V) = 0.125 exp(\\frac{-(V + 65)} {80})
+      &\beta_n(V) = 0.125 exp(\frac{-(V + 65)} {80})
 
 
-  **Neuron Parameters**
+  Model Parameters
+  ----------------
 
   ============= ============== ======== ====================================
   **Parameter** **Init Value** **Unit** **Explanation**
@@ -59,9 +60,8 @@ class HH(bp.NeuGroup):
   noise         0.             \        the noise fluctuation.
   ============= ============== ======== ====================================
 
-  **Neuron Variables**
-
-  An object of neuron class record those variables:
+  Model Variables
+  ---------------
 
   ================== ================= =========================================================
   **Variables name** **Initial Value** **Explanation**

@@ -69,11 +69,6 @@ class ExponentialCUBA(bp.TwoEndConn):
     self.delay = delay
 
     # connections
-    self.conn = conn(pre.size, post.size)
-    self.pre_slice, self.post_ids = self.conn.requires('pre_slice', 'post_ids')
-    self.num = self.post.num
-
-    # connections
     if update_type == 'loop_slice':
       self.pre_slice = self.conn.requires('pre_slice')
       self.update = self._loop_slice_update
@@ -97,8 +92,8 @@ class ExponentialCUBA(bp.TwoEndConn):
     # variables
     self.g_max = g_max
     assert bp.math.size(g_max) == 1, 'This implementation only support scalar "g_max". '
-    self.g = bp.math.Variable(bp.math.zeros(self.num))
-    self.pre_spike = self.register_constant_delay('pre_spike', size=self.size, delay=delay)
+    self.g = bp.math.Variable(bp.math.zeros(self.size))
+    self.pre_spike = self.register_constant_delay('pre_spike', self.size, delay)
 
   @bp.odeint(method='exponential_euler')
   def integral(self, s, t):
