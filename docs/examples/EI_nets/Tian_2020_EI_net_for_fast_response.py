@@ -116,7 +116,7 @@ class Syn(bp.TwoEndConn):
       if spike:
         for post_i in self.pre2post[pre_i]:
           self.s[post_i] += 1.
-    self.post.input[:] += self.g_max * self.s
+    self.post.input += self.g_max * self.s
 
 
 # %%

@@ -104,7 +104,7 @@ class Syn(bp.TwoEndConn):
         post_ids = self.pre2post[pre_id]
         for i in post_ids:
           self.g[i] += self.w
-    self.post.Isyn[:] += self.g
+    self.post.Isyn += self.g
 
 
 # %%

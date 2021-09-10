@@ -213,7 +213,7 @@ class OtherSyn(bp.TwoEndConn):
   def update(self, _t, _dt):
     for i in range(self.pre.spike.shape[0]):
       if self.pre.spike[i]:
-        self.post.s[:] += self.weights[i]
+        self.post.s += self.weights[i]
 
 
 random2sensory_conn = OtherSyn(pre=random_net,
