@@ -11,6 +11,8 @@ __all__ = [
 class HindmarshRose(bp.NeuGroup):
   r"""Hindmarsh-Rose neuron model.
 
+  **Model Descriptions**
+
   The Hindmarsh–Rose model [1]_ [2]_ of neuronal activity is aimed to study the 
   spiking-bursting behavior of the membrane potential observed in experiments
   made with a single neuron.
@@ -30,7 +32,7 @@ class HindmarshRose(bp.NeuGroup):
   where :math:`a, b, c, d` model the working of the fast ion channels,
   :math:`I` models the slow ion channels.
 
-  **Examples**
+  **Model Examples**
 
   - `Illustrated examples to reproduce different firing patterns <../neurons/HindmarshRose_model.ipynb>`_
 
@@ -55,7 +57,7 @@ class HindmarshRose(bp.NeuGroup):
   s             4              \         Model parameter. Governs adaption.
   ============= ============== ========= ============================================================
 
-  **Model State**
+  **Model Variables**
 
   =============== ================= =====================================
   **Member name** **Initial Value** **Explanation**
@@ -68,8 +70,7 @@ class HindmarshRose(bp.NeuGroup):
   t_last_spike    -1e7              Last spike time stamp.
   =============== ================= =====================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Hindmarsh, James L., and R. M. Rose. "A model of neuronal bursting using
         three coupled first order differential equations." Proceedings of the
@@ -83,17 +84,6 @@ class HindmarshRose(bp.NeuGroup):
 
   def __init__(self, size, a=1., b=3., c=1., d=5., r=0.01, s=4.,
                V_rest=-1.6, V_th=1.0, update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # initialization
     super(HindmarshRose, self).__init__(size=size, **kwargs)
 
@@ -106,6 +96,17 @@ class HindmarshRose(bp.NeuGroup):
     self.s = s
     self.V_th = V_th
     self.V_rest = V_rest
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.z = bm.Variable(bm.zeros(self.num))

@@ -11,6 +11,8 @@ __all__ = [
 class LIF(bp.NeuGroup):
   r"""Leaky integrate-and-fire neuron model.
 
+  **Model Descriptions**
+
   The formal equations of a LIF model [1]_ is given by:
 
   .. math::
@@ -25,7 +27,7 @@ class LIF(bp.NeuGroup):
   :math:`\tau_{ref}` is the refractory time period,
   and :math:`I` is the time-variant synaptic inputs.
 
-  **Examples**
+  **Model Examples**
 
   - `Illustrated example <../neurons/LIF.ipynb>`_
 
@@ -53,8 +55,7 @@ class LIF(bp.NeuGroup):
   t_last_spike         -1e7              Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Abbott, Larry F. "Lapicque’s introduction of the integrate-and-fire model
          neuron (1907)." Brain research bulletin 50, no. 5-6 (1999): 303-304.
@@ -62,17 +63,6 @@ class LIF(bp.NeuGroup):
 
   def __init__(self, size, V_rest=0., V_reset=-5., V_th=20.,
                tau=10., tau_ref=1., update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # initialization
     super(LIF, self).__init__(size=size, **kwargs)
 
@@ -82,6 +72,17 @@ class LIF(bp.NeuGroup):
     self.V_th = V_th
     self.tau = tau
     self.tau_ref = tau_ref
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.V = bm.Variable(bm.ones(self.num) * V_rest)

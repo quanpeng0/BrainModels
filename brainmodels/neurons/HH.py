@@ -12,6 +12,8 @@ __all__ = [
 class HH(bp.NeuGroup):
   r"""Hodgkin–Huxley neuron model.
 
+  **Model Descriptions**
+
   The Hodgkin-Huxley (HH; Hodgkin & Huxley, 1952) model [1]_ for the generation of
   the nerve action potential is one of the most successful mathematical models of
   a complex biological process that has ever been formulated. The basic concepts
@@ -96,7 +98,7 @@ class HH(bp.NeuGroup):
   .. image:: ../../images/Hodgkin_Huxley_bifurcation.png
      :align: center
 
-  **Examples**
+  **Model Examples**
 
   - `An illustrated example <../neurons/HH_model.ipynb>`_
 
@@ -130,8 +132,7 @@ class HH(bp.NeuGroup):
   t_last_spike       -1e7               Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Hodgkin, Alan L., and Andrew F. Huxley. "A quantitative description
          of membrane current and its application to conduction and excitation
@@ -144,17 +145,6 @@ class HH(bp.NeuGroup):
 
   def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36., EL=-54.387,
                gL=0.03, V_th=20., C=1.0, update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # initialization
     super(HH, self).__init__(size=size, **kwargs)
 
@@ -167,6 +157,17 @@ class HH(bp.NeuGroup):
     self.gL = gL
     self.C = C
     self.V_th = V_th
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.V = bm.Variable(-65. * bm.ones(self.num))

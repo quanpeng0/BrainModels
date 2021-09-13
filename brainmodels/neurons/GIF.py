@@ -11,6 +11,8 @@ __all__ = [
 class GIF(bp.NeuGroup):
   r"""Generalized Integrate-and-Fire model.
 
+  **Model Descriptions**
+
   The generalized integrate-and-fire model [1]_ is given by
 
   .. math::
@@ -33,7 +35,7 @@ class GIF(bp.NeuGroup):
 
   Note that :math:`I_j` refers to arbitrary number of internal currents.
 
-  **Examples**
+  **Model Examples**
 
   - `Illustrated examples to reproduce different firing patterns <../neurons/GIF.ipynb>`_
 
@@ -77,8 +79,7 @@ class GIF(bp.NeuGroup):
   t_last_spike       -1e7              Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Mihalaş, Ştefan, and Ernst Niebur. "A generalized linear
          integrate-and-fire neural model produces diverse spiking
@@ -92,17 +93,6 @@ class GIF(bp.NeuGroup):
   def __init__(self, size, V_rest=-70., V_reset=-70., V_th_inf=-50., V_th_reset=-60.,
                R=20., tau=20., a=0., b=0.01, k1=0.2, k2=0.02, R1=0., R2=1., A1=0.,
                A2=0., update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # initialization
     super(GIF, self).__init__(size=size, **kwargs)
 
@@ -121,6 +111,17 @@ class GIF(bp.NeuGroup):
     self.R2 = R2
     self.A1 = A1
     self.A2 = A2
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # vars
     self.I1 = bm.Variable(bm.zeros(self.num))

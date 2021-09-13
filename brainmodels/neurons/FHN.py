@@ -11,6 +11,8 @@ __all__ = [
 class FHN(bp.NeuGroup):
   r"""FitzHugh-Nagumo neuron model.
 
+  **Model Descriptions**
+
   The FitzHugh–Nagumo model (FHN), named after Richard FitzHugh (1922–2007)
   who suggested the system in 1961 [1]_ and J. Nagumo et al. who created the
   equivalent circuit the following year, describes a prototype of an excitable
@@ -43,7 +45,7 @@ class FHN(bp.NeuGroup):
   :math:`w`) in a neuron after stimulation by an external
   input current.
 
-  **Examples**
+  **Model Examples**
 
   - `Illustrated example <../neurons/FHN.ipynb>`_
 
@@ -73,8 +75,7 @@ class FHN(bp.NeuGroup):
   t_last_spike       -1e7               Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] FitzHugh, Richard. "Impulses and physiological states in theoretical models of nerve membrane." Biophysical journal 1.6 (1961): 445-466.
   .. [2] https://en.wikipedia.org/wiki/FitzHugh%E2%80%93Nagumo_model
@@ -83,17 +84,6 @@ class FHN(bp.NeuGroup):
   """
 
   def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8, update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # initialization
     super(FHN, self).__init__(size=size, **kwargs)
 
@@ -102,6 +92,17 @@ class FHN(bp.NeuGroup):
     self.b = b
     self.tau = tau
     self.Vth = Vth
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.V = bm.Variable(bm.zeros(self.num))
@@ -130,5 +131,6 @@ class FHN(bp.NeuGroup):
   def _vector_update(self, _t, _dt):
     V, self.w[:] = self.integral(self.V, self.w, _t, self.input, dt=_dt)
     self.spike[:] = bm.logical_and(V >= self.Vth, self.V < self.Vth)
+    self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)
     self.V[:] = V
     self.input[:] = 0.

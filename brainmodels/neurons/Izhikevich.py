@@ -11,6 +11,8 @@ __all__ = [
 class Izhikevich(bp.NeuGroup):
   r"""The Izhikevich neuron model.
 
+  **Model Descriptions**
+
   The dynamics of the Izhikevich neuron model [1]_ [2]_ is given by:
 
   .. math ::
@@ -25,7 +27,7 @@ class Izhikevich(bp.NeuGroup):
       \begin{cases} v \leftarrow c \\
       u \leftarrow u+d \end{cases}
 
-  **Examples**
+  **Model Examples**
 
   - `Detailed examples to reproduce different firing patterns <../neurons/Izhikevich_model.ipynb>`_
 
@@ -65,8 +67,7 @@ class Izhikevich(bp.NeuGroup):
   t_last_spike               -1e7       Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Izhikevich, Eugene M. "Simple model of spiking neurons." IEEE
          Transactions on neural networks 14.6 (2003): 1569-1572.
@@ -77,17 +78,6 @@ class Izhikevich(bp.NeuGroup):
 
   def __init__(self, size, a=0.02, b=0.20, c=-65., d=8., tau_ref=0.,
                V_th=30., update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # initialization
     super(Izhikevich, self).__init__(size=size, **kwargs)
 
@@ -98,6 +88,17 @@ class Izhikevich(bp.NeuGroup):
     self.d = d
     self.V_th = V_th
     self.tau_ref = tau_ref
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # vars
     self.V = bm.Variable(bm.ones(self.num) * -65.)
@@ -133,7 +134,7 @@ class Izhikevich(bp.NeuGroup):
         else:
           spike = False
         self.V[i] = V
-        self.u[i] = u
+      self.u[i] = u
       self.spike[i] = spike
       self.refractory[i] = refractory
       self.input[i] = 0.

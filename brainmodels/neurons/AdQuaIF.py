@@ -11,6 +11,8 @@ __all__ = [
 class AdQuaIF(bp.NeuGroup):
   r"""Adaptive quadratic integrate-and-fire neuron model.
 
+  **Model Descriptions**
+
   The adaptive quadratic integrate-and-fire neuron model [1]_ is given by:
 
   .. math::
@@ -27,7 +29,7 @@ class AdQuaIF(bp.NeuGroup):
       V \rightarrow V_{reset}, \\
       w \rightarrow w+b.
 
-  **Examples**
+  **Model Examples**
 
   - `Simple example <../neurons/AdQuaIF.ipynb>`_
 
@@ -63,8 +65,7 @@ class AdQuaIF(bp.NeuGroup):
   t_last_spike        -1e7              Last spike time stamp.
   ================== ================= ==========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Izhikevich, E. M. (2004). Which model to use for cortical spiking
          neurons?. IEEE transactions on neural networks, 15(5), 1063-1070.
@@ -75,18 +76,6 @@ class AdQuaIF(bp.NeuGroup):
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0,
                a=1., b=.1, c=.07, tau=10., tau_w=10., update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
-    # initialize
     super(AdQuaIF, self).__init__(size=size, **kwargs)
 
     # parameters
@@ -99,6 +88,17 @@ class AdQuaIF(bp.NeuGroup):
     self.b = b
     self.tau = tau
     self.tau_w = tau_w
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.V = bm.Variable(bm.ones(self.num) * V_reset)

@@ -11,6 +11,8 @@ __all__ = [
 class MorrisLecar(bp.NeuGroup):
   r"""The Morris-Lecar neuron model.
 
+  **Model Descriptions**
+
   The Morris-Lecar model [1]_ (Also known as :math:`I_{Ca}+I_K`-model)
   is a two-dimensional "reduced" excitation model applicable to
   systems having two non-inactivating voltage-sensitive conductances.
@@ -34,7 +36,7 @@ class MorrisLecar(bp.NeuGroup):
   which is almost invariably the normalized :math:`K^+`-ion conductance, and
   :math:`I_{ext}` is the applied current stimulus.
 
-  **Examples**
+  **Model Examples**
 
   - `Illustrated example <../neurons/MorrisLecar.ipynb>`_
 
@@ -71,8 +73,7 @@ class MorrisLecar(bp.NeuGroup):
   t_last_spike       -1e7              Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Meier, Stephen R., Jarrett L. Lancaster, and Joseph M. Starobin.
          "Bursting regimes in a reaction-diffusion system with action
@@ -85,17 +86,6 @@ class MorrisLecar(bp.NeuGroup):
   def __init__(self, size, V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_leak=-60.,
                g_leak=2., C=20., V1=-1.2, V2=18., V3=2., V4=30., phi=0.04,
                V_th=10., update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # initialization
     super(MorrisLecar, self).__init__(size=size, **kwargs)
 
@@ -113,6 +103,17 @@ class MorrisLecar(bp.NeuGroup):
     self.V4 = V4
     self.phi = phi
     self.V_th = V_th
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # vars
     self.input = bm.Variable(bm.zeros(self.num))

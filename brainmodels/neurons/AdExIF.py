@@ -12,6 +12,8 @@ __all__ = [
 class AdExIF(bp.NeuGroup):
   r"""Adaptive exponential integrate-and-fire neuron model.
 
+  **Model Descriptions**
+
   The **adaptive exponential integrate-and-fire model**, also called AdEx, is a
   spiking neuron model with two variables [1]_ [2]_.
 
@@ -39,7 +41,7 @@ class AdExIF(bp.NeuGroup):
   neuronal firing patterns, e.g., adapting, bursting, delayed spike initiation,
   initial bursting, fast spiking, and regular spiking.
 
-  **Examples**
+  **Model Examples**
 
   - `Examples for different firing patterns <../neurons/AdExIF_model.ipynb>`_
 
@@ -72,8 +74,8 @@ class AdExIF(bp.NeuGroup):
   t_last_spike        -1e7              Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
+
   .. [1] Fourcaud-Trocmé, Nicolas, et al. "How spike generation
          mechanisms determine the neuronal response to fluctuating
          inputs." Journal of Neuroscience 23.37 (2003): 11628-11640.
@@ -82,17 +84,6 @@ class AdExIF(bp.NeuGroup):
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
                a=1., b=1., tau=10., tau_w=30., R=1., update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     super(AdExIF, self).__init__(size=size, **kwargs)
 
     # parameters
@@ -107,6 +98,17 @@ class AdExIF(bp.NeuGroup):
     self.tau_w = tau_w
     self.R = R
 
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
+
     # variables
     self.V = bm.Variable(bm.ones(self.num) * V_reset)
     self.w = bm.Variable(bm.zeros(self.num))
@@ -114,7 +116,6 @@ class AdExIF(bp.NeuGroup):
     self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
     self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
     self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
-
 
   @bp.odeint
   def int_V(self, V, t, w, Iext):

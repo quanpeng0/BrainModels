@@ -11,6 +11,7 @@ __all__ = [
 class QuaIF(bp.NeuGroup):
   r"""Quadratic Integrate-and-Fire neuron model.
 
+  **Model Descriptions**
 
   In contrast to physiologically accurate but computationally expensive
   neuron models like the Hodgkin–Huxley model, the QIF model [1]_ seeks only
@@ -26,7 +27,7 @@ class QuaIF(bp.NeuGroup):
   
   where the parameters are taken to be :math:`c` =0.07, and :math:`V_c = -50 mV` (Latham et al., 2000).
 
-  **Examples**
+  **Model Examples**
 
   - `Illustrated example <../neurons/QuaIF.ipynb>`_
 
@@ -57,8 +58,7 @@ class QuaIF(bp.NeuGroup):
   t_last_spike       -1e7               Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1]  P. E. Latham, B.J. Richmond, P. Nelson and S. Nirenberg
           (2000) Intrinsic dynamics in neuronal networks. I. Theory.
@@ -67,17 +67,6 @@ class QuaIF(bp.NeuGroup):
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0, c=.07,
                R=1., tau=10., tau_ref=0., update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # initialization
     super(QuaIF, self).__init__(size=size, **kwargs)
 
@@ -90,6 +79,17 @@ class QuaIF(bp.NeuGroup):
     self.R = R
     self.tau = tau
     self.tau_ref = tau_ref
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.V = bm.Variable(bm.ones(self.num) * V_reset)

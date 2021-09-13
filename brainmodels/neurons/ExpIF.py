@@ -11,6 +11,8 @@ __all__ = [
 class ExpIF(bp.NeuGroup):
   r"""Exponential integrate-and-fire neuron model.
 
+  **Model Descriptions**
+
   In the exponential integrate-and-fire model [1]_, the differential
   equation for the membrane potential is given by
 
@@ -47,7 +49,7 @@ class ExpIF(bp.NeuGroup):
     rate for constant input, and the linear response to fluctuations, even in the presence
     of input noise [4]_.
 
-  **Examples**
+  **Model Examples**
 
   - `Illustrated example <../neurons/ExpIF.ipynb>`_
 
@@ -78,8 +80,7 @@ class ExpIF(bp.NeuGroup):
   t_last_spike       -1e7              Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Fourcaud-Trocmé, Nicolas, et al. "How spike generation
          mechanisms determine the neuronal response to fluctuating
@@ -99,17 +100,6 @@ class ExpIF(bp.NeuGroup):
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
                R=1., tau=10., tau_ref=1.7, update_type='vector', **kwargs):
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # initialize
     super(ExpIF, self).__init__(size=size, **kwargs)
 
@@ -122,6 +112,17 @@ class ExpIF(bp.NeuGroup):
     self.R = R
     self.tau = tau
     self.tau_ref = tau_ref
+
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.steps.replace('update', self._loop_update)
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.steps.replace('update', self._vector_update)
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.V = bm.Variable(bm.ones(self.num) * V_rest)
