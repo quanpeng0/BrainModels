@@ -93,7 +93,7 @@ class Syn(bp.TwoEndConn):
         for post_i in self.pre2post[pre_i]:
           s[post_i] += J
     self.g.push(s)
-    self.post.V[:] -= self.g.pull() * self.post.not_ref
+    self.post.V -= self.g.pull() * self.post.not_ref
 
 
 # %%

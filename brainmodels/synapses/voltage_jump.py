@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import brainpy.math as bm
 
 __all__ = [
   'VoltageJump'
@@ -8,26 +9,33 @@ __all__ = [
 
 
 class VoltageJump(bp.TwoEndConn):
-  """Voltage jump synapses.
+  """Voltage jump synapse model.
+
+  **Model Descriptions**
 
   .. math::
 
-      I_{syn} = \sum J \delta(t-t_j)
+      I_{syn} (t) = \sum_{j\in C} w \delta(t-t_j-D)
 
+  where :math:`w` denotes the chemical synaptic strength, :math:`t_j` the spiking
+  moment of the presynaptic neuron :math:`j`, :math:`C` the set of neurons connected
+  to the post-synaptic neuron, and :math:`D` the transmission delay of chemical
+  synapses. For simplicity, the rise and decay phases of post-synaptic currents are
+  omitted in this model.
 
-  ST refers to synapse state, members of ST are listed below:
+  **Model Examples**
 
-  =============== ================= =========================================================
-  **Member name** **Initial Value** **Explanation**
-  --------------- ----------------- ---------------------------------------------------------
-  s               0.                Gating variable of the post-synaptic neuron.
-  =============== ================= =========================================================
+  - `Simple illustrated example <../synapses/voltage_jump.ipynb>`_
+  - `(Bouchacourt & Buschman, 2019) Flexible Working Memory Model <../../examples/working_memory/Bouchacourt_2019_Flexible_working_memory.ipynb>`_
 
-  Args:
-      post_has_refractory (bool): whether the post-synaptic neuron have refractory.
+  **Model Parameters**
 
-  Returns:
-      bp.SynType.
+  ============= ============== ======== ===========================================
+  **Parameter** **Init Value** **Unit** **Explanation**
+  ------------- -------------- -------- -------------------------------------------
+  w             1              mV       The synaptic strength.
+  ============= ============== ======== ===========================================
+
 
   """
 
@@ -48,20 +56,20 @@ class VoltageJump(bp.TwoEndConn):
 
     # connections
     if update_type == 'loop_slice':
-      self.pre_slice = self.conn.requires('pre_slice')
-      self.update = self._loop_slice_update
+      self.pre_slice, self.post_ids = self.conn.requires('pre_slice', 'post_ids')
+      self.steps.replace('update', self._loop_slice_update)
       self.size = self.post.num
       self.target_backend = 'numpy'
 
     elif update_type == 'loop':
       self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.update = self._loop_update
+      self.steps.replace('update', self._loop_update)
       self.size = len(self.pre_ids)
       self.target_backend = 'numpy'
 
     elif update_type == 'matrix':
       self.conn_mat = self.conn.requires('conn_mat')
-      self.update = self._matrix_update
+      self.steps.replace('update', self._matrix_update)
       self.size = self.conn_mat.shape
 
     else:
@@ -69,7 +77,7 @@ class VoltageJump(bp.TwoEndConn):
 
     # variables
     self.w = w
-    assert bp.math.size(w) == 1, 'This implementation only support scalar weight. '
+    assert bm.size(w) == 1, 'This implementation only support scalar weight. '
     self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
 
   def _loop_slice_update(self, _t, _dt):

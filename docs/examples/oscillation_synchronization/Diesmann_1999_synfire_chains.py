@@ -127,7 +127,7 @@ class SynBetweenGroups(bp.TwoEndConn):
     # delay push
     self.g.push(g)
     # delay pull
-    self.group.y[:] += self.g.pull()
+    self.group.y += self.g.pull()
 
 
 # %%

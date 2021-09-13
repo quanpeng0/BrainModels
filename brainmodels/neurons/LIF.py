@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import brainpy.math as bm
 
 __all__ = [
   'LIF'
@@ -8,96 +9,98 @@ __all__ = [
 
 
 class LIF(bp.NeuGroup):
-  r"""Leaky Integrate-and-Fire neuron model [1]_.
+  r"""Leaky integrate-and-fire neuron model.
+
+  **Model Descriptions**
+
+  The formal equations of a LIF model [1]_ is given by:
 
   .. math::
 
-      \tau \frac{d V}{d t}=-(V-V_{rest}) + RI(t)
+      \tau \frac{dV}{dt} = - (V(t) - V_{rest}) + I(t) \\
+      \text{after} \quad V(t) \gt V_{th}, V(t) = V_{reset} \quad
+      \text{last} \quad \tau_{ref} \quad  \text{ms}
 
-  **Neuron Parameters**
+  where :math:`V` is the membrane potential, :math:`V_{rest}` is the resting
+  membrane potential, :math:`V_{reset}` is the reset membrane potential,
+  :math:`V_{th}` is the spike threshold, :math:`\tau` is the time constant,
+  :math:`\tau_{ref}` is the refractory time period,
+  and :math:`I` is the time-variant synaptic inputs.
+
+  **Model Examples**
+
+  - `Illustrated example <../neurons/LIF.ipynb>`_
+  - `(Brette, Romain. 2004) LIF phase locking <../../examples/oscillation_synchronization/>`_
+
+  **Model Parameters**
 
   ============= ============== ======== =========================================
   **Parameter** **Init Value** **Unit** **Explanation**
   ------------- -------------- -------- -----------------------------------------
-  V_rest        0.             mV       Resting potential.
-
-  V_reset       -5.            mV       Reset potential after spike.
-
-  V_th          20.            mV       Threshold potential of spike.
-
-  R             1.             \        Membrane resistance.
-
-  tau           10.            ms       Membrane time constant. Compute by R * C.
-
-  t_refractory  5.             ms       Refractory period length.(ms)
+  V_rest         0              mV       Resting membrane potential.
+  V_reset        -5             mV       Reset potential after spike.
+  V_th           20             mV       Threshold potential of spike.
+  tau            10             ms       Membrane time constant. Compute by R * C.
+  tau_ref       5              ms       Refractory period length.(ms)
   ============= ============== ======== =========================================
 
   **Neuron Variables**
 
-  An object of neuron class record those variables for each neuron:
-
   ================== ================= =========================================================
   **Variables name** **Initial Value** **Explanation**
   ------------------ ----------------- ---------------------------------------------------------
-  V                  0.                Membrane potential.
-
-  input              0.                External and synaptic input current.
-
-  spike              0.                Flag to mark whether the neuron is spiking.
-
-  refractory         0.                Flag to mark whether the neuron is in refractory period.
-
-                                       Can be seen as bool.
-
-  t_last_spike       -1e7              Last spike time stamp.
+  V                    0                Membrane potential.
+  input                0                External and synaptic input current.
+  spike                False             Flag to mark whether the neuron is spiking.
+  refractory           False             Flag to mark whether the neuron is in refractory period.
+  t_last_spike         -1e7              Last spike time stamp.
   ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Abbott, Larry F. "Lapicque’s introduction of the integrate-and-fire model
          neuron (1907)." Brain research bulletin 50, no. 5-6 (1999): 303-304.
   """
 
-  def __init__(self, size, t_refractory=1., V_rest=0., V_reset=-5.,
-               V_th=20., R=1., tau=10., update_type='vector', **kwargs):
+  def __init__(self, size, V_rest=0., V_reset=-5., V_th=20.,
+               tau=10., tau_ref=1., update_type='vector', **kwargs):
+    # initialization
     super(LIF, self).__init__(size=size, **kwargs)
 
     # parameters
     self.V_rest = V_rest
     self.V_reset = V_reset
     self.V_th = V_th
-    self.R = R
     self.tau = tau
-    self.t_refractory = t_refractory
-
-    # variables
-    self.V = bp.math.Variable(bp.math.ones(self.num) * V_rest)
-    self.input = bp.math.Variable(bp.math.zeros(self.num))
-    self.refractory = bp.math.Variable(bp.math.zeros(self.num, dtype=bool))
-    self.spike = bp.math.Variable(bp.math.zeros(self.num, dtype=bool))
-    self.t_last_spike = bp.math.Variable(bp.math.ones(self.num) * -1e7)
+    self.tau_ref = tau_ref
 
     # update method
     self.update_type = update_type
     if update_type == 'loop':
-      self.update = self._loop_update
+      self.steps.replace('update', self._loop_update)
       self.target_backend = 'numpy'
     elif update_type == 'vector':
-      self.update = self._vector_update
+      self.steps.replace('update', self._vector_update)
       self.target_backend = 'general'
     else:
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
+    # variables
+    self.V = bm.Variable(bm.ones(self.num) * V_rest)
+    self.input = bm.Variable(bm.zeros(self.num))
+    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
+    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+
   @bp.odeint(method='exponential_euler')
   def integral(self, V, t, Iext):
-    dvdt = (-V + self.V_rest + self.R * Iext) / self.tau
+    dvdt = (-V + self.V_rest + Iext) / self.tau
     return dvdt
 
   def _loop_update(self, _t, _dt):
     for i in range(self.num):
       spike = False
-      refractory = (_t - self.t_last_spike[i] <= self.t_refractory)
+      refractory = (_t - self.t_last_spike[i] <= self.tau_ref)
       if not refractory:
         V = self.integral(self.V[i], _t, self.input[i], dt=_dt)
         spike = (V >= self.V_th)
@@ -108,15 +111,15 @@ class LIF(bp.NeuGroup):
         self.V[i] = V
       self.spike[i] = spike
       self.refractory[i] = refractory
-    self.input[:] = 0.
+      self.input[i] = 0.
 
   def _vector_update(self, _t, _dt):
-    refractory = (_t - self.t_last_spike) <= self.t_refractory
+    refractory = (_t - self.t_last_spike) <= self.tau_ref
     V = self.integral(self.V, _t, self.input, dt=_dt)
-    V = bp.math.where(refractory, self.V, V)
+    V = bm.where(refractory, self.V, V)
     spike = self.V_th <= V
-    self.t_last_spike[:] = bp.math.where(spike, _t, self.t_last_spike)
-    self.V[:] = bp.math.where(spike, self.V_reset, V)
-    self.refractory[:] = bp.math.logical_or(refractory, spike)
+    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
+    self.V[:] = bm.where(spike, self.V_reset, V)
+    self.refractory[:] = bm.logical_or(refractory, spike)
     self.input[:] = 0.
     self.spike[:] = spike
