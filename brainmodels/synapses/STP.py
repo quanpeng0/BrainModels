@@ -72,7 +72,7 @@ class STP(bp.TwoEndConn):
   tau_d         200            ms       Time constant of short-term depression.
   tau_f         1500           ms       Time constant of short-term facilitation.
   U             .15            \        The increment of :math:`u` produced by a spike.
-  A             1.             \        The response amplitude that would be produced by total release of all the neurotransmitter
+  A             1              \        The response amplitude that would be produced by total release of all the neurotransmitter
   ============= ============== ======== ===========================================
 
 

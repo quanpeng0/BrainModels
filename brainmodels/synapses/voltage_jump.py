@@ -9,23 +9,37 @@ __all__ = [
 
 
 class VoltageJump(bp.TwoEndConn):
-  """Voltage jump synapses.
+  """Voltage jump synapse model.
 
   **Model Descriptions**
 
   .. math::
 
-      I_{syn} = \sum J \delta(t-t_j)
+      I_{syn} (t) = \sum_{j\in C} w \delta(t-t_j-D)
+
+  where :math:`w` denotes the chemical synaptic strength, :math:`t_j` the spiking
+  moment of the presynaptic neuron :math:`j`, :math:`C` the set of neurons connected
+  to the post-synaptic neuron, and :math:`D` the transmission delay of chemical
+  synapses. For simplicity, the rise and decay phases of post-synaptic currents are
+  omitted in this model.
 
   **Model Examples**
+
+  - `Simple illustrated example <../synapses/voltage_jump.ipynb>`_
+
+  **Model Parameters**
+
+  ============= ============== ======== ===========================================
+  **Parameter** **Init Value** **Unit** **Explanation**
+  ------------- -------------- -------- -------------------------------------------
+  w             1              mV       The synaptic strength.
+  ============= ============== ======== ===========================================
 
 
   """
 
   def __init__(self, pre, post, conn, delay=0., post_has_ref=False,
                w=1., update_type='loop_slice', **kwargs):
-
-    # initialization
     super(VoltageJump, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     # checking
@@ -41,7 +55,7 @@ class VoltageJump(bp.TwoEndConn):
 
     # connections
     if update_type == 'loop_slice':
-      self.pre_slice = self.conn.requires('pre_slice')
+      self.pre_slice, self.post_ids = self.conn.requires('pre_slice', 'post_ids')
       self.steps.replace('update', self._loop_slice_update)
       self.size = self.post.num
       self.target_backend = 'numpy'
