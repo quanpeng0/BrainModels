@@ -96,6 +96,11 @@ class HH(bp.NeuGroup):
   .. image:: ../../images/Hodgkin_Huxley_bifurcation.png
      :align: center
 
+  **Examples**
+
+  - `An illustrated example <../neurons/HH_model.ipynb>`_
+
+
   **Model Parameters**
 
   ============= ============== ======== ====================================

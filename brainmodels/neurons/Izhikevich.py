@@ -25,7 +25,9 @@ class Izhikevich(bp.NeuGroup):
       \begin{cases} v \leftarrow c \\
       u \leftarrow u+d \end{cases}
 
-  Detailed examples please see `this notebook <../neurons/Izhikevich_model.ipynb>`_.
+  **Examples**
+
+  - `Detailed examples to reproduce different firing patterns <../neurons/Izhikevich_model.ipynb>`_
 
   **Model Parameters**
 

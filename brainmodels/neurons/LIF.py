@@ -25,7 +25,9 @@ class LIF(bp.NeuGroup):
   :math:`\tau_{ref}` is the refractory time period,
   and :math:`I` is the time-variant synaptic inputs.
 
-  Illustrated example please see `this notebook <../neurons/LIF.ipynb>`_.
+  **Examples**
+
+  - `Illustrated example <../neurons/LIF.ipynb>`_
 
   **Model Parameters**
 

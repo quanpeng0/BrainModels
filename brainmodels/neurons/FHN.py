@@ -43,7 +43,9 @@ class FHN(bp.NeuGroup):
   :math:`w`) in a neuron after stimulation by an external
   input current.
 
-  Illustrated example for FHN model please see `this notebook <../neurons/FHN.ipynb>`_.
+  **Examples**
+
+  - `Illustrated example <../neurons/FHN.ipynb>`_
 
   **Model Parameters**
 

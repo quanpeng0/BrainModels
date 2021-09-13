@@ -33,7 +33,9 @@ class GIF(bp.NeuGroup):
 
   Note that :math:`I_j` refers to arbitrary number of internal currents.
 
-  Illustrated example of GIF please see `this notebook <../neurons/GIF.ipynb>`_.
+  **Examples**
+
+  - `Illustrated examples to reproduce different firing patterns <../neurons/GIF.ipynb>`_
 
   **Model Parameters**
 

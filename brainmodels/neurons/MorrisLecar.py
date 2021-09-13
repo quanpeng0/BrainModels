@@ -34,7 +34,9 @@ class MorrisLecar(bp.NeuGroup):
   which is almost invariably the normalized :math:`K^+`-ion conductance, and
   :math:`I_{ext}` is the applied current stimulus.
 
-  Illustrated example please see `this notebook <../neurons/MorrisLecar.ipynb>`_.
+  **Examples**
+
+  - `Illustrated example <../neurons/MorrisLecar.ipynb>`_
 
   **Model Parameters**
 

@@ -30,7 +30,9 @@ class HindmarshRose(bp.NeuGroup):
   where :math:`a, b, c, d` model the working of the fast ion channels,
   :math:`I` models the slow ion channels.
 
-  Illustrated example please see `this notebook <../neurons/HindmarshRose_model.ipynb>`_.
+  **Examples**
+
+  - `Illustrated examples to reproduce different firing patterns <../neurons/HindmarshRose_model.ipynb>`_
 
   **Model Parameters**
 

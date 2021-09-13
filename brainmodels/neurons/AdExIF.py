@@ -37,8 +37,11 @@ class AdExIF(bp.NeuGroup):
 
   The adaptive exponential integrate-and-fire model is capable of describing known
   neuronal firing patterns, e.g., adapting, bursting, delayed spike initiation,
-  initial bursting, fast spiking, and regular spiking. Details please see
-  `this example notebook <../neurons/AdExIF_model.ipynb>`_
+  initial bursting, fast spiking, and regular spiking.
+
+  **Examples**
+
+  - `Examples for different firing patterns <../neurons/AdExIF_model.ipynb>`_
 
   **Model Parameters**
 

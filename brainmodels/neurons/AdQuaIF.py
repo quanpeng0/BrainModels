@@ -27,7 +27,9 @@ class AdQuaIF(bp.NeuGroup):
       V \rightarrow V_{reset}, \\
       w \rightarrow w+b.
 
-  Example please see `this notebook <../neurons/AdQuaIF.ipynb>`_.
+  **Examples**
+
+  - `Simple example <../neurons/AdQuaIF.ipynb>`_
 
   **Model Parameters**
 

@@ -47,7 +47,9 @@ class ExpIF(bp.NeuGroup):
     rate for constant input, and the linear response to fluctuations, even in the presence
     of input noise [4]_.
 
-  Illustrated example please see `this notebook <../neurons/ExpIF.ipynb>`_.
+  **Examples**
+
+  - `Illustrated example <../neurons/ExpIF.ipynb>`_
 
   **Model Parameters**
 

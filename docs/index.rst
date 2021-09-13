@@ -12,7 +12,7 @@ with other BrainPy users.
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API documentation
 
    apis/neurons

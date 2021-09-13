@@ -26,7 +26,9 @@ class QuaIF(bp.NeuGroup):
   
   where the parameters are taken to be :math:`c` =0.07, and :math:`V_c = -50 mV` (Latham et al., 2000).
 
-  Illustrated example please see `this notebook <../neurons/QuaIF.ipynb>`_.
+  **Examples**
+
+  - `Illustrated example <../neurons/QuaIF.ipynb>`_
 
   **Model Parameters**
   
