@@ -26,6 +26,7 @@ class VoltageJump(bp.TwoEndConn):
   **Model Examples**
 
   - `Simple illustrated example <../synapses/voltage_jump.ipynb>`_
+  - `(Bouchacourt & Buschman, 2019) Flexible Working Memory Model <../../examples/working_memory/Bouchacourt_2019_Flexible_working_memory.ipynb>`_
 
   **Model Parameters**
 
