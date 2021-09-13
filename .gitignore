@@ -4,19 +4,19 @@
 .DS_Store
 docs/_autosummary
 docs/generated
-docs/apis/_autosummary
-docs/apis/generated
 docs/_build
 dist/
 build/
 *.egg-info
 .idea
+docs/apis/generated
+docs/apis/*.rst
 docs/images/logo1.tif
 docs/images/logo2.tif
 docs/images/logo3.tif
 
+examples/
 */__pycache__
-docs/c4_examples/
 
 
 __pycache__/

@@ -12,13 +12,13 @@ class Ca(bp.Channel):
 
 
 class IT(bp.Channel):
-  raise NotImplementedError
+  pass
 
 
 class IAHP(bp.Channel):
-  raise NotImplementedError
+  pass
 
 
 class ICAN(bp.Channel):
-  raise NotImplementedError
+  pass
 

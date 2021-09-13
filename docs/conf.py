@@ -15,6 +15,9 @@ import sys
 sys.path.insert(0, os.path.abspath('../'))
 
 import brainmodels
+from docs import generate_apis
+
+generate_apis.generate()
 
 
 # -- Project information -----------------------------------------------------

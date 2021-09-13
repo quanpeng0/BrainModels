@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import brainpy.math as bm
 
 __all__ = [
   'DualExpCUBA', 'DualExpCOBA',
@@ -99,8 +100,8 @@ class DualExpCUBA(bp.TwoEndConn):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.g = bp.math.Variable(bp.math.zeros(self.size))
-    self.h = bp.math.Variable(bp.math.zeros(self.size))
+    self.g = bm.Variable(bm.zeros(self.size))
+    self.h = bm.Variable(bm.zeros(self.size))
     self.pre_spike = self.register_constant_delay('pre_spike', size=self.size, delay=delay)
 
   @bp.odeint(method='exponential_euler')

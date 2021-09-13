@@ -2,6 +2,7 @@
 
 __version__ = "0.3.2"
 
+from . import channels
 from . import neurons
 from . import synapses
 from .neurons import *

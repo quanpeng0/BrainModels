@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import brainpy.math as bm
 
 __all__ = [
   'VoltageJump'
@@ -69,7 +70,7 @@ class VoltageJump(bp.TwoEndConn):
 
     # variables
     self.w = w
-    assert bp.math.size(w) == 1, 'This implementation only support scalar weight. '
+    assert bm.size(w) == 1, 'This implementation only support scalar weight. '
     self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
 
   def _loop_slice_update(self, _t, _dt):

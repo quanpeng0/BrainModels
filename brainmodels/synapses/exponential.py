@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import brainpy.math as bm
 
 __all__ = [
   'ExponentialCUBA', 'ExponentialCOBA'
@@ -91,8 +92,8 @@ class ExponentialCUBA(bp.TwoEndConn):
 
     # variables
     self.g_max = g_max
-    assert bp.math.size(g_max) == 1, 'This implementation only support scalar "g_max". '
-    self.g = bp.math.Variable(bp.math.zeros(self.size))
+    assert bm.size(g_max) == 1, 'This implementation only support scalar "g_max". '
+    self.g = bm.Variable(bm.zeros(self.size))
     self.pre_spike = self.register_constant_delay('pre_spike', self.size, delay)
 
   @bp.odeint(method='exponential_euler')

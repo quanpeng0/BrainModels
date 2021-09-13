@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import brainpy.math as bm
 
 __all__ = [
   'STP'
@@ -101,9 +102,9 @@ class STP(bp.TwoEndConn):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.I = bp.math.Variable(bp.math.zeros(self.size))
-    self.x = bp.math.Variable(bp.math.ones(self.size))
-    self.u = bp.math.Variable(bp.math.zeros(self.size))
+    self.I = bm.Variable(bm.zeros(self.size))
+    self.x = bm.Variable(bm.ones(self.size))
+    self.u = bm.Variable(bm.zeros(self.size))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, I, u, x, t):

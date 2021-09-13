@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import brainpy.math as bm
 
 __all__ = [
   'NMDA'
@@ -113,8 +114,8 @@ class NMDA(bp.TwoEndConn):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.s = bp.math.Variable(bp.math.zeros(self.size))
-    self.x = bp.math.Variable(bp.math.zeros(self.size))
+    self.s = bm.Variable(bm.zeros(self.size))
+    self.x = bm.Variable(bm.zeros(self.size))
     self.g = self.register_constant_delay('g', size=self.size, delay=delay)
 
   @bp.odeint(method='exponential_euler')
@@ -129,6 +130,6 @@ class NMDA(bp.TwoEndConn):
     for i in range(self.size):
       pre_id, post_id = self.pre_ids[i], self.post_ids[i]
       self.x[i] += self.pre.spike[pre_id]
-      g_inf = 1 + self.cc_Mg / self.beta * bp.math.exp(-self.alpha * self.post.V[post_id])
+      g_inf = 1 + self.cc_Mg / self.beta * bm.exp(-self.alpha * self.post.V[post_id])
       self.post.input[post_id] -= delayed_g[i] * (self.post.V[post_id] - self.E) / g_inf
     self.g.push(self.g_max * self.s)

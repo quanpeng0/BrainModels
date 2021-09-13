@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import brainpy.math as bm
 
 __all__ = [
   'AMPA',
@@ -86,7 +87,7 @@ class AMPA(bp.TwoEndConn):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.s = bp.math.Variable(bp.math.zeros(self.size))
+    self.s = bm.Variable(bm.zeros(self.size))
     self.g = self.register_constant_delay('g', self.size, delay)
 
   @bp.odeint(method='exponential_euler')

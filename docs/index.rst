@@ -12,7 +12,7 @@ with other BrainPy users.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: API documentation
 
    apis/neurons
@@ -28,17 +28,6 @@ with other BrainPy users.
    examples/gj_nets/_index
    examples/oscillation_synchronization/_index
    examples/working_memory/_index
-
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Tutorials
-
-   tutorials/neurons
-   tutorials/synapses
-   tutorials/dynamics_analysis
-
 
 
 Indices and tables

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import brainpy as bp
+import brainpy.math as bm
 
 __all__ = [
   'MorrisLecar'
@@ -8,52 +9,63 @@ __all__ = [
 
 
 class MorrisLecar(bp.NeuGroup):
-  """
-  The Morris-Lecar neuron model [1]_. (Also known as :math:`I_{Ca}+I_K`-model.)
+  r"""The Morris-Lecar neuron model.
+
+  The Morris-Lecar model [1]_ (Also known as :math:`I_{Ca}+I_K`-model)
+  is a two-dimensional "reduced" excitation model applicable to
+  systems having two non-inactivating voltage-sensitive conductances.
+  This model was named after Cathy Morris and Harold Lecar, who
+  derived it in 1981. Because it is two-dimensional, the Morris-Lecar
+  model is one of the favorite conductance-based models in computational neuroscience.
+
+  The original form of the model employed an instantaneously
+  responding voltage-sensitive Ca2+ conductance for excitation and a delayed
+  voltage-dependent K+ conductance for recovery. The equations of the model are:
 
   .. math::
 
-      C\\frac{dV}{dt} = -  g_{Ca} M_{\\infty} (V - & V_{Ca})- g_{K} W(V - V_{K}) - g_{Leak} (V - V_{Leak}) + I_{ext}
+      \begin{aligned}
+      C\frac{dV}{dt} =& -  g_{Ca} M_{\infty} (V - V_{Ca})- g_{K} W(V - V_{K}) -
+                        g_{Leak} (V - V_{Leak}) + I_{ext} \\
+      \frac{dW}{dt} =& \frac{W_{\infty}(V) - W}{ \tau_W(V)}
+      \end{aligned}
 
-      & \\frac{dW}{dt} = \\frac{W_{\\infty}(V) - W}{ \\tau_W(V)}
+  Here, :math:`V` is the membrane potential, :math:`W` is the "recovery variable",
+  which is almost invariably the normalized :math:`K^+`-ion conductance, and
+  :math:`I_{ext}` is the applied current stimulus.
 
-  **Neuron Parameters**
+  Illustrated example please see `this notebook <../neurons/MorrisLecar.ipynb>`_.
+
+  **Model Parameters**
 
   ============= ============== ======== =======================================================
   **Parameter** **Init Value** **Unit** **Explanation**
   ------------- -------------- -------- -------------------------------------------------------
-  noise         0.             \        The noise fluctuation.
-  V_Ca          130.           mV       Equilibrium potentials of Ca+.(mV)
+  V_Ca          130            mV       Equilibrium potentials of Ca+.(mV)
   g_Ca          4.4            \        Maximum conductance of corresponding Ca+.(mS/cm2)
-  V_K           -84.           mV       Equilibrium potentials of K+.(mV)
-  g_K           8.             \        Maximum conductance of corresponding K+.(mS/cm2)
-  V_Leak        -60.           mV       Equilibrium potentials of leak current.(mV)
-  g_Leak        2.             \        Maximum conductance of leak current.(mS/cm2)
-  C             20.            \        Membrane capacitance.(uF/cm2)
+  V_K           -84            mV       Equilibrium potentials of K+.(mV)
+  g_K           8              \        Maximum conductance of corresponding K+.(mS/cm2)
+  V_Leak        -60            mV       Equilibrium potentials of leak current.(mV)
+  g_Leak        2              \        Maximum conductance of leak current.(mS/cm2)
+  C             20             \        Membrane capacitance.(uF/cm2)
   V1            -1.2           \        Potential at which M_inf = 0.5.(mV)
-  V2            18.            \        Reciprocal of slope of voltage dependence of M_inf.(mV)
-  V3            2.             \        Potential at which W_inf = 0.5.(mV)
-  V4            30.            \        Reciprocal of slope of voltage dependence of W_inf.(mV)
-  phi           0.04           \        A temperature factor.(1/s)
-  V_th          10.            mV       the spike threshold.
+  V2            18             \        Reciprocal of slope of voltage dependence of M_inf.(mV)
+  V3            2              \        Potential at which W_inf = 0.5.(mV)
+  V4            30             \        Reciprocal of slope of voltage dependence of W_inf.(mV)
+  phi           0.04           \        A temperature factor. (1/s)
+  V_th          10             mV       The spike threshold.
   ============= ============== ======== =======================================================
 
-  **Neuron Variables**
-
-  An object of neuron class record those variables for each neuron:
+  **Model Variables**
 
   ================== ================= =========================================================
   **Variables name** **Initial Value** **Explanation**
   ------------------ ----------------- ---------------------------------------------------------
-  V                  -20.              Membrane potential.
-
+  V                  -20               Membrane potential.
   W                  0.02              Gating variable, refers to the fraction of
                                        opened K+ channels.
-
-  input              0.                External and synaptic input current.
-
-  spike              0.                Flag to mark whether the neuron is spiking.
-
+  input              0                 External and synaptic input current.
+  spike              False             Flag to mark whether the neuron is spiking.
   t_last_spike       -1e7              Last spike time stamp.
   ================== ================= =========================================================
 
@@ -64,11 +76,25 @@ class MorrisLecar(bp.NeuGroup):
          "Bursting regimes in a reaction-diffusion system with action
          potential-dependent equilibrium." PloS one 10.3 (2015):
          e0122401.
+  .. [2] http://www.scholarpedia.org/article/Morris-Lecar_model
+  .. [3] https://en.wikipedia.org/wiki/Morris%E2%80%93Lecar_model
   """
 
   def __init__(self, size, V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_leak=-60.,
                g_leak=2., C=20., V1=-1.2, V2=18., V3=2., V4=30., phi=0.04,
                V_th=10., update_type='vector', **kwargs):
+    # update method
+    self.update_type = update_type
+    if update_type == 'loop':
+      self.update = self._loop_update
+      self.target_backend = 'numpy'
+    elif update_type == 'vector':
+      self.update = self._vector_update
+      self.target_backend = 'general'
+    else:
+      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
+
+    # initialization
     super(MorrisLecar, self).__init__(size=size, **kwargs)
 
     # params
@@ -87,40 +113,29 @@ class MorrisLecar(bp.NeuGroup):
     self.V_th = V_th
 
     # vars
-    self.input = bp.math.Variable(bp.math.zeros(self.num))
-    self.V = bp.math.Variable(bp.math.ones(self.num) * -20.)
-    self.W = bp.math.Variable(bp.math.ones(self.num) * 0.02)
-    self.spike = bp.math.Variable(bp.math.zeros(self.num, dtype=bool))
-    self.t_last_spike = bp.math.Variable(bp.math.ones(self.num) * -1e7)
-
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.update = self._loop_update
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.update = self._vector_update
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
+    self.input = bm.Variable(bm.zeros(self.num))
+    self.V = bm.Variable(bm.ones(self.num) * -20.)
+    self.W = bm.Variable(bm.ones(self.num) * 0.02)
+    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
 
   @bp.odeint
   def integral(self, V, W, t, I_ext):
-    M_inf = (1 / 2) * (1 + bp.math.tanh((V - self.V1) / self.V2))
+    M_inf = (1 / 2) * (1 + bm.tanh((V - self.V1) / self.V2))
     I_Ca = self.g_Ca * M_inf * (V - self.V_Ca)
     I_K = self.g_K * W * (V - self.V_K)
     I_Leak = self.g_leak * (V - self.V_leak)
     dVdt = (- I_Ca - I_K - I_Leak + I_ext) / self.C
 
-    tau_W = 1 / (self.phi * bp.math.cosh((V - self.V3) / (2 * self.V4)))
-    W_inf = (1 / 2) * (1 + bp.math.tanh((V - self.V3) / self.V4))
+    tau_W = 1 / (self.phi * bm.cosh((V - self.V3) / (2 * self.V4)))
+    W_inf = (1 / 2) * (1 + bm.tanh((V - self.V3) / self.V4))
     dWdt = (W_inf - W) / tau_W
     return dVdt, dWdt
 
   def _loop_update(self, _t, _dt):
     for i in range(self.num):
       V, W = self.integral(self.V[i], self.W[i], _t, self.input[i], dt=_dt)
-      spike = bp.math.logical_and(self.V[i] < self.V_th, V >= self.V_th)
+      spike = bm.logical_and(self.V[i] < self.V_th, V >= self.V_th)
       self.V[i] = V
       self.W[i] = W
       self.spike[i] = spike
@@ -130,8 +145,8 @@ class MorrisLecar(bp.NeuGroup):
 
   def _vector_update(self, _t, _dt):
     V, self.W[:] = self.integral(self.V, self.W, _t, self.input, dt=_dt)
-    spike = bp.math.logical_and(self.V < self.V_th, V >= self.V_th)
-    self.t_last_spike[:] = bp.math.where(spike, _t, self.t_last_spike)
+    spike = bm.logical_and(self.V < self.V_th, V >= self.V_th)
+    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
     self.V[:] = V
     self.spike[:] = spike
     self.input[:] = 0.
