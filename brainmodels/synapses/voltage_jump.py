@@ -11,29 +11,21 @@ __all__ = [
 class VoltageJump(bp.TwoEndConn):
   """Voltage jump synapses.
 
+  **Model Descriptions**
+
   .. math::
 
       I_{syn} = \sum J \delta(t-t_j)
 
+  **Model Examples**
 
-  ST refers to synapse state, members of ST are listed below:
-
-  =============== ================= =========================================================
-  **Member name** **Initial Value** **Explanation**
-  --------------- ----------------- ---------------------------------------------------------
-  s               0.                Gating variable of the post-synaptic neuron.
-  =============== ================= =========================================================
-
-  Args:
-      post_has_refractory (bool): whether the post-synaptic neuron have refractory.
-
-  Returns:
-      bp.SynType.
 
   """
 
   def __init__(self, pre, post, conn, delay=0., post_has_ref=False,
                w=1., update_type='loop_slice', **kwargs):
+
+    # initialization
     super(VoltageJump, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     # checking
@@ -50,19 +42,19 @@ class VoltageJump(bp.TwoEndConn):
     # connections
     if update_type == 'loop_slice':
       self.pre_slice = self.conn.requires('pre_slice')
-      self.update = self._loop_slice_update
+      self.steps.replace('update', self._loop_slice_update)
       self.size = self.post.num
       self.target_backend = 'numpy'
 
     elif update_type == 'loop':
       self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.update = self._loop_update
+      self.steps.replace('update', self._loop_update)
       self.size = len(self.pre_ids)
       self.target_backend = 'numpy'
 
     elif update_type == 'matrix':
       self.conn_mat = self.conn.requires('conn_mat')
-      self.update = self._matrix_update
+      self.steps.replace('update', self._matrix_update)
       self.size = self.conn_mat.shape
 
     else:

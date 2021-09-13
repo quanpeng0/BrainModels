@@ -9,48 +9,64 @@ __all__ = [
 
 
 class ExponentialCUBA(bp.TwoEndConn):
-  r"""Current-based single exponential decay synapse model.
+  r"""Current-based exponential decay synapse model.
+
+  **Model Descriptions**
+
+  The single exponential decay synapse model assumes the release of neurotransmitter,
+  its diffusion across the cleft, the receptor binding, and channel opening all happen
+  very quickly, so that the channels instantaneously jump from the closed to the open state.
+  Therefore, its expression is given by
 
   .. math::
 
-       \frac{d s}{d t} = -\frac{s}{\tau_{decay}}+\sum_{k} \delta(t-t_{j}^{k})
+      g_{\mathrm{syn}}(t)=g_{\mathrm{max}} e^{-\left(t-t_{0}\right) / \tau}
 
-  For conductance-based (co-base=True):
+  where :math:`\tau_{delay}` is the time constant of the synaptic state decay,
+  :math:`t_0` is the time of the pre-synaptic spike,
+  :math:`g_{\mathrm{max}}` is the maximal conductance.
 
-  .. math::
-
-      I_{syn}(t) = g_{syn} (t) (V(t)-E_{syn})
-
-
-  For current-based (co-base=False):
+  Accordingly, the differential form of the exponential synapse is given by
 
   .. math::
 
-      I(t) = \bar{g} s (t)
+      \begin{aligned}
+       & g_{\mathrm{syn}}(t) = g_{max} g \\
+       & \frac{d g}{d t} = -\frac{g}{\tau_{decay}}+\sum_{k} \delta(t-t_{j}^{k}).
+       \end{aligned}
+
+  For the current output onto the post-synaptic neuron, its expression is given by
+
+  .. math::
+
+      I_{\mathrm{syn}}(t) = g_{\mathrm{syn}}(t)
 
 
-  **Synapse Parameters**
+  **Model Examples**
+
+  - `Simple illustrated example <../synapses/exp_cuba.ipynb>`_
+
+
+  **Model Parameters**
 
   ============= ============== ======== ===================================================================================
   **Parameter** **Init Value** **Unit** **Explanation**
   ------------- -------------- -------- -----------------------------------------------------------------------------------
-  tau_decay     8.             ms       The time constant of decay.
-
+  delay         0              ms       The decay length of the pre-synaptic spikes.
+  tau_decay     8              ms       The time constant of decay.
+  g_max         1              µmho(µS) The maximum conductance.
   ============= ============== ======== ===================================================================================
 
-  **Synapse State**
+  **Model Variables**
 
   ================ ================== =========================================================
   **Member name**  **Initial values** **Explanation**
   ---------------- ------------------ ---------------------------------------------------------
-  s                  0                  Gating variable.
-
-  weight           0                  Synaptic weights.
-
+  g                 0                 Gating variable.
+  pre_spike         False             The history spiking states of the pre-synaptic neurons.
   ================ ================== =========================================================
 
-  References
-  ----------
+  **References**
 
   .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw.
           "The Synapse." Principles of Computational Modelling in Neuroscience.
@@ -59,6 +75,8 @@ class ExponentialCUBA(bp.TwoEndConn):
 
   def __init__(self, pre, post, conn, g_max=1., delay=0., tau=8.0,
                update_type='loop_slice', **kwargs):
+
+    # initialization
     super(ExponentialCUBA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     # checking
@@ -71,20 +89,20 @@ class ExponentialCUBA(bp.TwoEndConn):
 
     # connections
     if update_type == 'loop_slice':
-      self.pre_slice = self.conn.requires('pre_slice')
-      self.update = self._loop_slice_update
+      self.pre_slice, self.post_ids = self.conn.requires('pre_slice', 'post_ids')
+      self.steps.replace('update', self._loop_slice_update)
       self.size = self.post.num
       self.target_backend = 'numpy'
 
     elif update_type == 'loop':
       self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.update = self._loop_update
+      self.steps.replace('update', self._loop_update)
       self.size = len(self.pre_ids)
       self.target_backend = 'numpy'
 
     elif update_type == 'matrix':
       self.conn_mat = self.conn.requires('conn_mat')
-      self.update = self._matrix_update
+      self.steps.replace('update', self._matrix_update)
       self.size = self.conn_mat.shape
 
     else:
@@ -97,12 +115,9 @@ class ExponentialCUBA(bp.TwoEndConn):
     self.pre_spike = self.register_constant_delay('pre_spike', self.size, delay)
 
   @bp.odeint(method='exponential_euler')
-  def integral(self, s, t):
-    ds = -s / self.tau
-    return ds
-
-  def output_current(self, g):
-    return g
+  def integral(self, g, t):
+    dg = -g / self.tau
+    return dg
 
   def _loop_slice_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
@@ -115,26 +130,71 @@ class ExponentialCUBA(bp.TwoEndConn):
         for post_id in self.post_ids[start: end]:
           self.g[post_id] += self.g_max
 
-    self.post.input[:] += self.output_current(self.g)
+    self.post.input[:] += self.g
 
   def _loop_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
 
     self.g[:] = self.integral(self.g, _t, dt=_dt)
-    for pre_i in range(self.pre.num):
-      if pre_spike[pre_i]:
-        start, end = self.pre_slice[pre_i]
-        for post_i in self.post_ids[start: end]:
-          self.g[post_i] += self.g_max
-
-    self.post.input[:] += self.output_current(self.g)
+    for i in range(self.size):
+      pre_i, post_i = self.pre_ids[i], self.post_ids[i]
+      if pre_spike[pre_i]: self.g[i] += self.g_max
+      self.post.input[post_i] += self.g
 
   def _matrix_update(self, _t, _dt):
     raise NotImplementedError
 
 
 class ExponentialCOBA(ExponentialCUBA):
+  """Conductance-based exponential decay synapse model.
+
+  **Model Descriptions**
+
+  The conductance-based exponential decay synapse model is similar with the
+  `current-based exponential decay synapse model <./brainmodels.synapses.ExponentialCUBA.rst>`_,
+  except the expression which output onto the post-synaptic neurons:
+
+  .. math::
+
+      I_{syn}(t) = g_{\mathrm{syn}}(t) (V(t)-E)
+
+  where :math:`V(t)` is the membrane potential of the post-synaptic neuron,
+  :math:`E` is the reversal potential.
+
+
+  **Model Examples**
+
+  - `Simple illustrated example <../synapses/exp_coba.ipynb>`_
+
+
+  **Model Parameters**
+
+  ============= ============== ======== ===================================================================================
+  **Parameter** **Init Value** **Unit** **Explanation**
+  ------------- -------------- -------- -----------------------------------------------------------------------------------
+  delay         0              ms       The decay length of the pre-synaptic spikes.
+  tau_decay     8              ms       The time constant of decay.
+  g_max         1              µmho(µS) The maximum conductance.
+  E             0              mV       The reversal potential for the synaptic current.
+  ============= ============== ======== ===================================================================================
+
+  **Model Variables**
+
+  ================ ================== =========================================================
+  **Member name**  **Initial values** **Explanation**
+  ---------------- ------------------ ---------------------------------------------------------
+  g                 0                 Gating variable.
+  pre_spike         False             The history spiking states of the pre-synaptic neurons.
+  ================ ================== =========================================================
+
+  **References**
+
+  .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw.
+          "The Synapse." Principles of Computational Modelling in Neuroscience.
+          Cambridge: Cambridge UP, 2011. 172-95. Print.
+  """
+
   def __init__(self, pre, post, conn, g_max=1., delay=0., tau=8.0, E=0.,
                update_type='loop_slice', **kwargs):
     super(ExponentialCOBA, self).__init__(pre=pre, post=post, conn=conn,
@@ -144,5 +204,25 @@ class ExponentialCOBA(ExponentialCUBA):
     self.E = E
     assert hasattr(self.post, 'V'), 'Post-synaptic group must has "V" variable.'
 
-  def output_current(self, g):
-    return g * (self.E - self.post.V)
+  def _loop_slice_update(self, _t, _dt):
+    self.pre_spike.push(self.pre.spike)
+    pre_spike = self.pre_spike.pull()
+
+    self.g[:] = self.integral(self.g, _t, dt=_dt)
+    for pre_id in range(self.pre.num):
+      if pre_spike[pre_id]:
+        start, end = self.pre_slice[pre_id]
+        for post_id in self.post_ids[start: end]:
+          self.g[post_id] += self.g_max
+
+    self.post.input[:] += self.g * (self.E - self.post.V)
+
+  def _loop_update(self, _t, _dt):
+    self.pre_spike.push(self.pre.spike)
+    pre_spike = self.pre_spike.pull()
+
+    self.g[:] = self.integral(self.g, _t, dt=_dt)
+    for i in range(self.size):
+      pre_i, post_i = self.pre_ids[i], self.post_ids[i]
+      if pre_spike[pre_i]: self.g[i] += self.g_max
+      self.post.input[post_i] += self.g * (self.E - self.post.V)

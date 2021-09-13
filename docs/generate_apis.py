@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
+import inspect
 import os
 import importlib
 
@@ -10,7 +10,8 @@ def write(module_name, filename):
     os.makedirs(os.path.dirname(filename))
 
   module = importlib.import_module(module_name)
-  models = [k for k in dir(module) if not k.startswith('__')]
+  models = [k for k in dir(module)
+            if not k.startswith('__') and not inspect.ismodule(getattr(module, k))]
 
   fout = open(filename, 'w')
 

@@ -8,61 +8,61 @@ __all__ = [
 
 
 class AlphaCUBA(DualExpCUBA):
-  r"""Alpha synapse model.
+  r"""Current-based alpha synapse model.
+
+  **Model Descriptions**
+
+  The analytical expression of alpha synapse is given by:
 
   .. math::
 
-      g_{syn}(t)=\bar{g}_{syn} \frac{t-t_{s}}{\tau} \exp \left(-\frac{t-t_{s}}{\tau}\right)
+      g_{syn}(t)= g_{max} \frac{t-t_{s}}{\tau} \exp \left(-\frac{t-t_{s}}{\tau}\right).
 
-  This equation can be rewritten as the differential forms:
+  While, this equation is hard to implement. So, let's try to convert it into the
+  differential forms:
 
   .. math::
 
       \begin{aligned}
-      &g_{\mathrm{syn}}(t)=\bar{g}_{\mathrm{syn}} g \\
+      &g_{\mathrm{syn}}(t)= g_{\mathrm{max}} g \\
       &\frac{d g}{d t}=-\frac{g}{\tau}+h \\
       &\frac{d h}{d t}=-\frac{h}{\tau}+\delta\left(t_{0}-t\right)
       \end{aligned}
 
-  For conductance-based (co-base=True):
+  The current onto the post-synaptic neuron is given by
 
   .. math::
 
-      I_{syn}(t) = g_{syn} (t) (V(t)-E_{syn})
+      I_{syn}(t) = g_{\mathrm{syn}}(t).
 
 
-  For current-based (co-base=False):
+  **Model Examples**
 
-  .. math::
+  - `Simple illustrated example <../synapses/alphacuba.ipynb>`_
 
-      I(t) = \bar{g} s (t)
 
-  **Synapse Parameters**
+  **Model Parameters**
 
   ============= ============== ======== ===================================================================================
   **Parameter** **Init Value** **Unit** **Explanation**
   ------------- -------------- -------- -----------------------------------------------------------------------------------
-  tau_decay     2.             ms       The time constant of decay.
-
-  g_max         .2             µmho(µS) Maximum conductance.
-
-  E             0.             mV       The reversal potential for the synaptic current. (only for conductance-based model)
-
-  co_base       False          \        Whether to return Conductance-based model. If False: return current-based model.
+  delay         0              ms       The decay length of the pre-synaptic spikes.
+  tau_decay     2              ms       The decay time constant of the synaptic state.
+  g_max         .2             µmho(µS) The maximum conductance.
   ============= ============== ======== ===================================================================================
 
-  **Synapse Variables**
+  **Model Variables**
 
   ================== ================= =========================================================
   **Variables name** **Initial Value** **Explanation**
   ------------------ ----------------- ---------------------------------------------------------
-  g                  0                  Synapse conductance on the post-synaptic neuron.
-  s                  0                  Gating variable.
-  x                  0                  Gating variable.
-  ================ ================== =========================================================
+  g                   0                Synapse conductance on the post-synaptic neuron.
+  h                   0                Gating variable.
+  pre_spike           False            The history spiking states of the pre-synaptic neurons.
+  ================== ================= =========================================================
 
-  References
-  ----------
+  **References**
+
   .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw.
           "The Synapse." Principles of Computational Modelling in Neuroscience.
           Cambridge: Cambridge UP, 2011. 172-95. Print.
@@ -80,6 +80,57 @@ class AlphaCUBA(DualExpCUBA):
 
 
 class AlphaCOBA(DualExpCOBA):
+  """Conductance-based alpha synapse model.
+
+  **Model Descriptions**
+
+  The conductance-based alpha synapse model is similar with the
+  `current-based alpha synapse model <./brainmodels.synapses.AlphaCUBA.rst>`_,
+  except the expression which output onto the post-synaptic neurons:
+
+  .. math::
+
+      I_{syn}(t) = g_{\mathrm{syn}}(t) (V(t)-E)
+
+  where :math:`V(t)` is the membrane potential of the post-synaptic neuron,
+  :math:`E` is the reversal potential.
+
+
+  **Model Examples**
+
+  - `Simple illustrated example <../synapses/alphacoba.ipynb>`_
+
+
+  **Model Parameters**
+
+  ============= ============== ======== ===================================================================================
+  **Parameter** **Init Value** **Unit** **Explanation**
+  ------------- -------------- -------- -----------------------------------------------------------------------------------
+  delay         0              ms       The decay length of the pre-synaptic spikes.
+  tau_decay     2              ms       The decay time constant of the synaptic state.
+  g_max         .2             µmho(µS) The maximum conductance.
+  E             0              mV       The reversal potential for the synaptic current.
+  ============= ============== ======== ===================================================================================
+
+
+  **Model Variables**
+
+  ================== ================= =========================================================
+  **Variables name** **Initial Value** **Explanation**
+  ------------------ ----------------- ---------------------------------------------------------
+  g                   0                Synapse conductance on the post-synaptic neuron.
+  h                   0                Gating variable.
+  pre_spike           False            The history spiking states of the pre-synaptic neurons.
+  ================== ================= =========================================================
+
+  **References**
+
+  .. [1] Sterratt, David, Bruce Graham, Andrew Gillies, and David Willshaw.
+          "The Synapse." Principles of Computational Modelling in Neuroscience.
+          Cambridge: Cambridge UP, 2011. 172-95. Print.
+
+  """
+
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0,
                E=0., update_type='loop', **kwargs):
     super(AlphaCOBA, self).__init__(pre=pre, post=post, conn=conn,

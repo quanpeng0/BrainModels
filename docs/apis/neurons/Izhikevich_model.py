@@ -18,7 +18,7 @@
 # # Izhikevich Model
 
 # %% [markdown]
-# ## Model Overview
+# ## 1. Model Overview
 
 # %% [markdown]
 # Izhikevich neuron model reproduces spiking and bursting behavior of known types of cortical neurons. This model combines the biologically plausibility of Hodgkin–Huxley-type dynamics (HH model) and the computational efficiency of integrate-and-fire neurons (LIF model) .
@@ -87,7 +87,7 @@ import matplotlib.pyplot as plt
 # The model can exhibit ﬁring patterns of all known types of cortical neurons with the choice of parameters $a,b,c,d$ and given below.
 
 # %% [markdown]
-# ## Different firing patterns
+# ## 2. Different firing patterns
 
 # %% [markdown]
 # The following interpretation of the most prominent features of biological spiking neurons is based on reference [1].
@@ -604,7 +604,7 @@ fig.tight_layout()
 plt.show()
 
 # %% [markdown]
-# ## Different types of neurons
+# ## 3. Different types of neurons
 
 # %% [markdown]
 # The table above gives the value of the parameter $a,b,c,d$ under 7 types of neurons.

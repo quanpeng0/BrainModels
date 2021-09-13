@@ -9,51 +9,87 @@ __all__ = [
 
 
 class AMPA(bp.TwoEndConn):
-  """AMPA conductance-based synapse.
-  
+  r"""AMPA conductance-based synapse model.
+
+  **Model Descriptions**
+
+  AMPA receptor is an ionotropic receptor, which is an ion channel.
+  When it is bound by neurotransmitters, it will immediately open the
+  ion channel, causing the change of membrane potential of postsynaptic neurons.
+
+  A classical model is to use the Markov process to model ion channel switch.
+  Here :math:`g` represents the probability of channel opening, :math:`1-g`
+  represents the probability of ion channel closing, and :math:`\alpha` and
+  :math:`\beta` are the transition probability. Because neurotransmitters can
+  open ion channels, the transfer probability from :math:`1-g` to :math:`g`
+  is affected by the concentration of neurotransmitters. We denote the concentration
+  of neurotransmitters as :math:`[T]` and get the following Markov process.
+
+  .. image:: ../../images/synapse_markov.png
+      :align: center
+
+  We obtained the following formula when describing the process by a differential equation.
+
   .. math::
 
-      I_{syn}&=\\bar{g}_{syn} s (V-E_{syn})
+      \frac{ds}{dt} =\alpha[T](1-g)-\beta g
 
-      \\frac{ds}{dt} &=\\alpha[T](1-s)-\\beta s
+  where :math:`\alpha [T]` denotes the transition probability from state :math:`(1-g)`
+  to state :math:`(g)`; and :math:`\beta` represents the transition probability of
+  the other direction. :math:`\alpha` is the binding constant. :math:`\beta` is the
+  unbinding constant. :math:`[T]` is the neurotransmitter concentration, and
+  has the duration of 0.5 ms.
 
-  **Synapse Parameters**
+  Moreover, the post-synaptic current on the post-synaptic neuron is formulated as
+
+  .. math::
+
+      I_{syn} = g_{max} g (V-E)
+
+  where :math:`g_{max}` is the maximum conductance, and `E` is the reverse potential.
+
+
+  **Model Examples**
+
+  - `Simple illustrated example <../synapses/ampa.ipynb>`_
+
+
+  **Model Parameters**
   
   ============= ============== ======== ================================================
   **Parameter** **Init Value** **Unit** **Explanation**
   ------------- -------------- -------- ------------------------------------------------
+  delay         0              ms       The decay length of the pre-synaptic spikes.
   g_max         .42            µmho(µS) Maximum conductance.
-
-  E             0.             mV       The reversal potential for the synaptic current.
-
+  E             0              mV       The reversal potential for the synaptic current.
   alpha         .98            \        Binding constant.
-
   beta          .18            \        Unbinding constant.
-
   T             .5             mM       Neurotransmitter concentration.
-
   T_duration    .5             ms       Duration of the neurotransmitter concentration.
   ============= ============== ======== ================================================
 
-  **Synapse State**
 
-  ================ ================== =========================
-  **Member name**  **Initial values** **Explanation**
-  ---------------- ------------------ -------------------------
-  s                 0                 Gating variable.
-  
-  g                 0                 Synapse conductance.
-  ================ ================== =========================
+  **Model Variables**
 
-  References
-  ----------
+  ================== ================== ==================================================
+  **Member name**    **Initial values** **Explanation**
+  ------------------ ------------------ --------------------------------------------------
+  g                  0                  Synapse gating variable.
+  pre_spike          False              The history of pre-synaptic neuron spikes.
+  spike_arrival_time -1e7               The arrival time of the pre-synaptic neuron spike.
+  ================== ================== ==================================================
+
+  **References**
+
   .. [1] Vijayan S, Kopell N J. Thalamic model of awake alpha oscillations
-          and implications for stimulus processing[J]. Proceedings of the
-          National Academy of Sciences, 2012, 109(45): 18553-18558.
+         and implications for stimulus processing[J]. Proceedings of the
+         National Academy of Sciences, 2012, 109(45): 18553-18558.
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=0.42, E=0., alpha=0.98,
                beta=0.18, T=0.5, T_duration=0.5, update_type='loop', **kwargs):
+
+    # initialization
     super(AMPA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     # checking
@@ -73,7 +109,7 @@ class AMPA(bp.TwoEndConn):
     # connections
     if update_type == 'loop':
       self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.update = self._loop_update
+      self.steps.replace('update', self._loop_update)
       self.size = len(self.pre_ids)
       self.target_backend = 'numpy'
 
@@ -87,21 +123,23 @@ class AMPA(bp.TwoEndConn):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.s = bm.Variable(bm.zeros(self.size))
-    self.g = self.register_constant_delay('g', self.size, delay)
+    self.g = bm.Variable(bm.zeros(self.size))
+    self.pre_spike = self.register_constant_delay('ps', self.pre.num, delay)
+    self.spike_arrival_time = bm.Variable(bm.ones(self.pre.num) * -1e7)
 
   @bp.odeint(method='exponential_euler')
-  def int_s(self, s, t, TT):
-    ds = self.alpha * TT * (1 - s) - self.beta * s
-    return ds
+  def integral(self, g, t, TT):
+    dg = self.alpha * TT * (1 - g) - self.beta * g
+    return dg
 
   def _loop_update(self, _t, _dt):
-    g_delayed = self.s.pull()
+    self.pre_spike.push(self.pre.spike)
+    delayed_pre_spike = self.pre_spike.pull()
+    self.spike_arrival_time[:] = bm.where(delayed_pre_spike, _t, self.spike_arrival_time)
     for i in range(self.size):
       pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      # output
-      self.post.input[post_id] -= g_delayed[i] * (self.post.V[post_id] - self.E)
       # update
-      TT = ((_t - self.pre.t_last_spike[pre_id]) < self.T_duration) * self.T
-      self.s[i] = self.int_s(self.s[i], _t, TT, dt=_dt)
-    self.g.push(self.g_max * self.s)
+      TT = ((_t - self.spike_arrival_time[pre_id]) < self.T_duration) * self.T
+      self.g[i] = self.integral(self.g[i], _t, TT, dt=_dt)
+      # output
+      self.post.input[post_id] -= self.g_max * self.g[i] * (self.post.V[post_id] - self.E)
