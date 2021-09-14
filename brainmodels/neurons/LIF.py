@@ -30,7 +30,7 @@ class LIF(bp.NeuGroup):
   **Model Examples**
 
   - `Illustrated example <../neurons/LIF.ipynb>`_
-  - `(Brette, Romain. 2004) LIF phase locking <../../examples/oscillation_synchronization/>`_
+  - `(Brette, Romain. 2004) LIF phase locking <../../examples/neurons/Romain_2004_LIF_phase_locking.ipynb>`_
 
   **Model Parameters**
 

@@ -2,13 +2,13 @@
 \#*\#
 *.pyc
 .DS_Store
-docs/_autosummary
-docs/generated
-docs/_build
 dist/
 build/
 *.egg-info
 .idea
+docs/_autosummary
+docs/generated
+docs/_build
 docs/apis/generated
 docs/apis/*.rst
 docs/images/logo1.tif

@@ -29,7 +29,7 @@ class Izhikevich(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Detailed examples to reproduce different firing patterns <../neurons/Izhikevich_model.ipynb>`_
+  - `Detailed examples to reproduce different firing patterns <../../examples/neurons/Izhikevich_model.ipynb>`_
 
   **Model Parameters**
 
