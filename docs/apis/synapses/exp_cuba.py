@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 # %%
 neu1 = brainmodels.neurons.LIF(1, monitors=['V'], name='X')
 neu2 = brainmodels.neurons.LIF(1, monitors=['V'])
-syn1 = brainmodels.synapses.ExponentialCUBA(neu1, neu2, bp.connect.All2All(), g_max=5, monitors=['g'])
+syn1 = brainmodels.synapses.ExpCUBA(neu1, neu2, bp.connect.All2All(), g_max=5, monitors=['g'])
 net = bp.Network(neu1, syn1, neu2)
 net.run(150., inputs=[('X.input', 25.)])
 

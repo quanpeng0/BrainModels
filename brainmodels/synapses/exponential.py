@@ -4,11 +4,11 @@ import brainpy as bp
 import brainpy.math as bm
 
 __all__ = [
-  'ExponentialCUBA', 'ExponentialCOBA'
+  'ExpCUBA', 'ExpCOBA'
 ]
 
 
-class ExponentialCUBA(bp.TwoEndConn):
+class ExpCUBA(bp.TwoEndConn):
   r"""Current-based exponential decay synapse model.
 
   **Model Descriptions**
@@ -83,7 +83,7 @@ class ExponentialCUBA(bp.TwoEndConn):
                update_type='loop_slice', **kwargs):
 
     # initialization
-    super(ExponentialCUBA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
+    super(ExpCUBA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     # checking
     assert hasattr(pre, 'spike'), 'Pre-synaptic group must has "spike" variable.'
@@ -118,7 +118,7 @@ class ExponentialCUBA(bp.TwoEndConn):
     self.g_max = g_max
     assert bm.size(g_max) == 1, 'This implementation only support scalar "g_max". '
     self.g = bm.Variable(bm.zeros(self.size))
-    self.pre_spike = self.register_constant_delay('pre_spike', self.size, delay)
+    self.pre_spike = self.register_constant_delay('pre_spike', self.pre.num, delay)
 
   @bp.odeint(method='exponential_euler')
   def integral(self, g, t):
@@ -152,13 +152,13 @@ class ExponentialCUBA(bp.TwoEndConn):
     raise NotImplementedError
 
 
-class ExponentialCOBA(ExponentialCUBA):
+class ExpCOBA(ExpCUBA):
   """Conductance-based exponential decay synapse model.
 
   **Model Descriptions**
 
   The conductance-based exponential decay synapse model is similar with the
-  `current-based exponential decay synapse model <./brainmodels.synapses.ExponentialCUBA.rst>`_,
+  `current-based exponential decay synapse model <./brainmodels.synapses.ExpCUBA.rst>`_,
   except the expression which output onto the post-synaptic neurons:
 
   .. math::
@@ -203,9 +203,9 @@ class ExponentialCOBA(ExponentialCUBA):
 
   def __init__(self, pre, post, conn, g_max=1., delay=0., tau=8.0, E=0.,
                update_type='loop_slice', **kwargs):
-    super(ExponentialCOBA, self).__init__(pre=pre, post=post, conn=conn,
-                                          g_max=g_max, delay=delay, tau=tau,
-                                          update_type=update_type, **kwargs)
+    super(ExpCOBA, self).__init__(pre=pre, post=post, conn=conn,
+                                  g_max=g_max, delay=delay, tau=tau,
+                                  update_type=update_type, **kwargs)
 
     self.E = E
     assert hasattr(self.post, 'V'), 'Post-synaptic group must has "V" variable.'

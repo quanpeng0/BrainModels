@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # %%
 neu1 = brainmodels.neurons.HH(1, monitors=['V'], name='X')
 neu2 = brainmodels.neurons.HH(1, monitors=['V'])
-syn1 = brainmodels.synapses.ExponentialCOBA(neu1, neu2, bp.connect.All2All(), E=0., monitors=['g'])
+syn1 = brainmodels.synapses.ExpCOBA(neu1, neu2, bp.connect.All2All(), E=0., monitors=['g'])
 net = bp.Network(neu1, syn1, neu2)
 net.run(150., inputs=[('X.input', 5.)])
 

@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
 
-from .Ca import *
-from .K import *
-from .leak import *
-from .Na import *
+from . import Ca
+from . import K
+from . import Na
+from . import other
+# from .Ca import *
+# from .K import *
+# from .other import *
+# from .Na import *
 
