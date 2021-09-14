@@ -23,12 +23,13 @@ with other BrainPy users.
    :maxdepth: 2
    :caption: Examples from paper
 
+   examples/neurons/_index
    examples/CANN/_index
    examples/EI_nets/_index
    examples/gj_nets/_index
    examples/oscillation_synchronization/_index
    examples/working_memory/_index
-   examples/others/_index
+
 
 
 Indices and tables
