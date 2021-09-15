@@ -2,11 +2,9 @@
 
 
 from . import Ca
+from . import IH
 from . import K
+from . import KCa
 from . import Na
 from . import other
-# from .Ca import *
-# from .K import *
-# from .other import *
-# from .Na import *
 

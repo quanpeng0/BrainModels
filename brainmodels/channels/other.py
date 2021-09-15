@@ -2,13 +2,24 @@
 
 import brainpy as bp
 
+
 __all__ = [
   'IL',
+  'IKL',
 ]
 
 
 class IL(bp.Channel):
-  def __init__(self, g_max, E, **kwargs):
+  """The leakage channel current.
+
+  Parameters
+  ----------
+  g_max : float
+    The leakage conductance.
+  E : float
+    The reversal potential.
+  """
+  def __init__(self, g_max=0.1, E=-70., **kwargs):
     super(IL, self).__init__(**kwargs)
 
     self.E = E
@@ -16,13 +27,23 @@ class IL(bp.Channel):
 
   def init(self, host):
     super(IL, self).init(host)
-    self.I = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
 
   def update(self, _t, _dt):
-    self.I[:] = self.g_max * (self.E - self.host.V)
+    self.host.input += self.g_max * (self.E - self.host.V)
 
 
 class IKL(IL):
-  pass
+  """The potassium leak channel current.
+
+  Parameters
+  ----------
+  g_max : float
+    The potassium leakage conductance which is modulated by both
+    acetylcholine and norepinephrine.
+  E : float
+    The reversal potential.
+  """
+  def __init__(self, g_max=0.005, E=-90., **kwargs):
+    super(IKL, self).__init__(g_max=g_max, E=E, **kwargs)
 
 
