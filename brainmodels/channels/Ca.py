@@ -172,7 +172,7 @@ class CaDyn(CaBase):
     self.C = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * self.C_rest)
     # The dynamical reversal potential
     self.E = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * 120.)
-    # Used to receive the Calcium current.
+    # Used to receive all Calcium currents
     self.input = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
 
   @bp.odeint(method='exponential_euler')
