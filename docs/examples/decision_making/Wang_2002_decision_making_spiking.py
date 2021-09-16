@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.11.4
+#       jupytext_version: 1.11.5
 #   kernelspec:
 #     display_name: brainpy
 #     language: python
@@ -24,9 +24,12 @@
 
 # %%
 import brainpy as bp
+import brainpy.math as bnp
 import matplotlib.pyplot as plt
 
 bp.__version__
+
+bnp.use_backend('jax')
 
 
 # %% [markdown]
@@ -63,11 +66,11 @@ class LIF(bp.NeuGroup):
     self.gL = gL
     self.t_refractory = t_refractory
 
-    self.V = bp.math.Variable(bp.math.ones(self.num) * V_L)
-    self.input = bp.math.Variable(bp.math.zeros(self.num))
-    self.spike = bp.math.Variable(bp.math.zeros(self.num, dtype=bool))
-    self.refractory = bp.math.Variable(bp.math.zeros(self.num, dtype=bool))
-    self.t_last_spike = bp.math.Variable(bp.math.ones(self.num) * -1e7)
+    self.V = bnp.Variable(bnp.ones(self.num) * V_L)
+    self.input = bnp.Variable(bnp.zeros(self.num))
+    self.spike = bnp.Variable(bnp.zeros(self.num, dtype=bool))
+    self.refractory = bnp.Variable(bnp.zeros(self.num, dtype=bool))
+    self.t_last_spike = bnp.Variable(bnp.ones(self.num) * -1e7)
 
   @bp.odeint
   def integral(self, V, t, Iext):
@@ -77,12 +80,12 @@ class LIF(bp.NeuGroup):
   def update(self, _t, _dt):
     ref = (_t - self.t_last_spike) <= self.t_refractory
     V = self.integral(self.V, _t, self.input)
-    V = bp.math.where(ref, self.V, V)
+    V = bnp.where(ref, self.V, V)
     spike = (V >= self.V_th)
-    self.V[:] = bp.math.where(spike, self.V_reset, V)
+    self.V[:] = bnp.where(spike, self.V_reset, V)
     self.spike[:] = spike
-    self.t_last_spike[:] = bp.math.where(spike, _t, self.t_last_spike)
-    self.refractory[:] = bp.math.logical_or(spike, ref)
+    self.t_last_spike[:] = bnp.where(spike, _t, self.t_last_spike)
+    self.refractory[:] = bnp.logical_or(spike, ref)
     self.input[:] = 0.
 
 
@@ -92,44 +95,16 @@ class LIF(bp.NeuGroup):
 
 # %%
 class PoissonNoise(bp.NeuGroup):
-  def __init__(self, size, freqs, **kwargs):
+  def __init__(self, size, freq, **kwargs):
     super(PoissonNoise, self).__init__(size=size, **kwargs)
 
-    self.freqs = freqs
-    self.dt = bp.math.get_dt() / 1000.
-    self.spike = bp.math.Variable(bp.math.zeros(self.num, dtype=bool))
-    self.rng = bp.math.random.RandomState()
+    self.freq = bnp.Variable(bnp.array([freq]))
+    self.dt = bnp.get_dt() / 1000.
+    self.spike = bnp.Variable(bnp.zeros(self.num, dtype=bool))
+    self.rng = bnp.random.RandomState()
 
   def update(self, _t, _dt):
-    self.spike[:] = self.rng.random(self.num) < self.freqs * self.dt
-
-
-# %%
-class PoissonStimulus(bp.NeuGroup):
-  def __init__(self, size, t_start=0., t_end=0., t_interval=0.,
-               freq_mean=0., freq_var=20., **kwargs):
-    super(PoissonStimulus, self).__init__(size=size, **kwargs)
-
-    self.dt = bp.math.get_dt() / 1000
-    self.t_start = t_start
-    self.t_end = t_end
-    self.t_interval = t_interval
-    self.freq_mean = freq_mean
-    self.freq_var = freq_var
-    self.freqs = bp.math.Variable(bp.math.array([0.]))
-    self.t_last_change = bp.math.Variable(bp.math.array([-1e7]))
-    self.spike = bp.math.Variable(bp.math.zeros(size, dtype=bool))
-    self.rng = bp.math.random.RandomState()
-
-  def update(self, _t, _dt):
-    if self.t_start < _t < self.t_end:
-      if (_t - self.t_last_change[0]) >= self.t_interval:
-        self.freqs[0] = self.rng.normal(self.freq_mean, self.freq_var)
-        self.t_last_change[0] = _t
-      self.spike[:] = self.rng.random(self.num) < (self.freqs[0] * self.dt)
-    else:
-      self.freqs[0] = 0.
-      self.spike[:] = False
+    self.spike[:] = self.rng.random(self.num) < self.freq[0] * self.dt
 
 
 # %% [markdown]
@@ -189,7 +164,7 @@ class AMPA_One(bp.TwoEndConn):
 
     # variables
     self.pre_spike = self.register_constant_delay('ps', size=self.pre.num, delay=delay)
-    self.s = bp.math.Variable(bp.math.zeros(self.pre.num))
+    self.s = bnp.Variable(bnp.zeros(self.pre.num))
 
   @bp.odeint
   def int_s(self, s, t):
@@ -218,8 +193,8 @@ class AMPA(bp.TwoEndConn):
 
     # variables
     self.pre_spike = self.register_constant_delay('ps', size=self.pre.num, delay=delay)
-    self.pre_one = bp.math.Variable(bp.math.ones(self.pre.num))
-    self.s = bp.math.Variable(bp.math.zeros(self.size))
+    self.pre_one = bnp.Variable(bnp.ones(self.pre.num))
+    self.s = bnp.Variable(bnp.zeros(self.size))
 
   @bp.odeint
   def int_s(self, s, t):
@@ -231,7 +206,7 @@ class AMPA(bp.TwoEndConn):
     pre_spike = self.pre_spike.pull()
     self.s[:] = self.int_s(self.s, _t)
     self.s += (pre_spike * self.g_max).reshape((-1, 1))
-    self.post.input += bp.math.dot(self.pre_one, self.s) * (self.post.V - self.E)
+    self.post.input += bnp.dot(self.pre_one, self.s) * (self.post.V - self.E)
 
 
 # %% [markdown]
@@ -271,9 +246,9 @@ class NMDA(bp.TwoEndConn):
 
     # variables
     self.pre_spike = self.register_constant_delay('ps', size=self.pre.num, delay=delay)
-    self.pre_one = bp.math.Variable(bp.math.ones(self.pre.num))
-    self.s = bp.math.Variable(bp.math.zeros(self.size))
-    self.x = bp.math.Variable(bp.math.zeros(self.size))
+    self.pre_one = bnp.Variable(bnp.ones(self.pre.num))
+    self.s = bnp.Variable(bnp.zeros(self.size))
+    self.x = bnp.Variable(bnp.zeros(self.size))
 
   @bp.odeint
   def integral(self, s, x, t):
@@ -286,9 +261,8 @@ class NMDA(bp.TwoEndConn):
     pre_spike = self.pre_spike.pull()
     self.s[:], self.x[:] = self.integral(self.s, self.x, _t)
     self.x += pre_spike.reshape((-1, 1))
-
-    g_inf = 1 / (1 + self.cc_Mg * bp.math.exp(-0.062 * self.post.V) / 3.57)
-    Iext = bp.math.dot(self.pre_one, self.s) * (self.post.V - self.E) * g_inf
+    g_inf = 1 / (1 + self.cc_Mg * bnp.exp(-0.062 * self.post.V) / 3.57)
+    Iext = bnp.dot(self.pre_one, self.s) * (self.post.V - self.E) * g_inf
     self.post.input += Iext * self.g_max
 
 
@@ -360,19 +334,23 @@ N = LIF(num_N, Cm=0.5, gL=0.025, t_refractory=2.)
 I = LIF(num_inh, Cm=0.2, gL=0.020, t_refractory=1.)
 
 # %%
-IA = PoissonStimulus(num_A, t_start=pre_period, t_end=pre_period + stim_period, t_interval=50.,
-                     freq_mean=mu0 + mu0 / 100. * coherence, freq_var=10., monitors=['freqs'])
-IB = PoissonStimulus(num_B, t_start=pre_period, t_end=pre_period + stim_period, t_interval=50.,
-                     freq_mean=mu0 - mu0 / 100. * coherence, freq_var=10., monitors=['freqs'])
-# IA = PoissonNoise(num_A, freqs=mu0 + mu0 / 100. * coherence)
-# IB = PoissonNoise(num_B, freqs=mu0 - mu0 / 100. * coherence)
+IA = PoissonNoise(num_A, freq=mu0 + mu0 / 100. * coherence)
+IA.freq_mean = mu0 + mu0 / 100. * coherence
+IA.freq_var = 10.
+IA.t_interval = 50.
+IA.t_last_change = -1e7
 
+IB = PoissonNoise(num_B, freq=mu0 - mu0 / 100. * coherence)
+IB.freq_mean = mu0 - mu0 / 100. * coherence
+IB.freq_var = 10.
+IB.t_interval = 50.
+IB.t_last_change = -1e7
 
 # %%
-noise_A = PoissonNoise(num_A, freqs=poisson_freq)
-noise_B = PoissonNoise(num_B, freqs=poisson_freq)
-noise_N = PoissonNoise(num_N, freqs=poisson_freq)
-noise_I = PoissonNoise(num_inh, freqs=poisson_freq)
+noise_A = PoissonNoise(num_A, freq=poisson_freq)
+noise_B = PoissonNoise(num_B, freq=poisson_freq)
+noise_N = PoissonNoise(num_N, freq=poisson_freq)
+noise_I = PoissonNoise(num_inh, freq=poisson_freq)
 
 # %%
 IA2A = AMPA_One(pre=IA, post=A, g_max=g_max_ext2E_AMPA)
@@ -442,20 +420,32 @@ net = bp.Network(
   # Neuron Groups
   noise_A, noise_B, noise_N, noise_I, N, I,
   A=A, B=B, IA=IA, IB=IB,
-  monitors=['A.spike', 'B.spike', 'IA.freqs', 'IB.freqs']
+  monitors=['A.spike', 'B.spike', 'IA.freq', 'IB.freq']
 )
-net = bp.math.jit(net)
+net = bnp.jit(net)
 
-net.run(duration=total_period, report=0.1)
+
+# %%
+def change_poisson_freq(_t, _dt):
+  for group in [IA, IB]:
+    if pre_period < _t < pre_period + stim_period:
+      if (_t - group.t_last_change) >= group.t_interval:
+        group.freq[0] = bnp.random.normal(group.freq_mean, group.freq_var)
+        group.t_last_change = _t
+    else:
+      group.freq[0] = 0.
+
+
+# %%
+net.run(duration=total_period, report=0.1, extra_func=change_poisson_freq)
 
 # %% [markdown]
 # ## Visualization
 
 # %%
-t_start = 0.
-
 fig, gs = bp.visualize.get_figure(4, 1, 3, 10)
 
+t_start = 0.
 fig.add_subplot(gs[0, 0])
 bp.visualize.raster_plot(net.mon.ts, net.mon['A.spike'], markersize=1)
 plt.title("Spiking activity of group A")
@@ -475,10 +465,12 @@ plt.axvline(pre_period + stim_period, linestyle='dashed')
 plt.axvline(pre_period + stim_period + delay_period, linestyle='dashed')
 
 fig.add_subplot(gs[2, 0])
-plt.plot(net.mon.ts, net.mon['IA.freqs'], label="group A")
-plt.plot(net.mon.ts, net.mon['IB.freqs'], label="group B")
-plt.title("Input activity")
-plt.ylabel("Firing rate [Hz]")
+rateA = bp.measure.firing_rate(net.mon['A.spike'], width=10.)
+rateB = bp.measure.firing_rate(net.mon['B.spike'], width=10.)
+plt.plot(net.mon.ts, rateA, label="Group A")
+plt.plot(net.mon.ts, rateB, label="Group B")
+plt.ylabel('Firing rate [Hz]')
+plt.title("Population activity")
 plt.xlim(t_start, total_period + 1)
 plt.axvline(pre_period, linestyle='dashed')
 plt.axvline(pre_period + stim_period, linestyle='dashed')
@@ -486,12 +478,10 @@ plt.axvline(pre_period + stim_period + delay_period, linestyle='dashed')
 plt.legend()
 
 fig.add_subplot(gs[3, 0])
-rateA = bp.measure.firing_rate(net.mon['A.spike'], width=10.)
-rateB = bp.measure.firing_rate(net.mon['B.spike'], width=10.)
-plt.plot(net.mon.ts, rateA, label="Group A")
-plt.plot(net.mon.ts, rateB, label="Group B")
-plt.ylabel('Firing rate [Hz]')
-plt.title("Population activity")
+plt.plot(net.mon.ts, net.mon['IA.freq'], label="group A")
+plt.plot(net.mon.ts, net.mon['IB.freq'], label="group B")
+plt.title("Input activity")
+plt.ylabel("Firing rate [Hz]")
 plt.xlim(t_start, total_period + 1)
 plt.axvline(pre_period, linestyle='dashed')
 plt.axvline(pre_period + stim_period, linestyle='dashed')

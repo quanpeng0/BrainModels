@@ -1,26 +1,5 @@
-*~
-\#*\#
-*.pyc
-.DS_Store
-dist/
-build/
-*.egg-info
-.idea
-docs/_autosummary
-docs/generated
-docs/_build
-docs/apis/generated
-docs/apis/neurons.rst
-docs/apis/synapses.rst
-docs/apis/channels.*.rst
-docs/images/logo1.tif
-docs/images/logo2.tif
-docs/images/logo3.tif
-
-examples/
-*/__pycache__
-
-
+### Python template
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -158,3 +137,13 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+.idea
+docs/apis/generated
+docs/apis/neurons/.ipynb_checkpoints
+docs/apis/synapses/.ipynb_checkpoints
+docs/examples/CANN/.ipynb_checkpoints
+docs/apis/neurons.rst
+docs/apis/synapses.rst
+docs/apis/channels.*.rst
+./examples/
