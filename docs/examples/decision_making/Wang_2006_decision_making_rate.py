@@ -28,7 +28,7 @@ bp.math.set_dt(dt=0.0005)
 # Consider two excitatory neural assemblies, populations $1$ and $2$, that compete with each other through a shared pool of 
 # inhibitory neurons.
 #
-# ![](files/decision_model.png)
+# ![](../../images/decision_model.png)
 #
 #
 # Let $r_1$ and $r_2$ be their respective population-firing rates, and the total synaptic input current $I_i$ and the resulting firing rate $r_i$ of the neural population $i$ obey the following input-output relationship ($F - I$ curve):
