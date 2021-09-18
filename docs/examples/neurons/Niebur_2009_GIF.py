@@ -7,15 +7,15 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.11.4
+#       jupytext_version: 1.11.5
 #   kernelspec:
-#     display_name: brainmodels
+#     display_name: brainpy
 #     language: python
-#     name: brainmodels
+#     name: brainpy
 # ---
 
 # %% [markdown]
-# # Generalized Integrate-and-fire model
+# # *(Niebur, et. al, 2009)*: Generalized integrate-and-fire model
 
 # %% [markdown]
 # Implementation of the paper: *Mihalaş, Ştefan, and Ernst Niebur. "A generalized linear integrate-and-fire neural model produces diverse spiking behaviors." Neural computation 21.3 (2009): 704-718.*

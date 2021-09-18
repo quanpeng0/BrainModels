@@ -1,5 +1,5 @@
-Working Memory
-==============
+Working Memory Models
+=====================
 
 .. toctree::
    :maxdepth: 1

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import importlib
 import inspect
 import os
-import importlib
 
 
-def write(module_name, filename):
+def write(module_name, filename, header=None):
   if not os.path.exists(os.path.dirname(filename)):
     os.makedirs(os.path.dirname(filename))
 
@@ -16,8 +16,12 @@ def write(module_name, filename):
   fout = open(filename, 'w')
 
   # write header
-  fout.write(module_name + '\n')
-  fout.write('=' * len(module_name) + '\n\n')
+  if header is None:
+    header = f'``{module_name}`` module'
+  else:
+    header = header
+  fout.write(header + '\n')
+  fout.write('=' * len(header) + '\n\n')
   fout.write(f'.. currentmodule:: {module_name} \n')
   fout.write(f'.. automodule:: {module_name} \n\n')
 
@@ -39,4 +43,10 @@ def write(module_name, filename):
 def generate():
   write(module_name='brainmodels.neurons', filename='apis/neurons.rst')
   write(module_name='brainmodels.synapses', filename='apis/synapses.rst')
+  write(module_name='brainmodels.channels.Na', filename='apis/channels.Na.rst', header='Na')
+  write(module_name='brainmodels.channels.K', filename='apis/channels.K.rst', header='K')
+  write(module_name='brainmodels.channels.Ca', filename='apis/channels.Ca.rst', header='Ca')
+  write(module_name='brainmodels.channels.IH', filename='apis/channels.IH.rst', header='IH')
+  write(module_name='brainmodels.channels.KCa', filename='apis/channels.KCa.rst', header='KCa')
+  write(module_name='brainmodels.channels.other', filename='apis/channels.other.rst', header='Other')
 
