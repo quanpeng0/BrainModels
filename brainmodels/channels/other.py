@@ -29,7 +29,8 @@ class IL(bp.Channel):
     super(IL, self).init(host)
 
   def update(self, _t, _dt):
-    self.host.input += self.g_max * (self.E - self.host.V)
+    self.host.I_ion += self.g_max * (self.E - self.host.V)
+    self.host.V_linear -= self.g_max
 
 
 class IKL(IL):

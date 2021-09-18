@@ -71,7 +71,9 @@ class IDR(bp.Channel):
 
   def update(self, _t, _dt):
     self.p[:] = self.integral(self.p, _t, self.host.V, dt=_dt)
-    self.host.input += (self.g_max * self.p ** 4) * (self.E - self.host.V)
+    g = self.g_max * self.p ** 4
+    self.host.I_ion += g * (self.E - self.host.V)
+    self.host.V_linear -= g
 
 
 class IK2(bp.Channel):
@@ -94,4 +96,6 @@ class IK2(bp.Channel):
 
   def update(self, _t, _dt):
     self.n[:] = self.integral(self.n, _t, self.host.V, dt=_dt)
-    self.host.input += (self.g_max * self.n ** 4) * (self.E - self.host.V)
+    g = self.g_max * self.n ** 4
+    self.host.I_ion += g * (self.E - self.host.V)
+    self.host.V_linear -= g

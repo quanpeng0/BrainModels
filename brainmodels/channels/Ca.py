@@ -9,46 +9,46 @@ __all__ = [
   'ICaN',
   'ICaL',
   'ICaT',
-  'ICaTRE',
+  'ICaT_RE',
   'ICaHT',
 ]
 
 
-class CaBase(bp.Channel):
+class BaseCa(bp.Channel):
   """The base calcium dynamics."""
   E = None
-  input = None
+  I_Ca = None
 
   def __init__(self, **kwargs):
-    super(CaBase, self).__init__(**kwargs)
+    super(BaseCa, self).__init__(**kwargs)
 
   def init(self, host):
-    super(CaBase, self).init(host)
+    super(BaseCa, self).init(host)
 
   def update(self, _t, _dt):
     raise NotImplementedError
 
 
-class CaFix(CaBase):
+class FixCa(BaseCa):
   """Fixed Calcium dynamics.
 
   This calcium model has no dynamics. It only hold a fixed reversal potential :math:`E`.
   """
 
   def __init__(self, E=120., **kwargs):
-    super(CaFix, self).__init__(E=E, **kwargs)
+    super(FixCa, self).__init__(E=E, **kwargs)
 
     self.E = E
 
   def init(self, host):
-    super(CaFix, self).init(host)
+    super(FixCa, self).init(host)
     self.input = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
 
   def update(self, _t, _dt):
     self.input[:] = 0.
 
 
-class CaDyn(CaBase):
+class DynCa(BaseCa):
   r"""Dynamical Calcium model.
 
 
@@ -156,7 +156,7 @@ class CaDyn(CaBase):
   """
 
   def __init__(self, d=1., F=96.489, C_rest=0.05, tau=5., C_0=2., T=36., R=8.31441, **kwargs):
-    super(CaDyn, self).__init__(**kwargs)
+    super(DynCa, self).__init__(**kwargs)
 
     self.R = R  # gas constant, J*mol-1*K-1
     self.T = T
@@ -167,13 +167,13 @@ class CaDyn(CaBase):
     self.C_0 = C_0
 
   def init(self, host):
-    super(CaDyn, self).init(host)
+    super(DynCa, self).init(host)
     # Concentration of the Calcium
     self.C = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * self.C_rest)
     # The dynamical reversal potential
     self.E = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * 120.)
     # Used to receive all Calcium currents
-    self.input = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
+    self.I_Ca = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, C, t, ICa):
@@ -181,9 +181,9 @@ class CaDyn(CaBase):
     return dCdt
 
   def update(self, _t, _dt):
-    self.C[:] = self.integral(self.C, _t, self.input, dt=_dt)
+    self.C[:] = self.integral(self.C, _t, self.I_Ca, dt=_dt)
     self.E[:] = self.R * (273.15 + self.T) / (2 * self.F) * bm.log(self.C_0 / self.C)
-    self.input[:] = 0.
+    self.I_Ca[:] = 0.
 
 
 class IAHP(bp.Channel):
@@ -238,7 +238,7 @@ class IAHP(bp.Channel):
 
   def init(self, host):
     super(IAHP, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, CaBase)
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
     self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
@@ -251,7 +251,9 @@ class IAHP(bp.Channel):
 
   def update(self, _t, _dt):
     self.p[:] = self.integral(self.p, _t, C=self.host.ca.C, dt=_dt)
-    self.host.input += (self.g_max * self.p) * (self.E - self.host.V)
+    g = self.g_max * self.p
+    self.host.I_ion += g * (self.E - self.host.V)
+    self.host.V_linear -= g
 
 
 class ICaN(bp.Channel):
@@ -299,7 +301,7 @@ class ICaN(bp.Channel):
 
   def init(self, host):
     super(ICaN, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, CaBase)
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
     self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
@@ -312,7 +314,9 @@ class ICaN(bp.Channel):
   def update(self, _t, _dt):
     self.p[:] = self.integral(self.p, _t, self.host.V, dt=_dt)
     M = self.host.ca.C / (self.host.ca.C + 0.2)
-    self.host.input += (self.g_max * M * self.p) * (self.E - self.host.V)
+    g = self.g_max * M * self.p
+    self.host.I_ion += g * (self.E - self.host.V)
+    self.host.V_linear -= g
 
 
 class ICaT(bp.Channel):
@@ -366,7 +370,7 @@ class ICaT(bp.Channel):
 
   def init(self, host):
     super(ICaT, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, CaBase)
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
     self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
     self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
 
@@ -388,12 +392,14 @@ class ICaT(bp.Channel):
 
   def update(self, _t, _dt):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    I = (self.g_max * self.p ** 2 * self.q) * (self.host.V - self.host.ca.E)
-    self.host.input -= I
-    self.host.ca.input += I
+    g = self.g_max * self.p ** 2 * self.q
+    I = g * (self.host.ca.E - self.host.V)
+    self.host.I_ion += I
+    self.host.V_linear -= g
+    self.host.ca.I_Ca -= I
 
 
-class ICaTRE(bp.Channel):
+class ICaT_RE(bp.Channel):
   r"""The low-threshold T-type calcium current model in thalamic reticular nucleus.
 
   The dynamics of the low-threshold T-type calcium current model [1]_ [2]_ in thalamic
@@ -439,7 +445,7 @@ class ICaTRE(bp.Channel):
   """
 
   def __init__(self, T=36., T_base_p=5., T_base_q=3., g_max=1.75, V_sh=-3., **kwargs):
-    super(ICaTRE, self).__init__(**kwargs)
+    super(ICaT_RE, self).__init__(**kwargs)
     self.T = T
     self.T_base_p = T_base_p
     self.T_base_q = T_base_q
@@ -447,8 +453,8 @@ class ICaTRE(bp.Channel):
     self.V_sh = V_sh
 
   def init(self, host):
-    super(ICaTRE, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, CaBase)
+    super(ICaT_RE, self).init(host)
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
     self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
     self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
 
@@ -468,9 +474,11 @@ class ICaTRE(bp.Channel):
 
   def update(self, _t, _dt):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    I = (self.g_max * self.p ** 2 * self.q) * (self.host.V - self.host.ca.E)
-    self.host.input -= I
-    self.host.ca.input += I
+    g = self.g_max * self.p ** 2 * self.q
+    I = g * (self.host.ca.E - self.host.V)
+    self.host.I_ion += I
+    self.host.V_linear -= g
+    self.host.ca.I_Ca -= I
 
 
 class ICaHT(bp.Channel):
@@ -528,7 +536,7 @@ class ICaHT(bp.Channel):
 
   def init(self, host):
     super(ICaHT, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, CaBase)
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
     self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
     self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
 
@@ -550,9 +558,11 @@ class ICaHT(bp.Channel):
 
   def update(self, _t, _dt):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    I = (self.g_max * self.p ** 2 * self.q) * (self.host.V - self.host.ca.E)
-    self.host.input -= I
-    self.host.ca.input += I
+    g = self.g_max * self.p ** 2 * self.q
+    I = g * (self.host.ca.E - self.host.V)
+    self.host.I_ion += I
+    self.host.V_linear -= g
+    self.host.ca.I_Ca -= I
 
 
 class ICaL(bp.Channel):
@@ -606,7 +616,7 @@ class ICaL(bp.Channel):
 
   def init(self, host):
     super(ICaL, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, CaBase)
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
     self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
     self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
 
@@ -626,6 +636,8 @@ class ICaL(bp.Channel):
 
   def update(self, _t, _dt):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    I = (self.g_max * self.p ** 2 * self.q) * (self.host.V - self.host.ca.E)
-    self.host.input -= I
-    self.host.ca.input += I
+    g = self.g_max * self.p ** 2 * self.q
+    I = g * (self.host.ca.E - self.host.V)
+    self.host.I_ion += I
+    self.host.V_linear -= g
+    self.host.ca.I_Ca -= I

@@ -3,12 +3,10 @@
 import brainmodels
 import brainpy as bp
 
-bp.math.set_dt(0.02)
-
 trn = bp.CondNeuGroup(ina=brainmodels.Na.INa(g_max=100., E=50., V_sh=-55.),
                       ik=brainmodels.K.IDR(g_max=10., E=-95., V_sh=-55.),
-                      ca=brainmodels.Ca.CaDyn(tau=5., C_rest=2.4e-4),
-                      it=brainmodels.Ca.ICaTRE(g_max=2.),
+                      ca=brainmodels.Ca.DynCa(tau=5., C_rest=2.4e-4),
+                      it=brainmodels.Ca.ICaT_RE(g_max=2.),
                       il=brainmodels.other.IL(g_max=0.05, E=-77.),
                       ikl=brainmodels.other.IKL(g_max=0.005, E=-95.))
 trn.init(1, monitors=['ina.p', 'it.p', 'it.q', 'V'])

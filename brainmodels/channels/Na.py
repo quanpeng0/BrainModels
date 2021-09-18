@@ -81,7 +81,9 @@ class INa(bp.Channel):
 
   def update(self, _t, _dt):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    self.host.input += (self.g_max * self.p ** 3 * self.q) * (self.E - self.host.V)
+    g = self.g_max * self.p ** 3 * self.q
+    self.host.I_ion += g * (self.E - self.host.V)
+    self.host.V_linear -= g
 
 
 class INa2(bp.Channel):
@@ -110,5 +112,6 @@ class INa2(bp.Channel):
 
   def update(self, _t, _dt):
     self.m[:], self.h[:] = self.integral(self.m, self.h, _t, self.host.V, dt=_dt)
-    self.host.input += (self.g_max * self.m ** 3 * self.h) * (self.host.V - self.E)
-
+    g = self.g_max * self.m ** 3 * self.h
+    self.host.I_ion += g * (self.E - self.host.V)
+    self.host.V_linear -= g

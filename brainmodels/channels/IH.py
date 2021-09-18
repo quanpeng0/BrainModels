@@ -64,4 +64,6 @@ class Ih(bp.Channel):
 
   def update(self, _t, _dt):
     self.p[:] = self.integral(self.p, _t, self.host.V, dt=_dt)
-    self.host.input += (self.g_max * self.p) * (self.E - self.host.V)
+    g = self.g_max * self.p
+    self.host.I_ion += g * (self.E - self.host.V)
+    self.host.V_linear -= g
