@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.11.5
+#       jupytext_version: 1.11.4
 #   kernelspec:
 #     display_name: brainpy
 #     language: python
@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# # *(Wang, 2002)*: Decision making spiking model
+# # *(Wang, 2002)* Decision making spiking model
 
 # %% [markdown]
 # Implementation of the paper: *Wang, Xiao-Jing. "Probabilistic decision making by slow reverberation in cortical circuits." Neuron 36.5 (2002): 955-968.*
