@@ -142,7 +142,7 @@ cython_debug/
 docs/apis/generated
 docs/apis/neurons/.ipynb_checkpoints
 docs/apis/synapses/.ipynb_checkpoints
-docs/examples/CANN/.ipynb_checkpoints
+docs/examples/cann/.ipynb_checkpoints
 docs/apis/neurons.rst
 docs/apis/synapses.rst
 docs/apis/channels.*.rst

@@ -30,6 +30,11 @@ class IDR(bp.Channel):
   where :math:`\phi` is a temperature-dependent factor, which is given by
   :math:`\phi=3^{\frac{T-36}{10}}` (:math:`T` is the temperature in Celsius).
 
+  **Model Examples**
+
+  - `(Brette, et, al., 2007) COBAHH <../../examples/ei_nets/Brette_2007_COBAHH.ipynb>`_
+
+
   Parameters
   ----------
   g_max : float

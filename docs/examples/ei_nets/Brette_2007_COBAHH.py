@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# # _(Brette, et, al., 2007)_ COBA-HH
+# # *(Brette, et, al., 2007)* COBA-HH
 
 # %% [markdown]
 # Implementation of the paper:
@@ -33,7 +33,10 @@
 
 # %%
 import brainpy as bp
+import brainmodels
 
+# %% [markdown]
+# ## Parameters
 
 # %%
 num_exc = 3200
@@ -63,6 +66,44 @@ we = 6.  # excitatory synaptic conductance [nS]
 # inhibitory synaptic weight
 wi = 67.  # inhibitory synaptic conductance [nS]
 
+# %% [markdown]
+# ## Implementation 1
+
+
+# %%
+# neuron groups
+E = bp.CondNeuGroup(ina=brainmodels.Na.INa(V_sh=VT, g_max=g_Na, E=ENa),
+                    ik=brainmodels.K.IDR(V_sh=VT, g_max=g_Kd, E=EK),
+                    il=brainmodels.other.IL(E=El, g_max=gl),
+                    V_th=V_th, C=Cm)
+I = bp.CondNeuGroup(ina=brainmodels.Na.INa(V_sh=VT, g_max=g_Na, E=ENa),
+                    ik=brainmodels.K.IDR(V_sh=VT, g_max=g_Kd, E=EK),
+                    il=brainmodels.other.IL(E=El, g_max=gl),
+                    V_th=V_th, C=Cm)
+E.init(num_exc, monitors=['spike'])
+I.init(num_inh)
+E.V[:] = El + (bp.math.random.randn(num_exc) * 5 - 5)
+I.V[:] = El + (bp.math.random.randn(num_inh) * 5 - 5)
+
+# %%
+# synapses
+E2E = brainmodels.ExpCOBA(E, E, bp.connect.FixedProb(prob=0.02), E=Ee, g_max=we, tau=taue)
+E2I = brainmodels.ExpCOBA(E, I, bp.connect.FixedProb(prob=0.02), E=Ee, g_max=we, tau=taue)
+I2E = brainmodels.ExpCOBA(I, E, bp.connect.FixedProb(prob=0.02), E=Ei, g_max=wi, tau=taui)
+I2I = brainmodels.ExpCOBA(I, I, bp.connect.FixedProb(prob=0.02), E=Ei, g_max=wi, tau=taui)
+
+# %%
+# network
+net = bp.math.jit(bp.Network(E2E, E2I, I2I, I2E, E=E, I=I))
+
+# %%
+# simulation and visualization
+net.run(100., report=0.1)
+bp.visualize.raster_plot(E.mon.ts, E.mon.spike, show=True)
+
+
+# %% [markdown]
+# ## Implementation 2
 
 # %%
 class HH(bp.NeuGroup):

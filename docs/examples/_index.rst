@@ -4,9 +4,9 @@ Neuron Models
 .. toctree::
    :maxdepth: 1
 
-   neurons/GIF.ipynb
-   neurons/Izhikevich_model.ipynb
+   neurons/Izhikevich_2003_Izhikevich_model.ipynb
    neurons/Romain_2004_LIF_phase_locking.ipynb
+   neurons/Niebur_2009_GIF.ipynb
 
 
 E/I Balanced Network
@@ -15,11 +15,11 @@ E/I Balanced Network
 .. toctree::
    :maxdepth: 1
 
-   EI_nets/Vreeswijk_1996_EI_net.ipynb
-   EI_nets/Brette_2007_COBA.ipynb
-   EI_nets/Brette_2007_CUBA.ipynb
-   EI_nets/Brette_2007_COBAHH.ipynb
-   EI_nets/Tian_2020_EI_net_for_fast_response.ipynb
+   ei_nets/Vreeswijk_1996_EI_net.ipynb
+   ei_nets/Brette_2007_COBA.ipynb
+   ei_nets/Brette_2007_CUBA.ipynb
+   ei_nets/Brette_2007_COBAHH.ipynb
+   ei_nets/Tian_2020_EI_net_for_fast_response.ipynb
 
 
 
@@ -29,7 +29,7 @@ Continuous-attractor Neural Network
 .. toctree::
     :maxdepth: 1
 
-    CANN/Wu_2008_CANN.ipynb
+    cann/Wu_2008_CANN.ipynb
 
 
 Gap Junction Networks
@@ -62,4 +62,14 @@ Oscillation and Synchronization
    oscillation_synchronization/Brunel_Hakim_1999_fast_oscillation.ipynb
    oscillation_synchronization/Diesmann_1999_synfire_chains.ipynb
 
+
+
+Decision Making Models
+======================
+
+.. toctree::
+   :maxdepth: 1
+
+   decision_making/Wang_2002_decision_making_spiking.ipynb
+   decision_making/Wang_2006_decision_making_rate.ipynb
 

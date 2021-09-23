@@ -14,7 +14,7 @@
 # ---
 
 # %% [markdown]
-# # _(Vreeswijk & Sompolinsky, 1996)_ E/I balanced network
+# # *(Vreeswijk & Sompolinsky, 1996)* E/I balanced network
 
 # %% [markdown]
 # ## Overviews

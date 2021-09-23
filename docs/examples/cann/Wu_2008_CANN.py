@@ -27,7 +27,7 @@
 # - Chaoming Wang (chao.brain@qq.com)
 
 # %% [markdown]
-# The mathematical equation of the Continuous-attractor Neural Network (CANN) is given by:
+# The mathematical equation of the Continuous-attractor Neural Network (cann) is given by:
 #
 # $$\tau \frac{du(x,t)}{dt} = -u(x,t) + \rho \int dx' J(x,x') r(x',t)+I_{ext}$$
 #
@@ -118,17 +118,17 @@ bp.visualize.animate_1D(
   frame_step=1,
   frame_delay=100,
   show=True,
-  # save_path='../../images/CANN-encoding.gif'
+  # save_path='../../images/cann-encoding.gif'
 )
 
 # %% [markdown]
-# <img src="../../images/CANN-encoding.gif">
+# <img src="../../images/cann-encoding.gif">
 
 # %% [markdown]
 # ## Template matching
 
 # %% [markdown]
-# The CANN can perform efficient population decoding by achieving template-matching. 
+# The cann can perform efficient population decoding by achieving template-matching.
 
 # %%
 cann = CANN1D(num=512, k=8.1, monitors=['u'])
@@ -149,16 +149,16 @@ bp.visualize.animate_1D(
   frame_step=5,
   frame_delay=50,
   show=True,
-  # save_path='../../images/CANN-decoding.gif'
+  # save_path='../../images/cann-decoding.gif'
 )
 
 # %% [markdown]
-# <img src="../../images/CANN-decoding.gif">
+# <img src="../../images/cann-decoding.gif">
 
 # %% [markdown]
 # ## Smooth tracking
 #
-# The CANN can track moving stimulus. 
+# The cann can track moving stimulus.
 
 # %%
 cann = CANN1D(num=512, k=8.1, monitors=['u'])
@@ -180,8 +180,8 @@ bp.visualize.animate_1D(
   frame_step=5,
   frame_delay=50,
   show=True,
-  # save_path='../../images/CANN-tracking.gif'
+  # save_path='../../images/cann-tracking.gif'
 )
 
 # %% [markdown]
-# <img src="../../images/CANN-tracking.gif">
+# <img src="../../images/cann-tracking.gif">

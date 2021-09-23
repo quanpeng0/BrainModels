@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# # _(Tian, et al., 2020)_ E/I Net for fast response
+# # *(Tian, et al., 2020)* E/I Net for fast response
 
 # %% [markdown]
 # Implementation of the paper： 
