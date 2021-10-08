@@ -44,7 +44,9 @@ bnp.use_backend('jax')
 # $$
 # C_{m} \frac{d V(t)}{d t}=-g_{L}\left(V(t)-V_{L}\right)-I_{s y n}(t)
 # $$
+#
 # where 
+#
 # - $I_{syn}(t)$ represents the total synaptic current flowing into the cell
 # - resting potential $V_L$ = -70 mV
 # - firing threshold $V_{th}$ = -50 mV

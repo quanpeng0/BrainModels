@@ -22,6 +22,7 @@ with other BrainPy users.
    examples/oscillation_synchronization/_index
    examples/working_memory/_index
    examples/decision_making/_index
+   examples/recurrent_networks/_index
 
 .. examples/_index
 
