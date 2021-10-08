@@ -68,7 +68,13 @@ group = bp.math.jit(group)
 group.run(duration=5 * 1000., report=0.1)
 
 indices, times = bp.measure.raster_plot(group.mon.spike, group.mon.ts)
-plt.plot((times % tau) / tau, inputs[indices], ',')
+
+# plt.plot((times % tau) / tau, inputs[indices], ',')
+
+spike_phases = (times % tau) / tau
+params = inputs[indices]
+plt.scatter(x=spike_phases, y=params, c=spike_phases, marker=',', s=0.1, cmap="coolwarm")
+
 plt.xlabel('Spike phase')
 plt.ylabel('Parameter (input)')
 plt.show()

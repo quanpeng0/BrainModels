@@ -46,9 +46,9 @@ class ExpCUBA(bp.TwoEndConn):
 
   - `Simple illustrated example <../synapses/exp_cuba.ipynb>`_
   - `(Brunel & Hakim, 1999) Fast Global Oscillation <../../examples/oscillation_synchronization/Brunel_Hakim_1999_fast_oscillation.ipynb>`_
-  - `(Vreeswijk & Sompolinsky, 1996) E/I balanced network <../../examples/EI_nets/Vreeswijk_1996_EI_net.ipynb>`_
-  - `(Brette, et, al., 2007) CUBA <../../examples/EI_nets/Brette_2007_CUBA.ipynb>`_
-  - `(Tian, et al., 2020) E/I Net for fast response <../../examples/EI_nets/Tian_2020_EI_net_for_fast_response.ipynb>`_
+  - `(Vreeswijk & Sompolinsky, 1996) E/I balanced network <../../examples/ei_nets/Vreeswijk_1996_EI_net.ipynb>`_
+  - `(Brette, et, al., 2007) CUBA <../../examples/ei_nets/Brette_2007_CUBA.ipynb>`_
+  - `(Tian, et al., 2020) E/I Net for fast response <../../examples/ei_nets/Tian_2020_EI_net_for_fast_response.ipynb>`_
 
 
   **Model Parameters**
@@ -170,8 +170,8 @@ class ExpCOBA(ExpCUBA):
   **Model Examples**
 
   - `Simple illustrated example <../synapses/exp_coba.ipynb>`_
-  - `(Brette, et, al., 2007) COBA <../../examples/EI_nets/Brette_2007_COBA.ipynb>`_
-  - `(Brette, et, al., 2007) COBAHH <../../examples/EI_nets/Brette_2007_COBAHH.ipynb>`_
+  - `(Brette, et, al., 2007) COBA <../../examples/ei_nets/Brette_2007_COBA.ipynb>`_
+  - `(Brette, et, al., 2007) COBAHH <../../examples/ei_nets/Brette_2007_COBAHH.ipynb>`_
 
 
   **Model Parameters**

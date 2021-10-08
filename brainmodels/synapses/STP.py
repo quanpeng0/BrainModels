@@ -73,6 +73,7 @@ class STP(bp.TwoEndConn):
   tau_f         1500           ms       Time constant of short-term facilitation.
   U             .15            \        The increment of :math:`u` produced by a spike.
   A             1              \        The response amplitude that would be produced by total release of all the neurotransmitter
+  delay         0              ms       The decay time of the current :math:`I` output onto the post-synaptic neuron groups.
   ============= ============== ======== ===========================================
 
 
@@ -102,7 +103,7 @@ class STP(bp.TwoEndConn):
   """
 
   def __init__(self, pre, post, conn, U=0.15, tau_f=1500., tau_d=200.,
-               tau=8., A=1.,update_type='loop', **kwargs):
+               tau=8., A=1., delay=0., update_type='loop', **kwargs):
     super(STP, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     # checking
@@ -115,6 +116,7 @@ class STP(bp.TwoEndConn):
     self.tau = tau
     self.U = U
     self.A = A
+    self.delay = delay
 
     # connections
     if update_type == 'loop':
@@ -133,6 +135,7 @@ class STP(bp.TwoEndConn):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
+    self.delayed_I = self.register_constant_delay('dI', self.size, delay=delay)
     self.I = bm.Variable(bm.zeros(self.size, dtype=bm.float_))
     self.x = bm.Variable(bm.ones(self.size, dtype=bm.float_))
     self.u = bm.Variable(bm.zeros(self.size, dtype=bm.float_))
@@ -145,6 +148,7 @@ class STP(bp.TwoEndConn):
     return dIdt, dudt, dxdt
 
   def _loop_update(self, _t, _dt):
+    delayed_I = self.delayed_I.pull()
     self.I[:], u, x = self.integral(self.I, self.u, self.x, _t, dt=_dt)
     for i in range(self.size):
       pre_id, post_id = self.pre_ids[i], self.post_ids[i]
@@ -152,6 +156,7 @@ class STP(bp.TwoEndConn):
         u[i] += self.U * (1 - self.u[i])
         x[i] -= u[i] * self.x[i]
         self.I[i] += self.A * u[i] * self.x[i]
-      self.post.input[post_id] += self.I[i]
+      self.post.input[post_id] += delayed_I[i]
     self.u[:] = u
     self.x[:] = x
+    self.delayed_I.push(self.I)

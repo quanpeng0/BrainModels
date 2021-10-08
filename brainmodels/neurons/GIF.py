@@ -37,7 +37,7 @@ class GIF(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Illustrated examples to reproduce different firing patterns <../../examples/neurons/GIF.ipynb>`_
+  - `Detailed examples to reproduce different firing patterns <../../examples/neurons/Niebur_2009_GIF.ipynb>`_
 
   **Model Parameters**
 

@@ -16,12 +16,13 @@ with other BrainPy users.
    :caption: Examples from paper
 
    examples/neurons/_index
-   examples/CANN/_index
-   examples/EI_nets/_index
+   examples/cann/_index
+   examples/ei_nets/_index
    examples/gj_nets/_index
    examples/oscillation_synchronization/_index
    examples/working_memory/_index
    examples/decision_making/_index
+   examples/recurrent_networks/_index
 
 .. examples/_index
 
