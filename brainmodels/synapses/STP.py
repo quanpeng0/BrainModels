@@ -103,7 +103,7 @@ class STP(bp.TwoEndConn):
   """
 
   def __init__(self, pre, post, conn, U=0.15, tau_f=1500., tau_d=200.,
-               tau=8., A=1., delay=0., update_type='loop', **kwargs):
+               tau=8., A=1., delay=0., update_type='sparse', **kwargs):
     super(STP, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     # checking
@@ -119,16 +119,13 @@ class STP(bp.TwoEndConn):
     self.delay = delay
 
     # connections
-    if update_type == 'loop':
+    if update_type == 'sparse':
       self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.steps.replace('update', self._loop_update)
+      self.steps.replace('update', self.sparse_update)
       self.size = len(self.pre_ids)
       self.target_backend = 'numpy'
 
-    elif update_type == 'loop_slice':
-      raise NotImplementedError
-
-    elif update_type == 'matrix':
+    elif update_type == 'dense':
       raise NotImplementedError
 
     else:
@@ -147,7 +144,7 @@ class STP(bp.TwoEndConn):
     dxdt = (1 - x) / self.tau_d
     return dIdt, dudt, dxdt
 
-  def _loop_update(self, _t, _dt):
+  def sparse_update(self, _t, _dt):
     delayed_I = self.delayed_I.pull()
     self.I[:], u, x = self.integral(self.I, self.u, self.x, _t, dt=_dt)
     for i in range(self.size):

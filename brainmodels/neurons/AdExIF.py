@@ -82,9 +82,9 @@ class AdExIF(bp.NeuGroup):
   .. [2] http://www.scholarpedia.org/article/Adaptive_exponential_integrate-and-fire_model
   """
 
-  def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
-               a=1., b=1., tau=10., tau_w=30., R=1., update_type='vector', **kwargs):
-    super(AdExIF, self).__init__(size=size, **kwargs)
+  def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48, a=1.,
+               b=1., tau=10., tau_w=30., R=1., num_batch=None, **kwargs):
+    super(AdExIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -98,24 +98,13 @@ class AdExIF(bp.NeuGroup):
     self.tau_w = tau_w
     self.R = R
 
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # variables
-    self.V = bm.Variable(bm.ones(self.num) * V_reset)
-    self.w = bm.Variable(bm.zeros(self.num))
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(bm.ones(self.shape) * V_reset)
+    self.w = bm.Variable(bm.zeros(self.shape))
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint
   def int_V(self, V, t, w, Iext):
@@ -128,21 +117,7 @@ class AdExIF(bp.NeuGroup):
     dwdt = (self.a * (V - self.V_rest) - w) / self.tau_w
     return dwdt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      w = self.int_w(self.w[i], _t, self.V[i], dt=_dt)
-      V = self.int_V(self.V[i], _t, self.w[i], self.input[i], dt=_dt)
-      spike = (V >= self.V_th)
-      if spike:
-        V = self.V_rest
-        w += self.b
-        self.t_last_spike[i] = _t
-      self.V[i] = V
-      self.w[i] = w
-      self.spike[i] = spike
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     w = self.int_w(self.w, _t, self.V, dt=_dt)
     V = self.int_V(self.V, _t, self.w, self.input, dt=_dt)
     spike = V >= self.V_th

@@ -143,10 +143,10 @@ class HH(bp.NeuGroup):
          The Journal of Mathematical Neuroscience 6, no. 1 (2016): 1-92.
   """
 
-  def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36., EL=-54.387,
-               gL=0.03, V_th=20., C=1.0, update_type='vector', **kwargs):
+  def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36., EL=-54.387,  gL=0.03,
+              V_th=20., C=1.0, num_batch=None, **kwargs):
     # initialization
-    super(HH, self).__init__(size=size, **kwargs)
+    super(HH, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.ENa = ENa
@@ -158,25 +158,14 @@ class HH(bp.NeuGroup):
     self.C = C
     self.V_th = V_th
 
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # variables
-    self.V = bm.Variable(-65. * bm.ones(self.num))
-    self.m = bm.Variable(0.5 * bm.ones(self.num))
-    self.h = bm.Variable(0.6 * bm.ones(self.num))
-    self.n = bm.Variable(0.32 * bm.ones(self.num))
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(-65. * bm.ones(self.shape))
+    self.m = bm.Variable(0.5 * bm.ones(self.shape))
+    self.h = bm.Variable(0.6 * bm.ones(self.shape))
+    self.n = bm.Variable(0.32 * bm.ones(self.shape))
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint(method='exponential_euler')
   def integral(self, V, m, h, n, t, Iext):
@@ -199,21 +188,7 @@ class HH(bp.NeuGroup):
 
     return dVdt, dmdt, dhdt, dndt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      V, m, h, n = self.integral(self.V[i], self.m[i], self.h[i], self.n[i],
-                                 _t, self.input[i], dt=_dt)
-      spike = (self.V[i] < self.V_th) and (V >= self.V_th)
-      self.spike[i] = spike
-      if spike:
-        self.t_last_spike[i] = _t
-      self.V[i] = V
-      self.m[i] = m
-      self.h[i] = h
-      self.n[i] = n
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     V, m, h, n = self.integral(self.V, self.m, self.h, self.n, _t, self.input, dt=_dt)
     self.spike[:] = bm.logical_and(self.V < self.V_th, V >= self.V_th)
     self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)

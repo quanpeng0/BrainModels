@@ -98,7 +98,7 @@ tau_decay = 2.
 class Syn(bp.TwoEndConn):
   target_backend = 'numpy'
 
-  def __init__(self, pre, post, conn, g_max, delay=0., **kwargs):
+  def __init__(self, pre, post, conn, g_max, **kwargs):
     super(Syn, self).__init__(pre, post, conn=conn, **kwargs)
 
     # parameters

@@ -85,9 +85,9 @@ class MorrisLecar(bp.NeuGroup):
 
   def __init__(self, size, V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_leak=-60.,
                g_leak=2., C=20., V1=-1.2, V2=18., V3=2., V4=30., phi=0.04,
-               V_th=10., update_type='vector', **kwargs):
+               V_th=10., num_batch=None, **kwargs):
     # initialization
-    super(MorrisLecar, self).__init__(size=size, **kwargs)
+    super(MorrisLecar, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # params
     self.V_Ca = V_Ca
@@ -104,23 +104,12 @@ class MorrisLecar(bp.NeuGroup):
     self.phi = phi
     self.V_th = V_th
 
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # vars
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.V = bm.Variable(bm.ones(self.num) * -20.)
-    self.W = bm.Variable(bm.ones(self.num) * 0.02)
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.V = bm.Variable(bm.ones(self.shape) * -20.)
+    self.W = bm.Variable(bm.ones(self.shape) * 0.02)
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint
   def integral(self, V, W, t, I_ext):
@@ -135,18 +124,7 @@ class MorrisLecar(bp.NeuGroup):
     dWdt = (W_inf - W) / tau_W
     return dVdt, dWdt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      V, W = self.integral(self.V[i], self.W[i], _t, self.input[i], dt=_dt)
-      spike = bm.logical_and(self.V[i] < self.V_th, V >= self.V_th)
-      self.V[i] = V
-      self.W[i] = W
-      self.spike[i] = spike
-      if spike:
-        self.t_last_spike[i] = _t
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     V, self.W[:] = self.integral(self.V, self.W, _t, self.input, dt=_dt)
     spike = bm.logical_and(self.V < self.V_th, V >= self.V_th)
     self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)

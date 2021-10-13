@@ -30,10 +30,10 @@
 # Authors:
 #
 # - Chaoming Wang (chao.brain@qq.com)
-
+#
 # %%
 import brainpy as bp
-import brainmodels
+import brainmodels as bms
 
 # %% [markdown]
 # ## Parameters
@@ -72,25 +72,25 @@ wi = 67.  # inhibitory synaptic conductance [nS]
 
 # %%
 # neuron groups
-E = bp.CondNeuGroup(ina=brainmodels.Na.INa(V_sh=VT, g_max=g_Na, E=ENa),
-                    ik=brainmodels.K.IDR(V_sh=VT, g_max=g_Kd, E=EK),
-                    il=brainmodels.other.IL(E=El, g_max=gl),
-                    V_th=V_th, C=Cm)
-I = bp.CondNeuGroup(ina=brainmodels.Na.INa(V_sh=VT, g_max=g_Na, E=ENa),
-                    ik=brainmodels.K.IDR(V_sh=VT, g_max=g_Kd, E=EK),
-                    il=brainmodels.other.IL(E=El, g_max=gl),
-                    V_th=V_th, C=Cm)
-E.init(num_exc, monitors=['spike'])
-I.init(num_inh)
+E = bp.CondNeuGroup(ina=bms.Na.INa(V_sh=VT, g_max=g_Na, E=ENa),
+                    ik=bms.K.IDR(V_sh=VT, g_max=g_Kd, E=EK),
+                    il=bms.other.IL(E=El, g_max=gl),
+                    V_th=V_th,
+                    C=Cm).init(num_exc, monitors=['spike'])
+I = bp.CondNeuGroup(ina=bms.Na.INa(V_sh=VT, g_max=g_Na, E=ENa),
+                    ik=bms.K.IDR(V_sh=VT, g_max=g_Kd, E=EK),
+                    il=bms.other.IL(E=El, g_max=gl),
+                    V_th=V_th,
+                    C=Cm).init(num_inh)
 E.V[:] = El + (bp.math.random.randn(num_exc) * 5 - 5)
 I.V[:] = El + (bp.math.random.randn(num_inh) * 5 - 5)
 
 # %%
 # synapses
-E2E = brainmodels.ExpCOBA(E, E, bp.connect.FixedProb(prob=0.02), E=Ee, g_max=we, tau=taue)
-E2I = brainmodels.ExpCOBA(E, I, bp.connect.FixedProb(prob=0.02), E=Ee, g_max=we, tau=taue)
-I2E = brainmodels.ExpCOBA(I, E, bp.connect.FixedProb(prob=0.02), E=Ei, g_max=wi, tau=taui)
-I2I = brainmodels.ExpCOBA(I, I, bp.connect.FixedProb(prob=0.02), E=Ei, g_max=wi, tau=taui)
+E2E = bms.ExpCOBA(E, E, bp.connect.FixedProb(prob=0.02), E=Ee, g_max=we, tau=taue)
+E2I = bms.ExpCOBA(E, I, bp.connect.FixedProb(prob=0.02), E=Ee, g_max=we, tau=taue)
+I2E = bms.ExpCOBA(I, E, bp.connect.FixedProb(prob=0.02), E=Ei, g_max=wi, tau=taui)
+I2I = bms.ExpCOBA(I, I, bp.connect.FixedProb(prob=0.02), E=Ei, g_max=wi, tau=taui)
 
 # %%
 # network

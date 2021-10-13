@@ -133,7 +133,7 @@ def plot_V_gc_I(times, hist_V, hist_gc, hist_I0, duration):
     plt.xlim(*duration)
 
     plt.xlabel('Time [ms]')
-
+    plt.show()
 
 # %%
 S = 0.15

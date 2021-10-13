@@ -82,7 +82,7 @@ class DualExpCUBA(bp.TwoEndConn):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0,
-               tau_rise=1., update_type='loop', **kwargs):
+               tau_rise=1., update_type='sparse', **kwargs):
     # initialization
     super(DualExpCUBA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
@@ -97,16 +97,13 @@ class DualExpCUBA(bp.TwoEndConn):
     self.g_max = g_max
 
     # connections
-    if update_type == 'loop':
+    if update_type == 'sparse':
       self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.steps.replace('update', self._loop_update)
+      self.steps.replace('update', self._sparse_update)
       self.size = len(self.pre_ids)
       self.target_backend = 'numpy'
 
-    elif update_type == 'loop_slice':
-      raise NotImplementedError
-
-    elif update_type == 'matrix':
+    elif update_type == 'dense':
       raise NotImplementedError
 
     else:
@@ -115,7 +112,7 @@ class DualExpCUBA(bp.TwoEndConn):
     # variables
     self.g = bm.Variable(bm.zeros(self.size))
     self.h = bm.Variable(bm.zeros(self.size))
-    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
+    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.shape, delay=delay)
 
   @bp.odeint(method='exponential_euler')
   def integral(self, g, h, t):
@@ -123,11 +120,11 @@ class DualExpCUBA(bp.TwoEndConn):
     dhdt = -h / self.tau_rise
     return dgdt, dhdt
 
-  def _loop_update(self, _t, _dt):
+  def _sparse_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
 
-    self.g[:], self.h[:] = self.integral(self.g[:], self.h[:], _t, dt=_dt)
+    self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
     for i in range(self.size):
       pre_id, post_id = self.pre_ids[i], self.post_ids[i]
       self.h[i] += pre_spike[pre_id]
@@ -149,8 +146,6 @@ class DualExpCOBA(DualExpCUBA):
 
   where :math:`V(t)` is the membrane potential of the post-synaptic neuron,
   :math:`E` is the reversal potential.
-
-
 
   **Model Examples**
 
@@ -188,7 +183,7 @@ class DualExpCOBA(DualExpCUBA):
 
   """
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0,
-               tau_rise=1., E=0., update_type='loop', **kwargs):
+               tau_rise=1., E=0., update_type='sparse', **kwargs):
     super(DualExpCOBA, self).__init__(pre, post, conn, delay=delay, g_max=g_max,
                                       tau_decay=tau_decay, tau_rise=tau_rise,
                                       update_type=update_type, **kwargs)
@@ -196,11 +191,11 @@ class DualExpCOBA(DualExpCUBA):
     self.E = E
     assert hasattr(post, 'V'), 'Post-synaptic group must has "V" variable.'
 
-  def _loop_update(self, _t, _dt):
+  def _sparse_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
 
-    self.g[:], self.h[:] = self.integral(self.g[:], self.h[:], _t, dt=_dt)
+    self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
     for i in range(self.size):
       pre_id, post_id = self.pre_ids[i], self.post_ids[i]
       self.h[i] += pre_spike[pre_id]

@@ -69,7 +69,7 @@ class AlphaCUBA(DualExpCUBA):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0,
-               update_type='loop', **kwargs):
+               update_type='sparse', **kwargs):
     super(AlphaCUBA, self).__init__(pre=pre, post=post, conn=conn,
                                     delay=delay,
                                     g_max=g_max,
@@ -132,7 +132,7 @@ class AlphaCOBA(DualExpCOBA):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0,
-               E=0., update_type='loop', **kwargs):
+               E=0., update_type='sparse', **kwargs):
     super(AlphaCOBA, self).__init__(pre=pre, post=post, conn=conn,
                                     delay=delay,
                                     g_max=g_max,

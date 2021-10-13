@@ -22,10 +22,10 @@ class BaseCa(bp.Channel):
   def __init__(self, **kwargs):
     super(BaseCa, self).__init__(**kwargs)
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(BaseCa, self).init(host)
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     raise NotImplementedError
 
 
@@ -40,11 +40,11 @@ class FixCa(BaseCa):
 
     self.E = E
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(FixCa, self).init(host)
-    self.input = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
+    self.input = bm.Variable(bm.zeros(self.host.shape, dtype=bm.float_))
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.input[:] = 0.
 
 
@@ -166,21 +166,21 @@ class DynCa(BaseCa):
     self.C_rest = C_rest
     self.C_0 = C_0
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(DynCa, self).init(host)
     # Concentration of the Calcium
-    self.C = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * self.C_rest)
+    self.C = bm.Variable(bm.ones(self.host.shape, dtype=bm.float_) * self.C_rest)
     # The dynamical reversal potential
-    self.E = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * 120.)
+    self.E = bm.Variable(bm.ones(self.host.shape, dtype=bm.float_) * 120.)
     # Used to receive all Calcium currents
-    self.I_Ca = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
+    self.I_Ca = bm.Variable(bm.zeros(self.host.shape, dtype=bm.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, C, t, ICa):
     dCdt = - ICa / (2 * self.F * self.d) + (self.C_rest - C) / self.tau
     return dCdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.C[:] = self.integral(self.C, _t, self.I_Ca, dt=_dt)
     self.E[:] = self.R * (273.15 + self.T) / (2 * self.F) * bm.log(self.C_0 / self.C)
     self.I_Ca[:] = 0.
@@ -236,10 +236,10 @@ class IAHP(bp.Channel):
     self.E = E
     self.g_max = g_max
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(IAHP, self).init(host)
     assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, p, t, C):
@@ -249,7 +249,7 @@ class IAHP(bp.Channel):
     dpdt = (phi_p - p) / p_inf
     return dpdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.p[:] = self.integral(self.p, _t, C=self.host.ca.C, dt=_dt)
     g = self.g_max * self.p
     self.host.I_ion += g * (self.E - self.host.V)
@@ -299,10 +299,10 @@ class ICaN(bp.Channel):
     self.g_max = g_max
     self.phi = phi
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(ICaN, self).init(host)
     assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, p, t, V):
@@ -311,7 +311,7 @@ class ICaN(bp.Channel):
     dpdt = self.phi * (phi_p - p) / p_inf
     return dpdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.p[:] = self.integral(self.p, _t, self.host.V, dt=_dt)
     M = self.host.ca.C / (self.host.ca.C + 0.2)
     g = self.g_max * M * self.p
@@ -368,11 +368,11 @@ class ICaT(bp.Channel):
     self.g_max = g_max
     self.V_sh = V_sh
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(ICaT, self).init(host)
     assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, p, q, t, V):
@@ -390,7 +390,7 @@ class ICaT(bp.Channel):
 
     return dpdt, dqdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
     g = self.g_max * self.p ** 2 * self.q
     I = g * (self.host.ca.E - self.host.V)
@@ -452,11 +452,11 @@ class ICaT_RE(bp.Channel):
     self.g_max = g_max
     self.V_sh = V_sh
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(ICaT_RE, self).init(host)
     assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, p, q, t, V):
@@ -472,7 +472,7 @@ class ICaT_RE(bp.Channel):
 
     return dpdt, dqdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
     g = self.g_max * self.p ** 2 * self.q
     I = g * (self.host.ca.E - self.host.V)
@@ -534,11 +534,11 @@ class ICaHT(bp.Channel):
     self.g_max = g_max
     self.V_sh = V_sh
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(ICaHT, self).init(host)
     assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, p, q, t, V):
@@ -556,7 +556,7 @@ class ICaHT(bp.Channel):
 
     return dpdt, dqdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
     g = self.g_max * self.p ** 2 * self.q
     I = g * (self.host.ca.E - self.host.V)
@@ -614,11 +614,11 @@ class ICaL(bp.Channel):
     self.g_max = g_max
     self.V_sh = V_sh
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(ICaL, self).init(host)
     assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, p, q, t, V):
@@ -634,7 +634,7 @@ class ICaL(bp.Channel):
 
     return dpdt, dqdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
     g = self.g_max * self.p ** 2 * self.q
     I = g * (self.host.ca.E - self.host.V)

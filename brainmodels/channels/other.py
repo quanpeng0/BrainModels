@@ -25,10 +25,10 @@ class IL(bp.Channel):
     self.E = E
     self.g_max = g_max
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(IL, self).init(host)
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.host.I_ion += self.g_max * (self.E - self.host.V)
     self.host.V_linear -= self.g_max
 

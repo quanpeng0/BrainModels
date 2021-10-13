@@ -99,9 +99,9 @@ class ExpIF(bp.NeuGroup):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
-               R=1., tau=10., tau_ref=1.7, update_type='vector', **kwargs):
+               R=1., tau=10., tau_ref=1.7, num_batch=None, **kwargs):
     # initialize
-    super(ExpIF, self).__init__(size=size, **kwargs)
+    super(ExpIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -113,23 +113,12 @@ class ExpIF(bp.NeuGroup):
     self.tau = tau
     self.tau_ref = tau_ref
 
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # variables
-    self.V = bm.Variable(bm.ones(self.num) * V_rest)
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(bm.ones(self.shape) * V_rest)
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint
   def integral(self, V, t, Iext):
@@ -137,23 +126,7 @@ class ExpIF(bp.NeuGroup):
     dvdt = (- (V - self.V_rest) + exp_v + self.R * Iext) / self.tau
     return dvdt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      spike = False
-      refractory = (_t - self.t_last_spike[i] <= self.tau_ref)
-      if not refractory:
-        V = self.integral(self.V[i], _t, self.input[i], dt=_dt)
-        spike = (V >= self.V_th)
-        if spike:
-          V = self.V_reset
-          self.t_last_spike[i] = _t
-          refractory = True
-        self.V[i] = V
-      self.spike[i] = spike
-      self.refractory[i] = refractory
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     refractory = (_t - self.t_last_spike) <= self.tau_ref
     V = self.integral(self.V, _t, self.input, dt=_dt)
     V = bm.where(refractory, self.V, V)

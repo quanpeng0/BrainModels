@@ -62,10 +62,10 @@ class LIF(bp.NeuGroup):
          neuron (1907)." Brain research bulletin 50, no. 5-6 (1999): 303-304.
   """
 
-  def __init__(self, size, V_rest=0., V_reset=-5., V_th=20.,
-               tau=10., tau_ref=1., update_type='vector', **kwargs):
+  def __init__(self, size, V_rest=0., V_reset=-5., V_th=20., tau=10.,
+               tau_ref=1., num_batch=None, **kwargs):
     # initialization
-    super(LIF, self).__init__(size=size, **kwargs)
+    super(LIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -74,46 +74,19 @@ class LIF(bp.NeuGroup):
     self.tau = tau
     self.tau_ref = tau_ref
 
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # variables
-    self.V = bm.Variable(bm.ones(self.num) * V_rest)
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(bm.ones(self.shape) * V_rest)
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint(method='exponential_euler')
   def integral(self, V, t, Iext):
     dvdt = (-V + self.V_rest + Iext) / self.tau
     return dvdt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      spike = False
-      refractory = (_t - self.t_last_spike[i] <= self.tau_ref)
-      if not refractory:
-        V = self.integral(self.V[i], _t, self.input[i], dt=_dt)
-        spike = (V >= self.V_th)
-        if spike:
-          V = self.V_reset
-          self.t_last_spike[i] = _t
-          refractory = True
-        self.V[i] = V
-      self.spike[i] = spike
-      self.refractory[i] = refractory
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     refractory = (_t - self.t_last_spike) <= self.tau_ref
     V = self.integral(self.V, _t, self.input, dt=_dt)
     V = bm.where(refractory, self.V, V)

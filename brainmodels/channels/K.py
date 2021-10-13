@@ -62,9 +62,9 @@ class IDR(bp.Channel):
     self.g_max = g_max
     self.V_sh = V_sh
 
-  def init(self, host, ):
+  def init(self, host, **kwargs):
     super(IDR, self).init(host)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, p, t, V):
@@ -74,7 +74,7 @@ class IDR(bp.Channel):
     dpdt = phi * (alpha_p * (1. - p) - beta_p * p)
     return dpdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.p[:] = self.integral(self.p, _t, self.host.V, dt=_dt)
     g = self.g_max * self.p ** 4
     self.host.I_ion += g * (self.E - self.host.V)
@@ -88,9 +88,9 @@ class IK2(bp.Channel):
     self.E = E
     self.g_max = g_max
 
-  def init(self, host):
+  def init(self, host, **kwargs):
     super(IK2, self).init(host)
-    self.n = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.n = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, n, t, V):
@@ -99,7 +99,7 @@ class IK2(bp.Channel):
     dndt = alpha * (1 - n) - beta * n
     return dndt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.n[:] = self.integral(self.n, _t, self.host.V, dt=_dt)
     g = self.g_max * self.n ** 4
     self.host.I_ion += g * (self.E - self.host.V)
