@@ -77,7 +77,7 @@ class Izhikevich(bp.NeuGroup):
   """
 
   def __init__(self, size, a=0.02, b=0.20, c=-65., d=8., tau_ref=0.,
-               V_th=30., update_type='vector', num_batch=None, **kwargs):
+               V_th=30., num_batch=None, **kwargs):
     # initialization
     super(Izhikevich, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
@@ -88,17 +88,6 @@ class Izhikevich(bp.NeuGroup):
     self.d = d
     self.V_th = V_th
     self.tau_ref = tau_ref
-
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # vars
     self.V = bm.Variable(bm.ones(self.shape) * -65.)
@@ -118,28 +107,7 @@ class Izhikevich(bp.NeuGroup):
     dudt = self.a * (self.b * V - u)
     return dudt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      spike = False
-      refractory = (_t - self.t_last_spike[i] <= self.tau_ref)
-      u = self.int_u(self.u[i], _t, self.V[i], dt=_dt)
-      if not refractory:
-        V = self.int_V(self.V[i], _t, self.u[i], self.input[i], dt=_dt)
-        if V >= self.V_th:
-          V = self.c
-          u += self.d
-          self.t_last_spike[i] = _t
-          refractory = True
-          spike = True
-        else:
-          spike = False
-        self.V[i] = V
-      self.u[i] = u
-      self.spike[i] = spike
-      self.refractory[i] = refractory
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     V = self.int_V(self.V, _t, self.u, self.input, dt=_dt)
     u = self.int_u(self.u, _t, self.V, dt=_dt)
     refractory = (_t - self.t_last_spike) <= self.tau_ref

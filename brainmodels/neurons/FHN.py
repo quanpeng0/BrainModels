@@ -83,8 +83,7 @@ class FHN(bp.NeuGroup):
 
   """
 
-  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8,
-               update_type='vector', num_batch=None, **kwargs):
+  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8, num_batch=None, **kwargs):
     # initialization
     super(FHN, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
@@ -93,17 +92,6 @@ class FHN(bp.NeuGroup):
     self.b = b
     self.tau = tau
     self.Vth = Vth
-
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.V = bm.Variable(bm.zeros(self.shape))
@@ -118,18 +106,7 @@ class FHN(bp.NeuGroup):
     dV = V - V * V * V / 3 - w + Iext
     return dV, dw
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      V, w = self.integral(self.V[i], self.w[i], _t, self.input[i], dt=_dt)
-      spike = (V >= self.Vth) and (self.V[i] < self.Vth)
-      self.spike[i] = spike
-      if spike:
-        self.t_last_spike[i] = _t
-      self.V[i] = V
-      self.w[i] = w
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     V, self.w[:] = self.integral(self.V, self.w, _t, self.input, dt=_dt)
     self.spike[:] = bm.logical_and(V >= self.Vth, self.V < self.Vth)
     self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)

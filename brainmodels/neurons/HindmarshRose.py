@@ -83,7 +83,7 @@ class HindmarshRose(bp.NeuGroup):
   """
 
   def __init__(self, size, a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6,
-               V_th=1.0, update_type='vector', num_batch=None, **kwargs):
+               V_th=1.0, num_batch=None, **kwargs):
     # initialization
     super(HindmarshRose, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
@@ -96,17 +96,6 @@ class HindmarshRose(bp.NeuGroup):
     self.s = s
     self.V_th = V_th
     self.V_rest = V_rest
-
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.z = bm.Variable(bm.zeros(self.shape))
@@ -123,17 +112,7 @@ class HindmarshRose(bp.NeuGroup):
     dzdt = self.r * (self.s * (V - self.V_rest) - z)
     return dVdt, dydt, dzdt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      V, self.y[i], self.z[i] = self.integral(self.V[i], self.y[i], self.z[i], _t, self.input[i], dt=_dt)
-      spike = bm.logical_and(V > self.V_th, V <= self.V_th)
-      self.spike[i] = spike
-      if spike:
-        self.t_last_spike[i] = _t
-      self.V[i] = V
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     V, self.y[:], self.z[:] = self.integral(self.V, self.y, self.z, _t, self.input, dt=_dt)
     self.spike[:] = bm.logical_and(V >= self.V_th, self.V < self.V_th)
     self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)

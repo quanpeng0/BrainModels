@@ -75,7 +75,7 @@ class AdQuaIF(bp.NeuGroup):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0, a=1., b=.1,
-               c=.07, tau=10., tau_w=10., update_type='vector', num_batch=None, **kwargs):
+               c=.07, tau=10., tau_w=10., num_batch=None, **kwargs):
     super(AdQuaIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
@@ -88,17 +88,6 @@ class AdQuaIF(bp.NeuGroup):
     self.b = b
     self.tau = tau
     self.tau_w = tau_w
-
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.V = bm.Variable(bm.ones(self.shape) * V_reset)
@@ -118,21 +107,7 @@ class AdQuaIF(bp.NeuGroup):
     dwdt = (self.a * (V - self.V_rest) - w) / self.tau_w
     return dwdt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      w = self.int_w(self.w[i], _t, self.V[i], dt=_dt)
-      V = self.int_V(self.V[i], _t, self.w[i], self.input[i], dt=_dt)
-      spike = (V >= self.V_th)
-      if spike:
-        V = self.V_rest
-        w += self.b
-        self.t_last_spike[i] = _t
-      self.V[i] = V
-      self.w[i] = w
-      self.spike[i] = spike
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     w = self.int_w(self.w, _t, self.V, dt=_dt)
     V = self.int_V(self.V, _t, self.w, self.input, dt=_dt)
     spike = self.V_th <= V

@@ -63,7 +63,7 @@ class LIF(bp.NeuGroup):
   """
 
   def __init__(self, size, V_rest=0., V_reset=-5., V_th=20., tau=10.,
-               tau_ref=1., update_type='vector', num_batch=None, **kwargs):
+               tau_ref=1., num_batch=None, **kwargs):
     # initialization
     super(LIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
@@ -73,17 +73,6 @@ class LIF(bp.NeuGroup):
     self.V_th = V_th
     self.tau = tau
     self.tau_ref = tau_ref
-
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
     self.V = bm.Variable(bm.ones(self.shape) * V_rest)
@@ -97,23 +86,7 @@ class LIF(bp.NeuGroup):
     dvdt = (-V + self.V_rest + Iext) / self.tau
     return dvdt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      spike = False
-      refractory = (_t - self.t_last_spike[i] <= self.tau_ref)
-      if not refractory:
-        V = self.integral(self.V[i], _t, self.input[i], dt=_dt)
-        spike = (V >= self.V_th)
-        if spike:
-          V = self.V_reset
-          self.t_last_spike[i] = _t
-          refractory = True
-        self.V[i] = V
-      self.spike[i] = spike
-      self.refractory[i] = refractory
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     refractory = (_t - self.t_last_spike) <= self.tau_ref
     V = self.integral(self.V, _t, self.input, dt=_dt)
     V = bm.where(refractory, self.V, V)

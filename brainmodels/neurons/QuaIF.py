@@ -103,23 +103,7 @@ class QuaIF(bp.NeuGroup):
     dVdt = (self.c * (V - self.V_rest) * (V - self.V_c) + self.R * Iext) / self.tau
     return dVdt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      spike = False
-      refractory = (_t - self.t_last_spike[i] <= self.tau_ref)
-      if not refractory:
-        V = self.integral(self.V[i], _t, self.input[i], dt=_dt)
-        spike = (V >= self.V_th)
-        if spike:
-          V = self.V_rest
-          self.t_last_spike[i] = _t
-          refractory = True
-        self.V[i] = V
-      self.spike[i] = spike
-      self.refractory[i] = refractory
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     refractory = (_t - self.t_last_spike) <= self.tau_ref
     V = self.integral(self.V, _t, self.input, dt=_dt)
     V = bm.where(refractory, self.V, V)

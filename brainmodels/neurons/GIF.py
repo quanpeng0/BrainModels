@@ -92,7 +92,7 @@ class GIF(bp.NeuGroup):
 
   def __init__(self, size, V_rest=-70., V_reset=-70., V_th_inf=-50., V_th_reset=-60.,
                R=20., tau=20., a=0., b=0.01, k1=0.2, k2=0.02, R1=0., R2=1., A1=0.,
-               A2=0., update_type='vector', num_batch=None, **kwargs):
+               A2=0., num_batch=None, **kwargs):
     # initialization
     super(GIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
@@ -112,17 +112,6 @@ class GIF(bp.NeuGroup):
     self.A1 = A1
     self.A2 = A2
 
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # vars
     self.I1 = bm.Variable(bm.zeros(self.shape))
     self.I2 = bm.Variable(bm.zeros(self.shape))
@@ -140,25 +129,7 @@ class GIF(bp.NeuGroup):
     dVdt = (- (V - self.V_rest) + self.R * Iext + self.R * I1 + self.R * I2) / self.tau
     return dI1dt, dI2dt, dVthdt, dVdt
 
-  def _loop_update(self, _t, _dt):
-    for i in range(self.num):
-      I1, I2, V_th, V = self.integral(self.I1[i], self.I2[i], self.V_th[i],
-                                      self.V[i], _t, self.input[i], dt=_dt)
-      self.spike[i] = self.V_th[i] < V
-      if self.spike[i]:
-        V = self.V_reset
-        I1 = self.R1 * I1 + self.A1
-        I2 = self.R2 * I2 + self.A2
-        self.t_last_spike[i] = _t
-        if V_th < self.V_th_reset:
-          V_th = self.V_th_reset
-      self.I1[i] = I1
-      self.I2[i] = I2
-      self.V_th[i] = V_th
-      self.V[i] = V
-      self.input[i] = 0.
-
-  def _vector_update(self, _t, _dt):
+  def update(self, _t, _dt):
     I1, I2, V_th, V = self.integral(self.I1, self.I2, self.V_th,
                                     self.V, _t, self.input, dt=_dt)
     spike = self.V_th <= V
