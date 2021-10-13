@@ -115,7 +115,7 @@ class DualExpCUBA(bp.TwoEndConn):
     # variables
     self.g = bm.Variable(bm.zeros(self.size))
     self.h = bm.Variable(bm.zeros(self.size))
-    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
+    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.shape, delay=delay)
 
   @bp.odeint(method='exponential_euler')
   def integral(self, g, h, t):

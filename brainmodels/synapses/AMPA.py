@@ -124,7 +124,7 @@ class AMPA(bp.TwoEndConn):
 
     # variables
     self.g = bm.Variable(bm.zeros(self.size))
-    self.pre_spike = self.register_constant_delay('ps', self.pre.num, delay)
+    self.pre_spike = self.register_constant_delay('ps', self.pre.shape, delay)
     self.spike_arrival_time = bm.Variable(bm.ones(self.pre.num) * -1e7)
 
   @bp.odeint(method='exponential_euler')

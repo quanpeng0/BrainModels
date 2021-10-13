@@ -78,7 +78,7 @@ class VoltageJump(bp.TwoEndConn):
     # variables
     self.w = w
     assert bm.size(w) == 1, 'This implementation only support scalar weight. '
-    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
+    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.shape, delay=delay)
 
   def _loop_slice_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)

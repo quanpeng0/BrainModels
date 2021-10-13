@@ -146,7 +146,7 @@ class NMDA(bp.TwoEndConn):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.pre_spike = self.register_constant_delay('ps', self.pre.num, delay)
+    self.pre_spike = self.register_constant_delay('ps', self.pre.shape, delay)
     self.g = bm.Variable(bm.zeros(self.size, dtype=bm.float_))
     self.x = bm.Variable(bm.zeros(self.size, dtype=bm.float_))
 
