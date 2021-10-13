@@ -10,6 +10,7 @@
 # %%
 import numpy as np
 import brainpy as bp
+import brainpy.math.jax as bm
 import matplotlib.pyplot as plt
 
 # %%
@@ -60,39 +61,39 @@ class EchoStateNet(bp.DynamicalSystem):
     self.alpha = alpha
 
     # weights
-    self.w_ir = bp.math.random.normal(size=(num_input, num_hidden)) / bp.math.sqrt(num_input)
-    self.w_rr = g * bp.math.random.normal(size=(num_hidden, num_hidden)) / bp.math.sqrt(num_hidden)
-    self.w_or = bp.math.random.normal(size=(num_output, num_hidden))
-    w_ro = bp.math.random.normal(size=(num_hidden, num_output)) / bp.math.sqrt(num_hidden)
-    self.w_ro = bp.math.Variable(w_ro)
+    self.w_ir = bm.random.normal(size=(num_input, num_hidden)) / bm.sqrt(num_input)
+    self.w_rr = g * bm.random.normal(size=(num_hidden, num_hidden)) / bm.sqrt(num_hidden)
+    self.w_or = bm.random.normal(size=(num_output, num_hidden))
+    w_ro = bm.random.normal(size=(num_hidden, num_output)) / bm.sqrt(num_hidden)
+    self.w_ro = bm.Variable(w_ro)
 
     # variables
-    self.h = bp.math.Variable(bp.math.random.normal(size=num_hidden) * 0.25)  # hidden
-    self.r = bp.math.tanh(self.h)  # firing rate
-    self.o = bp.math.Variable(bp.math.dot(self.r, w_ro))  # output unit
-    self.P = bp.math.Variable(bp.math.eye(num_hidden) * self.alpha)  # inverse correlation matrix
+    self.h = bm.Variable(bm.random.normal(size=num_hidden) * 0.25)  # hidden
+    self.r = bm.tanh(self.h)  # firing rate
+    self.o = bm.Variable(bm.dot(self.r, w_ro))  # output unit
+    self.P = bm.Variable(bm.eye(num_hidden) * self.alpha)  # inverse correlation matrix
 
   def update(self, x, **kwargs):
-    dhdt = -self.h + bp.math.dot(x, self.w_ir)
-    dhdt += bp.math.dot(self.r, self.w_rr)
-    dhdt += bp.math.dot(self.o, self.w_or)
+    dhdt = -self.h + bm.dot(x, self.w_ir)
+    dhdt += bm.dot(self.r, self.w_rr)
+    dhdt += bm.dot(self.o, self.w_or)
     self.h += self.dt / self.tau * dhdt
-    self.r.value = bp.math.tanh(self.h)
-    self.o.value = bp.math.dot(self.r, self.w_ro)
+    self.r.value = bm.tanh(self.h)
+    self.o.value = bm.dot(self.r, self.w_ro)
 
   def rls(self, target):
     # update inverse correlation matrix
-    k = bp.math.expand_dims(bp.math.dot(self.P, self.r), axis=1)  # (num_hidden, 1)
-    hPh = bp.math.dot(self.r.T, k)  # (1,)
+    k = bm.expand_dims(bm.dot(self.P, self.r), axis=1)  # (num_hidden, 1)
+    hPh = bm.dot(self.r.T, k)  # (1,)
     c = 1.0 / (1.0 + hPh)  # (1,)
-    self.P -= bp.math.dot(k * c, k.T) # (num_hidden, num_hidden)
+    self.P -= bm.dot(k * c, k.T) # (num_hidden, num_hidden)
     # update the output weights
-    e = bp.math.atleast_2d(self.o - target)  # (1, num_output)
-    dw = bp.math.dot(-c * k, e)  # (num_hidden, num_output)
+    e = bm.atleast_2d(self.o - target)  # (1, num_output)
+    dw = bm.dot(-c * k, e)  # (num_hidden, num_output)
     self.w_ro += dw
 
   def simulate(self, xs):
-    f = bp.math.easy_scan(self.update, dyn_vars=[self.h, self.r, self.o], out_vars=[self.r, self.o])
+    f = bm.easy_scan(self.update, dyn_vars=[self.h, self.r, self.o], out_vars=[self.r, self.o])
     return f(xs)
 
   def train(self, xs, targets):
@@ -101,7 +102,7 @@ class EchoStateNet(bp.DynamicalSystem):
       self.update(input)
       self.rls(target)
 
-    f = bp.math.easy_scan(_f, dyn_vars=self.vars(), out_vars=[self.r, self.o])
+    f = bm.easy_scan(_f, dyn_vars=self.vars(), out_vars=[self.r, self.o])
     return f([xs, targets])
 
 
@@ -183,8 +184,8 @@ def plot_params(net):
 # %%
 dt = 0.1
 T = 30
-times = bp.math.arange(0, T, dt)
-xs = bp.math.zeros((times.shape[0], 1))
+times = bm.arange(0, T, dt)
+xs = bm.zeros((times.shape[0], 1))
 
 # %% [markdown]
 # Generate some target data by running an ESN, and just grabbing hidden dimensions as the targets of the FORCE trained network.
