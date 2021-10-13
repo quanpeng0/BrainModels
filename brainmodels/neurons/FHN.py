@@ -83,9 +83,10 @@ class FHN(bp.NeuGroup):
 
   """
 
-  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8, update_type='vector', **kwargs):
+  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8,
+               update_type='vector', num_batch=None, **kwargs):
     # initialization
-    super(FHN, self).__init__(size=size, **kwargs)
+    super(FHN, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.a = a
@@ -105,11 +106,11 @@ class FHN(bp.NeuGroup):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.V = bm.Variable(bm.zeros(self.num))
-    self.w = bm.Variable(bm.zeros(self.num))
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(bm.zeros(self.shape))
+    self.w = bm.Variable(bm.zeros(self.shape))
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint
   def integral(self, V, w, t, Iext):

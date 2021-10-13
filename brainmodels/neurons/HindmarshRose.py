@@ -82,10 +82,10 @@ class HindmarshRose(bp.NeuGroup):
         033128.
   """
 
-  def __init__(self, size, a=1., b=3., c=1., d=5., r=0.01, s=4.,
-               V_rest=-1.6, V_th=1.0, update_type='vector', **kwargs):
+  def __init__(self, size, a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6,
+               V_th=1.0, update_type='vector', num_batch=None, **kwargs):
     # initialization
-    super(HindmarshRose, self).__init__(size=size, **kwargs)
+    super(HindmarshRose, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.a = a
@@ -109,12 +109,12 @@ class HindmarshRose(bp.NeuGroup):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.z = bm.Variable(bm.zeros(self.num))
-    self.V = bm.Variable(bm.ones(self.num) * -1.6)
-    self.y = bm.Variable(bm.ones(self.num) * -10.)
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.z = bm.Variable(bm.zeros(self.shape))
+    self.V = bm.Variable(bm.ones(self.shape) * -1.6)
+    self.y = bm.Variable(bm.ones(self.shape) * -10.)
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint
   def integral(self, V, y, z, t, Iext):

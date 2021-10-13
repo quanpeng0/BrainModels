@@ -77,9 +77,9 @@ class Izhikevich(bp.NeuGroup):
   """
 
   def __init__(self, size, a=0.02, b=0.20, c=-65., d=8., tau_ref=0.,
-               V_th=30., update_type='vector', **kwargs):
+               V_th=30., update_type='vector', num_batch=None, **kwargs):
     # initialization
-    super(Izhikevich, self).__init__(size=size, **kwargs)
+    super(Izhikevich, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # params
     self.a = a
@@ -101,12 +101,12 @@ class Izhikevich(bp.NeuGroup):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # vars
-    self.V = bm.Variable(bm.ones(self.num) * -65.)
-    self.u = bm.Variable(bm.ones(self.num))
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(bm.ones(self.shape) * -65.)
+    self.u = bm.Variable(bm.ones(self.shape))
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint
   def int_V(self, V, t, u, Iext):

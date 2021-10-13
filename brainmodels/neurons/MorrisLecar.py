@@ -85,9 +85,9 @@ class MorrisLecar(bp.NeuGroup):
 
   def __init__(self, size, V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_leak=-60.,
                g_leak=2., C=20., V1=-1.2, V2=18., V3=2., V4=30., phi=0.04,
-               V_th=10., update_type='vector', **kwargs):
+               V_th=10., update_type='vector', num_batch=None, **kwargs):
     # initialization
-    super(MorrisLecar, self).__init__(size=size, **kwargs)
+    super(MorrisLecar, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # params
     self.V_Ca = V_Ca
@@ -116,11 +116,11 @@ class MorrisLecar(bp.NeuGroup):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # vars
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.V = bm.Variable(bm.ones(self.num) * -20.)
-    self.W = bm.Variable(bm.ones(self.num) * 0.02)
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.V = bm.Variable(bm.ones(self.shape) * -20.)
+    self.W = bm.Variable(bm.ones(self.shape) * 0.02)
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint
   def integral(self, V, W, t, I_ext):

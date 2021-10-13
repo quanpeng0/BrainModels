@@ -62,10 +62,10 @@ class LIF(bp.NeuGroup):
          neuron (1907)." Brain research bulletin 50, no. 5-6 (1999): 303-304.
   """
 
-  def __init__(self, size, V_rest=0., V_reset=-5., V_th=20.,
-               tau=10., tau_ref=1., update_type='vector', **kwargs):
+  def __init__(self, size, V_rest=0., V_reset=-5., V_th=20., tau=10.,
+               tau_ref=1., update_type='vector', num_batch=None, **kwargs):
     # initialization
-    super(LIF, self).__init__(size=size, **kwargs)
+    super(LIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -86,11 +86,11 @@ class LIF(bp.NeuGroup):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.V = bm.Variable(bm.ones(self.num) * V_rest)
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(bm.ones(self.shape) * V_rest)
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint(method='exponential_euler')
   def integral(self, V, t, Iext):

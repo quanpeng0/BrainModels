@@ -143,10 +143,10 @@ class HH(bp.NeuGroup):
          The Journal of Mathematical Neuroscience 6, no. 1 (2016): 1-92.
   """
 
-  def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36., EL=-54.387,
-               gL=0.03, V_th=20., C=1.0, update_type='vector', **kwargs):
+  def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36., EL=-54.387,  gL=0.03,
+              V_th=20., C=1.0, update_type='vector', num_batch=None, **kwargs):
     # initialization
-    super(HH, self).__init__(size=size, **kwargs)
+    super(HH, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.ENa = ENa
@@ -170,13 +170,13 @@ class HH(bp.NeuGroup):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.V = bm.Variable(-65. * bm.ones(self.num))
-    self.m = bm.Variable(0.5 * bm.ones(self.num))
-    self.h = bm.Variable(0.6 * bm.ones(self.num))
-    self.n = bm.Variable(0.32 * bm.ones(self.num))
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(-65. * bm.ones(self.shape))
+    self.m = bm.Variable(0.5 * bm.ones(self.shape))
+    self.h = bm.Variable(0.6 * bm.ones(self.shape))
+    self.n = bm.Variable(0.32 * bm.ones(self.shape))
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint(method='exponential_euler')
   def integral(self, V, m, h, n, t, Iext):

@@ -74,9 +74,9 @@ class AdQuaIF(bp.NeuGroup):
          Mathematics 68, no. 4 (2008): 1045-1079.
   """
 
-  def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0,
-               a=1., b=.1, c=.07, tau=10., tau_w=10., update_type='vector', **kwargs):
-    super(AdQuaIF, self).__init__(size=size, **kwargs)
+  def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0, a=1., b=.1,
+               c=.07, tau=10., tau_w=10., update_type='vector', num_batch=None, **kwargs):
+    super(AdQuaIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -101,12 +101,12 @@ class AdQuaIF(bp.NeuGroup):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.V = bm.Variable(bm.ones(self.num) * V_reset)
-    self.w = bm.Variable(bm.zeros(self.num))
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(bm.ones(self.shape) * V_reset)
+    self.w = bm.Variable(bm.zeros(self.shape))
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint
   def int_V(self, V, t, w, Iext):

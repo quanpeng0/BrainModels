@@ -92,9 +92,9 @@ class GIF(bp.NeuGroup):
 
   def __init__(self, size, V_rest=-70., V_reset=-70., V_th_inf=-50., V_th_reset=-60.,
                R=20., tau=20., a=0., b=0.01, k1=0.2, k2=0.02, R1=0., R2=1., A1=0.,
-               A2=0., update_type='vector', **kwargs):
+               A2=0., update_type='vector', num_batch=None, **kwargs):
     # initialization
-    super(GIF, self).__init__(size=size, **kwargs)
+    super(GIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # params
     self.V_rest = V_rest
@@ -124,13 +124,13 @@ class GIF(bp.NeuGroup):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # vars
-    self.I1 = bm.Variable(bm.zeros(self.num))
-    self.I2 = bm.Variable(bm.zeros(self.num))
-    self.V = bm.Variable(bm.ones(self.num) * -70.)
-    self.V_th = bm.Variable(bm.ones(self.num) * -50.)
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.I1 = bm.Variable(bm.zeros(self.shape))
+    self.I2 = bm.Variable(bm.zeros(self.shape))
+    self.V = bm.Variable(bm.ones(self.shape) * -70.)
+    self.V_th = bm.Variable(bm.ones(self.shape) * -50.)
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint(method='exponential_euler')
   def integral(self, I1, I2, V_th, V, t, Iext):

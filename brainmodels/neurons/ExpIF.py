@@ -99,9 +99,9 @@ class ExpIF(bp.NeuGroup):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
-               R=1., tau=10., tau_ref=1.7, update_type='vector', **kwargs):
+               R=1., tau=10., tau_ref=1.7, update_type='vector', num_batch=None, **kwargs):
     # initialize
-    super(ExpIF, self).__init__(size=size, **kwargs)
+    super(ExpIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -125,11 +125,11 @@ class ExpIF(bp.NeuGroup):
       raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
 
     # variables
-    self.V = bm.Variable(bm.ones(self.num) * V_rest)
-    self.input = bm.Variable(bm.zeros(self.num))
-    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
+    self.V = bm.Variable(bm.ones(self.shape) * V_rest)
+    self.input = bm.Variable(bm.zeros(self.shape))
+    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
 
   @bp.odeint
   def integral(self, V, t, Iext):
