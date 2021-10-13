@@ -40,7 +40,9 @@ class Ih(bp.Channel):
 
   References
   ----------
-  .. [1] Huguenard, John R., and David A. McCormick. "Simulation of the currents involved in rhythmic oscillations in thalamic relay neurons." Journal of neurophysiology 68, no. 4 (1992): 1373-1383.
+  .. [1] Huguenard, John R., and David A. McCormick. "Simulation of the currents
+         involved in rhythmic oscillations in thalamic relay neurons." Journal
+         of neurophysiology 68, no. 4 (1992): 1373-1383.
 
   """
 
@@ -51,9 +53,9 @@ class Ih(bp.Channel):
     self.g_max = g_max
     self.E = E
 
-  def init(self, host, ):
+  def init(self, host, **kwargs):
     super(Ih, self).init(host)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, p, t, V):
@@ -62,7 +64,7 @@ class Ih(bp.Channel):
     dpdt = self.phi * (p_inf - p) / p_tau
     return dpdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.p[:] = self.integral(self.p, _t, self.host.V, dt=_dt)
     g = self.g_max * self.p
     self.host.I_ion += g * (self.E - self.host.V)

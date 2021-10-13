@@ -67,10 +67,10 @@ class INa(bp.Channel):
     self.g_max = g_max
     self.V_sh = V_sh
 
-  def init(self, host, ):
+  def init(self, host, **kwargs):
     super(INa, self).init(host)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, p, q, t, V):
@@ -84,7 +84,7 @@ class INa(bp.Channel):
     dqdt = phi * (alpha_q * (1. - q) - beta_q * q)
     return dpdt, dqdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
     g = self.g_max * self.p ** 3 * self.q
     self.host.I_ion += g * (self.E - self.host.V)
@@ -98,10 +98,10 @@ class INa2(bp.Channel):
     self.E = E
     self.g_max = g_max
 
-  def init(self, host, ):
+  def init(self, host, **kwargs):
     super(INa2, self).init(host)
-    self.m = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
-    self.h = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.m = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.h = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   @bp.odeint(method='exponential_euler')
   def integral(self, m, h, t, V):
@@ -115,7 +115,7 @@ class INa2(bp.Channel):
 
     return dmdt, dhdt
 
-  def update(self, _t, _dt):
+  def update(self, _t, _dt, **kwargs):
     self.m[:], self.h[:] = self.integral(self.m, self.h, _t, self.host.V, dt=_dt)
     g = self.g_max * self.m ** 3 * self.h
     self.host.I_ion += g * (self.E - self.host.V)
