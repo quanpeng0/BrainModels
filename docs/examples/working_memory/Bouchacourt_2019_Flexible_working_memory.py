@@ -150,7 +150,7 @@ def get_activity_vector(rates):
 
 # %%
 class PoissonNeuron(bp.NeuGroup):
-  target_backend = ['numpy', 'numba']
+  target_backend = 'numpy'
 
   @bp.odeint(method='exponential_euler')
   def int_s(self, s, t):
@@ -185,7 +185,7 @@ random_net = PoissonNeuron(num_all_random, monitors=['spike'], name='R')
 
 # %%
 class Sen2SenSyn(bp.TwoEndConn):
-  target_backend = ['numpy', 'numba']
+  target_backend = 'numpy'
 
   def __init__(self, pre, post, **kwargs):
     super(Sen2SenSyn, self).__init__(pre=pre, post=post, **kwargs)
@@ -204,7 +204,7 @@ sensory2sensory_conn = Sen2SenSyn(pre=sensory_net, post=sensory_net)
 
 # %%
 class OtherSyn(bp.TwoEndConn):
-  target_backend = ['numpy', 'numba']
+  target_backend = 'numpy'
 
   def __init__(self, pre, post, weights, **kwargs):
     self.weights = weights

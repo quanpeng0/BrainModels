@@ -31,9 +31,9 @@
 #
 # - Chaoming Wang (chao.brain@qq.com)
 #
-# import brainmodels as bms
 # %%
 import brainpy as bp
+import brainmodels as bms
 
 # %% [markdown]
 # ## Parameters

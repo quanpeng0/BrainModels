@@ -40,7 +40,7 @@ class VoltageJump(bp.TwoEndConn):
   """
 
   def __init__(self, pre, post, conn, delay=0., post_has_ref=False,
-               w=1., update_type='loop_slice', **kwargs):
+               w=1., update_type='sparse', **kwargs):
     super(VoltageJump, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     # checking
@@ -55,9 +55,9 @@ class VoltageJump(bp.TwoEndConn):
     self.post_has_ref = post_has_ref
 
     # connections
-    if update_type == 'loop_slice':
+    if update_type == 'sparse':
       self.pre_slice, self.post_ids = self.conn.requires('pre_slice', 'post_ids')
-      self.steps.replace('update', self._loop_slice_update)
+      self.steps.replace('update', self.sparse_update)
       self.size = self.post.num
       self.target_backend = 'numpy'
 
@@ -67,9 +67,9 @@ class VoltageJump(bp.TwoEndConn):
       self.size = len(self.pre_ids)
       self.target_backend = 'numpy'
 
-    elif update_type == 'matrix':
+    elif update_type == 'dense':
       self.conn_mat = self.conn.requires('conn_mat')
-      self.steps.replace('update', self._matrix_update)
+      self.steps.replace('update', self.dense_update)
       self.size = self.conn_mat.shape
 
     else:
@@ -80,17 +80,18 @@ class VoltageJump(bp.TwoEndConn):
     assert bm.size(w) == 1, 'This implementation only support scalar weight. '
     self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.shape, delay=delay)
 
-  def _loop_slice_update(self, _t, _dt):
+  def sparse_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
-    for pre_id in range(self.pre.num):
-      if pre_spike[pre_id]:
-        start, end = self.pre_slice[pre_id]
-        for post_id in self.post_ids[start: end]:
-          if self.post_has_ref:
-            self.post.V[post_id] += self.w * (1. - self.post.refractory[post_id])
-          else:
-            self.post.V[post_id] += self.w
+
+    spike_pres = bm.where(pre_spike)[0]
+    for pre_id in spike_pres:
+      start, end = self.pre_slice[pre_id]
+      post_ids = self.post_ids[start: end]
+      if self.post_has_ref:
+        self.post.V[post_ids] += self.w * (1. - self.post.refractory[post_ids])
+      else:
+        self.post.V[post_ids] += self.w
 
   def _loop_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
@@ -103,5 +104,5 @@ class VoltageJump(bp.TwoEndConn):
         else:
           self.post.V[post_id] += self.w
 
-  def _matrix_update(self, _t, _dt):
+  def dense_update(self, _t, _dt):
     raise NotImplemented

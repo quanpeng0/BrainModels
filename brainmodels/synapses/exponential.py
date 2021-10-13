@@ -190,7 +190,7 @@ class ExpCOBA(ExpCUBA):
   """
 
   def __init__(self, pre, post, conn, g_max=1., delay=0., tau=8.0, E=0.,
-               update_type='loop_slice', **kwargs):
+               update_type='sparse', **kwargs):
     super(ExpCOBA, self).__init__(pre=pre, post=post, conn=conn,
                                   g_max=g_max, delay=delay, tau=tau,
                                   update_type=update_type, **kwargs)

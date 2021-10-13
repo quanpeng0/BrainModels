@@ -102,8 +102,6 @@ sigma = 1.02  # nA
 
 # %%
 class DecisionMaking(bp.NeuGroup):
-  target_backend = ['numpy', 'numba']
-
   @staticmethod
   def current2rate(I):
     return (a * I - b) / (1. - bp.math.exp(-d * (a * I - b)))
@@ -157,7 +155,7 @@ dm = DecisionMaking(1)
 # $\mu_0 = 0, c'=0.$
 
 # %%
-phase = bp.sym_analysis.PhasePlane(
+phase = bp.analysis.symbolic.PhasePlane(
   dm,
   target_vars=dict(s2=[0., 1.], s1=[0., 1.]),
   pars_update=dict(mu0=0., coh=0., Ib1=0.3297, Ib2=0.3297),
@@ -172,7 +170,7 @@ _ = phase.plot_vector_field(show=True)
 # $\mu_0 = 30, c'=0.$
 
 # %%
-phase = bp.sym_analysis.PhasePlane(
+phase = bp.analysis.symbolic.PhasePlane(
   dm,
   target_vars=dict(s2=[0., 1.], s1=[0., 1.]),
   pars_update=dict(mu0=30., coh=0., Ib1=0.3297, Ib2=0.3297),
@@ -187,7 +185,7 @@ _ = phase.plot_vector_field(show=True)
 # $\mu_0 = 30, c'=0.5$
 
 # %%
-phase = bp.sym_analysis.PhasePlane(
+phase = bp.analysis.symbolic.PhasePlane(
   dm,
   target_vars=dict(s2=[0., 1.], s1=[0., 1.]),
   pars_update=dict(mu0=30., coh=0.5, Ib1=0.3297, Ib2=0.3297),
@@ -202,7 +200,7 @@ _ = phase.plot_vector_field(show=True)
 # $\mu_0 = 30, c'=-0.5$
 
 # %%
-phase = bp.sym_analysis.PhasePlane(
+phase = bp.analysis.symbolic.PhasePlane(
   dm,
   target_vars=dict(s2=[0., 1.], s1=[0., 1.]),
   pars_update=dict(mu0=30., coh=-0.5, Ib1=0.3297, Ib2=0.3297),
@@ -217,7 +215,7 @@ _ = phase.plot_vector_field(show=True)
 # $\mu_0 = 30, c'=1.$
 
 # %%
-phase = bp.sym_analysis.PhasePlane(
+phase = bp.analysis.symbolic.PhasePlane(
   dm,
   target_vars=dict(s2=[0., 1.], s1=[0., 1.]),
   pars_update=dict(mu0=30., coh=1., Ib1=0.3297, Ib2=0.3297),

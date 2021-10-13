@@ -24,12 +24,12 @@
 
 # %%
 import brainpy as bp
-import brainpy.math as bnp
+import brainpy.math as bm
 import matplotlib.pyplot as plt
 
 bp.__version__
 
-bnp.use_backend('jax')
+bm.use_backend('jax')
 
 
 # %% [markdown]
@@ -68,11 +68,11 @@ class LIF(bp.NeuGroup):
     self.gL = gL
     self.t_refractory = t_refractory
 
-    self.V = bnp.Variable(bnp.ones(self.num) * V_L)
-    self.input = bnp.Variable(bnp.zeros(self.num))
-    self.spike = bnp.Variable(bnp.zeros(self.num, dtype=bool))
-    self.refractory = bnp.Variable(bnp.zeros(self.num, dtype=bool))
-    self.t_last_spike = bnp.Variable(bnp.ones(self.num) * -1e7)
+    self.V = bm.Variable(bm.ones(self.num) * V_L)
+    self.input = bm.Variable(bm.zeros(self.num))
+    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
+    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
+    self.t_last_spike = bm.Variable(bm.ones(self.num) * -1e7)
 
   @bp.odeint
   def integral(self, V, t, Iext):
@@ -82,12 +82,12 @@ class LIF(bp.NeuGroup):
   def update(self, _t, _dt):
     ref = (_t - self.t_last_spike) <= self.t_refractory
     V = self.integral(self.V, _t, self.input)
-    V = bnp.where(ref, self.V, V)
+    V = bm.where(ref, self.V, V)
     spike = (V >= self.V_th)
-    self.V[:] = bnp.where(spike, self.V_reset, V)
+    self.V[:] = bm.where(spike, self.V_reset, V)
     self.spike[:] = spike
-    self.t_last_spike[:] = bnp.where(spike, _t, self.t_last_spike)
-    self.refractory[:] = bnp.logical_or(spike, ref)
+    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
+    self.refractory[:] = bm.logical_or(spike, ref)
     self.input[:] = 0.
 
 
@@ -100,10 +100,10 @@ class PoissonNoise(bp.NeuGroup):
   def __init__(self, size, freq, **kwargs):
     super(PoissonNoise, self).__init__(size=size, **kwargs)
 
-    self.freq = bnp.Variable(bnp.array([freq]))
-    self.dt = bnp.get_dt() / 1000.
-    self.spike = bnp.Variable(bnp.zeros(self.num, dtype=bool))
-    self.rng = bnp.random.RandomState()
+    self.freq = bm.Variable(bm.array([freq]))
+    self.dt = bm.get_dt() / 1000.
+    self.spike = bm.Variable(bm.zeros(self.num, dtype=bool))
+    self.rng = bm.random.RandomState()
 
   def update(self, _t, _dt):
     self.spike[:] = self.rng.random(self.num) < self.freq[0] * self.dt
@@ -166,7 +166,7 @@ class AMPA_One(bp.TwoEndConn):
 
     # variables
     self.pre_spike = self.register_constant_delay('ps', size=self.pre.num, delay=delay)
-    self.s = bnp.Variable(bnp.zeros(self.pre.num))
+    self.s = bm.Variable(bm.zeros(self.pre.num))
 
   @bp.odeint
   def int_s(self, s, t):
@@ -195,8 +195,8 @@ class AMPA(bp.TwoEndConn):
 
     # variables
     self.pre_spike = self.register_constant_delay('ps', size=self.pre.num, delay=delay)
-    self.pre_one = bnp.Variable(bnp.ones(self.pre.num))
-    self.s = bnp.Variable(bnp.zeros(self.size))
+    self.pre_one = bm.Variable(bm.ones(self.pre.num))
+    self.s = bm.Variable(bm.zeros(self.size))
 
   @bp.odeint
   def int_s(self, s, t):
@@ -208,7 +208,7 @@ class AMPA(bp.TwoEndConn):
     pre_spike = self.pre_spike.pull()
     self.s[:] = self.int_s(self.s, _t)
     self.s += (pre_spike * self.g_max).reshape((-1, 1))
-    self.post.input += bnp.dot(self.pre_one, self.s) * (self.post.V - self.E)
+    self.post.input += bm.dot(self.pre_one, self.s) * (self.post.V - self.E)
 
 
 # %% [markdown]
@@ -248,9 +248,9 @@ class NMDA(bp.TwoEndConn):
 
     # variables
     self.pre_spike = self.register_constant_delay('ps', size=self.pre.num, delay=delay)
-    self.pre_one = bnp.Variable(bnp.ones(self.pre.num))
-    self.s = bnp.Variable(bnp.zeros(self.size))
-    self.x = bnp.Variable(bnp.zeros(self.size))
+    self.pre_one = bm.Variable(bm.ones(self.pre.num))
+    self.s = bm.Variable(bm.zeros(self.size))
+    self.x = bm.Variable(bm.zeros(self.size))
 
   @bp.odeint
   def integral(self, s, x, t):
@@ -263,8 +263,8 @@ class NMDA(bp.TwoEndConn):
     pre_spike = self.pre_spike.pull()
     self.s[:], self.x[:] = self.integral(self.s, self.x, _t)
     self.x += pre_spike.reshape((-1, 1))
-    g_inf = 1 / (1 + self.cc_Mg * bnp.exp(-0.062 * self.post.V) / 3.57)
-    Iext = bnp.dot(self.pre_one, self.s) * (self.post.V - self.E) * g_inf
+    g_inf = 1 / (1 + self.cc_Mg * bm.exp(-0.062 * self.post.V) / 3.57)
+    Iext = bm.dot(self.pre_one, self.s) * (self.post.V - self.E) * g_inf
     self.post.input += Iext * self.g_max
 
 
@@ -424,7 +424,7 @@ net = bp.Network(
   A=A, B=B, IA=IA, IB=IB,
   monitors=['A.spike', 'B.spike', 'IA.freq', 'IB.freq']
 )
-net = bnp.jit(net)
+net = bm.jit(net)
 
 
 # %%
@@ -432,7 +432,7 @@ def change_poisson_freq(_t, _dt):
   for group in [IA, IB]:
     if pre_period < _t < pre_period + stim_period:
       if (_t - group.t_last_change) >= group.t_interval:
-        group.freq[0] = bnp.random.normal(group.freq_mean, group.freq_var)
+        group.freq[0] = bm.random.normal(group.freq_mean, group.freq_var)
         group.t_last_change = _t
     else:
       group.freq[0] = 0.

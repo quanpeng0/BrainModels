@@ -87,7 +87,7 @@ class AMPA(bp.TwoEndConn):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=0.42, E=0., alpha=0.98,
-               beta=0.18, T=0.5, T_duration=0.5, update_type='loop', **kwargs):
+               beta=0.18, T=0.5, T_duration=0.5, update_type='sparse', **kwargs):
 
     # initialization
     super(AMPA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
@@ -107,16 +107,13 @@ class AMPA(bp.TwoEndConn):
     self.T_duration = T_duration
 
     # connections
-    if update_type == 'loop':
+    if update_type == 'sparse':
       self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.steps.replace('update', self._loop_update)
+      self.steps.replace('update', self._sparse_update)
       self.size = len(self.pre_ids)
       self.target_backend = 'numpy'
 
-    elif update_type == 'loop_slice':
-      raise NotImplementedError
-
-    elif update_type == 'matrix':
+    elif update_type == 'dense':
       raise NotImplementedError
 
     else:
@@ -132,7 +129,7 @@ class AMPA(bp.TwoEndConn):
     dg = self.alpha * TT * (1 - g) - self.beta * g
     return dg
 
-  def _loop_update(self, _t, _dt):
+  def _sparse_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
     self.spike_arrival_time[:] = bm.where(delayed_pre_spike, _t, self.spike_arrival_time)

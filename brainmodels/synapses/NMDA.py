@@ -110,7 +110,7 @@ class NMDA(bp.TwoEndConn):
 
   def __init__(self, pre, post, conn, delay=0., g_max=0.15, E=0., cc_Mg=1.2,
                alpha=0.062, beta=3.57, tau_decay=100., a=0.5, tau_rise=2.,
-               update_type='loop', **kwargs):
+               update_type='sparse', **kwargs):
     super(NMDA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     # checking
@@ -130,16 +130,13 @@ class NMDA(bp.TwoEndConn):
     self.delay = delay
 
     # connections
-    if update_type == 'loop':
+    if update_type == 'sparse':
       self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.steps.replace('update', self._loop_update)
+      self.steps.replace('update', self.sparse_update)
       self.size = len(self.pre_ids)
       self.target_backend = 'numpy'
 
-    elif update_type == 'loop_slice':
-      raise NotImplementedError
-
-    elif update_type == 'matrix':
+    elif update_type == 'dense':
       raise NotImplementedError
 
     else:
@@ -156,7 +153,7 @@ class NMDA(bp.TwoEndConn):
     dgdt = -g / self.tau_decay + self.a * x * (1 - g)
     return dgdt, dxdt
 
-  def _loop_update(self, _t, _dt):
+  def sparse_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
     self.g[:], self.x[:] = self.integral(self.g, self.x, _t, dt=_dt)
