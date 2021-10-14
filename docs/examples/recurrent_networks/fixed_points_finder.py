@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
-# %% [markdown]
-# # Integrator RNN Model
-# %% [markdown]
-# In this notebook, we train a vanilla RNN to integrate white noise. This example is useful on its own to understand how RNN training works.
 
 # %%
-import time
+import sys
+sys.path.append('/mnt/d/codes/Projects/BrainPy/')
 from functools import partial
 
-# %%
 import brainpy as bp
 import brainpy.math.jax as bm
 
@@ -20,10 +16,6 @@ bp.__version__
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
-
-# %% [markdown]
-# ## Parameters
-
 
 # %%
 # Integration parameters
@@ -50,11 +42,8 @@ l2reg = 0.0002  # amount of L2 regularization on the weights
 num_train = 10000  # Total number of batches to train on.
 num_batch = 128  # How many examples in each batch
 max_grad_norm = 5.0  # Gradient clipping is HUGELY important for training RNNs
-                     # max gradient norm before clipping, clip to this value.
+# max gradient norm before clipping, clip to this value.
 
-
-# %% [markdown]
-# ## Helpers
 
 # %%
 def plot_examples(num_time, inputs, hiddens, outputs, targets, num_example=1, num_plot=10):
@@ -89,8 +78,8 @@ def plot_examples(num_time, inputs, hiddens, outputs, targets, num_example=1, nu
 
 # %%
 def plot_params(rnn):
-  """ Plot the parameters of the vanilla RNN. """
-  assert isinstance(rnn, IntegratorRNN)
+  """Plot the parameters. """
+  assert isinstance(rnn, GRU)
 
   plt.figure(figsize=(16, 8))
   plt.subplot(231)
@@ -151,19 +140,19 @@ def plot_data(num_time, inputs, targets=None, outputs=None, errors=None, num_plo
   # inputs
   plt.subplot(num, 1, 1)
   plt.plot(inputs[:, 0:num_plot, 0])
-  plt.xlim([0, num_time - 1])
+  plt.xlim([0, num_time])
   plt.ylabel('Noise')
 
   legends = []
   if outputs is not None:
     plt.subplot(num, 1, 2)
     plt.plot(outputs[:, 0:num_plot, 0])
-    plt.xlim([0, num_time - 1])
+    plt.xlim([0, num_time])
     legends.append(mlines.Line2D([], [], color='k', linestyle='-', label='predict'))
   if targets is not None:
     plt.subplot(num, 1, 2)
     plt.plot(targets[:, 0:num_plot, 0], '--')
-    plt.xlim([0, num_time - 1])
+    plt.xlim([0, num_time])
     plt.ylabel("Integration")
     legends.append(mlines.Line2D([], [], color='k', linestyle='--', label='target'))
   if len(legends): plt.legend(handles=legends)
@@ -171,7 +160,7 @@ def plot_data(num_time, inputs, targets=None, outputs=None, errors=None, num_plo
   if errors is not None:
     plt.subplot(num, 1, 3)
     plt.plot(errors[:, 0:num_plot, 0], '--')
-    plt.xlim([0, num_time - 1])
+    plt.xlim([0, num_time])
     plt.ylabel("|Errors|")
 
   plt.xlabel('Time steps')
@@ -189,158 +178,81 @@ def build_inputs_and_targets(mean, scale):
   samples = bm.random.normal(size=(num_step, num_batch))
   noise_t = scale / dt ** 0.5 * samples
   white_noise_t = bias + noise_t
-  inputs_tx1 = bm.expand_dims(white_noise_t, axis=2)
+  inputs_txbx1 = bm.expand_dims(white_noise_t, axis=2)
 
   # * dt, intentionally left off to get output scaling in O(1).
-  targets_tx1 = bm.expand_dims(bm.cumsum(white_noise_t, axis=0), axis=2)
-  return inputs_tx1, targets_tx1
+  integration_txbx1 = bm.expand_dims(bm.cumsum(white_noise_t, axis=0), axis=2)
+  targets_txbx1 = bm.zeros_like(integration_txbx1)
+  targets_txbx1[-1] = 2.0 * ((integration_txbx1[-1] > 0.0) - 0.5)
+  targets_mask = bm.ones((num_batch, 1)) * (num_step - 1)
+  return inputs_txbx1, targets_txbx1, targets_mask
 
 
 # %%
 # Plot the example inputs and targets for the RNN.
-_ints, _outs = build_inputs_and_targets(bval, sval)
+_ints, _outs, _ = build_inputs_and_targets(bval, sval)
 
 plot_data(num_step, inputs=_ints, targets=_outs)
 
 
-# %% [markdown]
-# ## Models
-
 # %%
-class IntegratorRNN(bp.DynamicalSystem):
-  target_backend = 'jax'
-
-  def __init__(self, num_input, num_hidden, num_output, num_batch,
-               g=1.0, l2_reg=2e-4, **kwargs):
-    super(IntegratorRNN, self).__init__(**kwargs)
+class GRU(bp.DynamicalSystem):
+  def __init__(self, num_hidden, num_input, num_output, num_batch, l2_reg=0., **kwargs):
+    super(GRU, self).__init__(num_hidden, num_input, **kwargs)
 
     # parameters
+    self.l2_reg = l2_reg
     self.num_input = num_input
+    self.num_batch = num_batch
     self.num_hidden = num_hidden
     self.num_output = num_output
-    self.num_batch = num_batch
-    self.g = g
-    self.l2_reg = l2_reg
     self.rng = bm.random.RandomState()
 
-    # weights
+    # recurrent weights
+    self.w_iz = bm.TrainVar(self.rng.normal(scale=1 / num_input ** 0.5, size=(num_input, num_hidden)))
     self.w_ir = bm.TrainVar(self.rng.normal(scale=1 / num_input ** 0.5, size=(num_input, num_hidden)))
-    self.w_rr = bm.TrainVar(self.rng.normal(scale=g / num_hidden ** 0.5, size=(num_hidden, num_hidden)))
-    self.b_rr = bm.TrainVar(bm.zeros((num_hidden,)))
+    self.w_ia = bm.TrainVar(self.rng.normal(scale=1 / num_input ** 0.5, size=(num_input, num_hidden)))
+    self.w_hz = bm.TrainVar(self.rng.normal(scale=1 / num_hidden ** 0.5, size=(num_hidden, num_hidden)))
+    self.w_hr = bm.TrainVar(self.rng.normal(scale=1 / num_hidden ** 0.5, size=(num_hidden, num_hidden)))
+    self.w_ha = bm.TrainVar(self.rng.normal(scale=1 / num_hidden ** 0.5, size=(num_hidden, num_hidden)))
+    self.bz = bm.TrainVar(bm.zeros((num_hidden,)))
+    self.br = bm.TrainVar(bm.zeros((num_hidden,)))
+    self.ba = bm.TrainVar(bm.zeros((num_hidden,)))
+    self.h0 = bm.TrainVar(self.rng.normal(scale=0.1, size=(num_hidden,)))
+
+    # output weights
     self.w_ro = bm.TrainVar(self.rng.normal(scale=1 / num_hidden ** 0.5, size=(num_hidden, num_output)))
     self.b_ro = bm.TrainVar(bm.zeros((num_output,)))
-    self.h0 = bm.TrainVar(self.rng.normal(scale=0.1, size=(num_hidden, )))
 
     # variables
-    self.h = bm.Variable(bm.repeat(bm.expand_dims(self.h0, 0), self.num_batch, axis=0))
+    self.h = bm.Variable(self.rng.normal(scale=0.1, size=(num_batch, self.num_hidden)))
     self.o = bm.Variable(self.h @ self.w_ro)
+
+    # loss
     self.total_loss = bm.Variable(bm.zeros(1))
     self.l2_loss = bm.Variable(bm.zeros(1))
     self.mse_loss = bm.Variable(bm.zeros(1))
 
-    # functions
-    self.val_and_grad = bm.value_and_grad(self.loss)
-
   def update(self, x, **kwargs):
-    self.h.value = bm.tanh(self.h @ self.w_rr + x @ self.w_ir + self.b_rr)
+    z = bm.sigmoid(x @ self.w_iz + self.h @ self.w_hz + self.bz)
+    r = bm.sigmoid(x @ self.w_ir + self.h @ self.w_hr + self.br)
+    a = bm.tanh(x @ self.w_ia + (r * self.h) @ self.w_ha + self.ba)
+    self.h.value = (1 - z) * self.h + z * a
     self.o.value = self.h @ self.w_ro + self.b_ro
-  
+
   def predict(self, xs):
     self.h[:] = self.h0
-    scan = bm.easy_scan(self.update, dyn_vars=self.vars().unique(), out_vars=[self.h, self.o])
-    return scan(xs)
+    f = bm.easy_scan(self.update, dyn_vars=self.vars().unique(), out_vars=[self.h, self.o])
+    return f(xs)
 
-  def loss(self, inputs, targets):
-    _, predicts = self.predict(inputs)
+  def loss(self, xs, ys):
+    hs, os = self.predict(xs)
     l2 = self.l2_reg * bm.losses.l2_norm([self.w_ir, self.w_rr, self.b_rr,
                                           self.w_ro, self.b_ro, self.h]) ** 2
-    mse = bm.losses.mean_squared_error(predicts, targets)
+    mse = bm.losses.mean_squared_error(os, ys)
     total = l2 + mse
     self.total_loss[0] = total
     self.l2_loss[0] = l2
     self.mse_loss[0] = mse
     return total
 
-
-# %%
-net = IntegratorRNN(num_input=1, num_hidden=100, num_output=1, num_batch=num_batch, 
-                    g=param_scale, l2_reg=l2reg)
-
-plot_params(net)
-
-# %%
-lr = bm.optimizers.exponential_decay(lr=0.025, decay_steps=1, decay_rate=0.99975)
-optimizer = bm.optimizers.Adam(lr=lr, train_vars=net.train_vars(), eps=1e-1)
-
-
-@bm.jit
-@bm.function(nodes=(net, optimizer))
-def train(inputs, targets):
-  loss, grads = net.val_and_grad(inputs, targets)
-  clipped_grads = bm.clip_by_norm(grads, max_grad_norm)
-  optimizer.update(clipped_grads)
-  return loss
-
-
-# %% [markdown]
-# ## Training
-
-# %%
-t0 = time.time()
-train_losses = {'total': [], 'l2': [], 'mse': []}
-for i in range(num_train):
-  _ins, _outs = build_inputs_and_targets(bval, sval)
-  loss = train(inputs=_ins, targets=_outs)
-  if (i + 1) % 100 == 0:
-    print(f"Run batch {i} in {time.time() - t0:0.3f} s, learning rate: "
-          f"{lr(optimizer.step[0]):.5f}, training loss {loss:0.4f}")
-
-    train_losses['total'].append(net.total_loss[0])
-    train_losses['l2'].append(net.l2_loss[0])
-    train_losses['mse'].append(net.mse_loss[0])
-
-# %%
-# Show the loss through training.
-plt.figure(figsize=(12, 4))
-plt.subplot(131)
-plt.plot(train_losses['total'], 'k')
-plt.title('Total loss')
-plt.xlabel('Trail')
-
-plt.subplot(132)
-plt.plot(train_losses['mse'], 'r')
-plt.title('Least mean square loss')
-plt.xlabel('Trail')
-
-plt.subplot(133)
-plt.plot(train_losses['l2'], 'g')
-plt.title('L2 loss')
-plt.xlabel('Trail')
-plt.show()
-
-# %%
-# Show the trained weights
-plot_params(net)
-
-# %% [markdown]
-# ## Testing
-
-
-# %%
-inputs, hiddens, outputs, targets = [], [], [], []
-for n in range(16):
-  input_b, target_b = build_inputs_and_targets(bval, sval)
-  h_b, o_b = net.predict(input_b)
-  inputs.append(input_b)
-  hiddens.append(h_b)
-  outputs.append(o_b)
-  targets.append(target_b)
-inputs = np.hstack(inputs)
-hiddens = np.hstack(hiddens)
-outputs = np.hstack(outputs)
-targets = np.hstack(targets)
-
-plot_data(num_step, inputs=inputs, targets=targets, outputs=outputs, errors=np.abs(targets - outputs))
-
-# %%
-plot_examples(num_step, inputs=inputs, targets=targets, outputs=outputs, hiddens=hiddens, num_example=4)

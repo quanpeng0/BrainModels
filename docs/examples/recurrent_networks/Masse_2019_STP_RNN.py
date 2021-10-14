@@ -16,9 +16,9 @@
 
 # %%
 import brainpy as bp
-import brainpy.math.jax as mjax
+import brainpy.math.jax as bm
 
-mjax.use_backend('jax')
+bp.math.use_backend('jax')
 
 # %%
 import os
@@ -51,9 +51,9 @@ iter_between_outputs = 5
 
 # %%
 def initialize(shape, prob, size):
-  w = mjax.random.gamma(shape, size=size)
-  w *= (mjax.random.random(size) < prob)
-  return mjax.asarray(w, dtype=mjax.float32)
+  w = bm.random.gamma(shape, size=size)
+  w *= (bm.random.random(size) < prob)
+  return bm.asarray(w, dtype=bm.float32)
 
 
 # %% [markdown]
@@ -79,10 +79,10 @@ class Model(bp.DynamicalSystem):
     # EI
     self.num_exc = int(self.num_hidden * self.exc_inh_prop)
     self.num_inh = self.num_hidden - self.num_exc
-    self.EI_list = mjax.ones(self.num_hidden)
+    self.EI_list = bm.ones(self.num_hidden)
     self.EI_list[self.num_exc:] = -1.
-    self.EI_matrix = mjax.diag(self.EI_list)
-    self.inh_index = mjax.arange(self.num_exc, self.num_hidden)
+    self.EI_matrix = bm.diag(self.EI_list)
+    self.inh_index = bm.arange(self.num_exc, self.num_hidden)
 
     # Input and noise
     self.noise_rnn = math.sqrt(2 * alpha) * 0.5
@@ -94,14 +94,14 @@ class Model(bp.DynamicalSystem):
     self.U_std = 0.45
 
     # Initial hidden values
-    self.init_h = mjax.TrainVar(mjax.ones((batch_size, self.num_hidden)) * 0.1)
-    self.h = mjax.Variable(mjax.ones((batch_size, self.num_hidden)) * 0.1)
+    self.init_h = bm.TrainVar(bm.ones((batch_size, self.num_hidden)) * 0.1)
+    self.h = bm.Variable(bm.ones((batch_size, self.num_hidden)) * 0.1)
 
     # Input/recurrent/output weights
     #   1. w_ir (input => recurrent)
     prob = self.conn_prob * task.num_receptive_fields
-    self.w_ir = mjax.TrainVar(initialize(0.2, prob, (self.num_input, self.num_hidden)))
-    self.w_ir_mask = mjax.ones((self.num_input, self.num_hidden))
+    self.w_ir = bm.TrainVar(initialize(0.2, prob, (self.num_input, self.num_hidden)))
+    self.w_ir_mask = bm.ones((self.num_input, self.num_hidden))
     if task.trial_type == 'location_DMS':
       self.w_ir_mask *= 0.
       target_ind = [range(0, self.num_hidden, 3), range(1, self.num_hidden, 3), range(2, self.num_hidden, 3)]
@@ -110,60 +110,56 @@ class Model(bp.DynamicalSystem):
         self.w_ir_mask[n, target_ind[u]] = 1.
       self.w_ir *= self.w_ir_mask  # only preserve
     #   2. w_rr (recurrent => recurrent)
-    self.w_rr = mjax.TrainVar(initialize(0.1, self.conn_prob, (self.num_hidden, self.num_hidden)))
+    self.w_rr = bm.TrainVar(initialize(0.1, self.conn_prob, (self.num_hidden, self.num_hidden)))
     self.w_rr[:, self.num_exc:] = initialize(0.2, self.conn_prob, (self.num_hidden, self.num_inh))
     self.w_rr[self.num_exc:, :] = initialize(0.2, self.conn_prob, (self.num_inh, self.num_hidden))
-    self.w_rr_mask = mjax.ones((self.num_hidden, self.num_hidden)) - mjax.eye(self.num_hidden)
+    self.w_rr_mask = bm.ones((self.num_hidden, self.num_hidden)) - bm.eye(self.num_hidden)
     self.w_rr *= self.w_rr_mask  # remove self-connections
-    self.b_rr = mjax.TrainVar(mjax.zeros((1, self.num_hidden)))
+    self.b_rr = bm.TrainVar(bm.zeros((1, self.num_hidden)))
     #   3. w_ro (input => recurrent)
-    self.w_ro = mjax.TrainVar(initialize(0.1, self.conn_prob, (self.num_hidden, self.num_output)))
-    self.w_ro_mask = mjax.ones((self.num_hidden, self.num_output))
+    self.w_ro = bm.TrainVar(initialize(0.1, self.conn_prob, (self.num_hidden, self.num_output)))
+    self.w_ro_mask = bm.ones((self.num_hidden, self.num_output))
     self.w_ro_mask[self.num_exc:, :] = 0.
     self.w_ro *= self.w_ro_mask  # remove inhibitory-to-output connections
     #   4. b_ro (bias)
-    self.b_ro = mjax.TrainVar(mjax.zeros((1, self.num_output)))
+    self.b_ro = bm.TrainVar(bm.zeros((1, self.num_output)))
 
     # Synaptic variables
     #   - The first row (first half neurons) are facilitating synapses
     #   - The second row (last half neurons) are depressing synapses
-    alpha_stf = mjax.ones((2, int(self.num_hidden / 2)))
+    alpha_stf = bm.ones((2, int(self.num_hidden / 2)))
     alpha_stf[0] = dt / self.tau_slow
     alpha_stf[1] = dt / self.tau_fast
-    alpha_std = mjax.ones((2, int(self.num_hidden / 2)))
+    alpha_std = bm.ones((2, int(self.num_hidden / 2)))
     alpha_std[0] = dt / self.tau_fast
     alpha_std[1] = dt / self.tau_slow
-    U = mjax.ones((2, int(self.num_hidden / 2)))
+    U = bm.ones((2, int(self.num_hidden / 2)))
     U[0] = 0.15
     U[1] = 0.45
-    u = mjax.ones((batch_size, 2, int(self.num_hidden / 2))) * 0.3
+    u = bm.ones((batch_size, 2, int(self.num_hidden / 2))) * 0.3
     u[:, 0] = 0.15
     u[:, 1] = 0.45
     #   - final
     self.alpha_stf = alpha_stf.reshape((1, -1))
     self.alpha_std = alpha_std.reshape((1, -1))
     self.U = U.reshape((1, -1))
-    self.u = mjax.Variable(u.reshape((batch_size, -1)))
-    self.x = mjax.Variable(mjax.ones((batch_size, self.num_hidden)))
-    self.y = mjax.Variable(mjax.ones((batch_size, self.num_output)))
-    self.y_hist = mjax.Variable(mjax.zeros((task.num_steps, batch_size, task.num_output)))
+    self.u = bm.Variable(u.reshape((batch_size, -1)))
+    self.x = bm.Variable(bm.ones((batch_size, self.num_hidden)))
+    self.y = bm.Variable(bm.ones((batch_size, self.num_output)))
+    self.y_hist = bm.Variable(bm.zeros((task.num_steps, batch_size, task.num_output)))
 
     # Loss
-    self.loss = mjax.Variable(mjax.zeros(1))
-    self.perf_loss = mjax.Variable(mjax.zeros(1))
-    self.spike_loss = mjax.Variable(mjax.zeros(1))
-    self.weight_loss = mjax.Variable(mjax.zeros(1))
-
-    self.update_scan = mjax.easy_scan(f=self.update,
-                                      dyn_vars=[self.x, self.u, self.h, self.y],
-                                      out_vars=[self.y, self.h])
+    self.loss = bm.Variable(bm.zeros(1))
+    self.perf_loss = bm.Variable(bm.zeros(1))
+    self.spike_loss = bm.Variable(bm.zeros(1))
+    self.weight_loss = bm.Variable(bm.zeros(1))
 
   def reset(self):
-    u = mjax.ones((batch_size, 2, int(self.num_hidden / 2))) * 0.3
+    u = bm.ones((batch_size, 2, int(self.num_hidden / 2))) * 0.3
     u[:, 0] = 0.15
     u[:, 1] = 0.45
     self.u.value = u.reshape((batch_size, -1))
-    self.x.value = mjax.ones((batch_size, self.num_hidden))
+    self.x.value = bm.ones((batch_size, self.num_hidden))
     self.loss[:] = 0.
     self.perf_loss[:] = 0.
     self.spike_loss[:] = 0.
@@ -173,30 +169,37 @@ class Model(bp.DynamicalSystem):
     # update STP variables
     self.x += (self.alpha_std * (1 - self.x) - dt_sec * self.u * self.x * self.h)
     self.u += (self.alpha_stf * (self.U - self.u) + dt_sec * self.U * (1 - self.u) * self.h)
-    self.x.value = mjax.minimum(1., mjax.relu(self.x))
-    self.u.value = mjax.minimum(1., mjax.relu(self.u))
+    self.x.value = bm.minimum(1., bm.relu(self.x))
+    self.u.value = bm.minimum(1., bm.relu(self.u))
     h_post = self.u * self.x * self.h
 
     # Update the hidden state. Only use excitatory projections from input layer to RNN
     # All input and RNN activity will be non-negative
-    state = alpha * (input @ mjax.relu(self.w_ir) + h_post @ self.w_rr + self.b_rr)
-    state += mjax.random.normal(0, self.noise_rnn, self.h.shape)
-    self.h.value = mjax.relu(state) + self.h * (1 - alpha)
-    self.y.value = self.h @ mjax.relu(self.w_ro) + self.b_ro
+    state = alpha * (input @ bm.relu(self.w_ir) + h_post @ self.w_rr + self.b_rr)
+    state += bm.random.normal(0, self.noise_rnn, self.h.shape)
+    self.h.value = bm.relu(state) + self.h * (1 - alpha)
+    self.y.value = self.h @ bm.relu(self.w_ro) + self.b_ro
+
+  def predict(self, inputs):
+    self.h[:] = self.init_h
+    scan = bm.easy_scan(f=self.update,
+                        dyn_vars=[self.x, self.u, self.h, self.y],
+                        out_vars=[self.y, self.h])
+    logits, hist_h = scan(inputs)
+    self.y_hist[:] = logits
+    return logits, hist_h
 
   def loss_func(self, inputs, targets, mask):
-    self.h[:] = self.init_h
-    logits, hist_h = self.update_scan(inputs)
-    self.y_hist[:] = logits
+    logits, hist_h = self.predict(inputs)
 
     # Calculate the performance loss
-    perf_loss = bp.losses.cross_entropy_loss(logits, targets, reduction='none') * mask
-    self.perf_loss[:] = mjax.mean(perf_loss)
+    perf_loss = bm.losses.cross_entropy_loss(logits, targets, reduction='none') * mask
+    self.perf_loss[:] = bm.mean(perf_loss)
 
     # L1/L2 penalty term on hidden state activity to encourage low spike rate solutions
     n = 2 if spike_regularization == 'L2' else 1
-    self.spike_loss[:] = mjax.mean(hist_h ** n)
-    self.weight_loss[:] = mjax.mean(mjax.relu(self.w_rr) ** n)
+    self.spike_loss[:] = bm.mean(hist_h ** n)
+    self.weight_loss[:] = bm.mean(bm.relu(self.w_rr) ** n)
 
     # final loss
     self.loss[:] = self.perf_loss + spike_cost * self.spike_loss + weight_cost * self.weight_loss
@@ -214,10 +217,10 @@ def trial(task_name, save_fn=None):
   # task.plot_neural_input(trial_info)
 
   model = Model(task)
-  opt = bp.optimizers.Adam(learning_rate, train_vars=model.train_vars())
-  vg = mjax.value_and_grad(model.loss_func, vars=model.vars())
+  opt = bm.optimizers.Adam(learning_rate, train_vars=model.train_vars())
+  vg = bm.value_and_grad(model.loss_func, vars=model.vars())
 
-  @mjax.jit
+  @bm.jit
   @bp.math.function(nodes=(model, opt))
   def train_op(x, y, mask):
     _, grads = vg(x, y, mask)
@@ -229,7 +232,7 @@ def trial(task_name, save_fn=None):
         grad *= model.w_ro_mask
       elif 'w_ri' in key:
         grad *= model.w_ir_mask
-      capped_gs[key] = mjax.clip_by_norm(grad, clip_max_grad_val)
+      capped_gs[key] = bm.clip_by_norm(grad, clip_max_grad_val)
     opt.update(grads=capped_gs)
 
   # keep track of the model performance across training
@@ -240,9 +243,9 @@ def trial(task_name, save_fn=None):
     model.reset()
     # generate batch of batch_train_size
     trial_info = task.generate_trial(set_rule=None)
-    inputs = mjax.array(trial_info['neural_input'], dtype=mjax.float32)
-    targets = mjax.array(trial_info['desired_output'], dtype=mjax.float32)
-    mask = mjax.array(trial_info['train_mask'], dtype=mjax.float32)
+    inputs = bm.array(trial_info['neural_input'], dtype=bm.float32)
+    targets = bm.array(trial_info['desired_output'], dtype=bm.float32)
+    mask = bm.array(trial_info['train_mask'], dtype=bm.float32)
 
     # Run the model
     train_op(inputs, targets, mask)
@@ -264,7 +267,7 @@ def trial(task_name, save_fn=None):
             f' | Perf loss {model.perf_loss[0]:0.4f}' +
             f' | Spike loss {model.spike_loss[0]:0.4f}' +
             f' | Weight loss {model.weight_loss[0]:0.4f}' +
-            f' | Mean activity {mjax.mean(model.h):0.4f}')
+            f' | Mean activity {bm.mean(model.h):0.4f}')
 
   if save_fn:
     if not os.path.exists(os.path.dirname(save_fn)):
