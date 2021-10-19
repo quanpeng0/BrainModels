@@ -218,12 +218,13 @@ def trial(task_name, save_fn=None):
 
   model = Model(task)
   opt = bm.optimizers.Adam(learning_rate, train_vars=model.train_vars())
-  vg = bm.value_and_grad(model.loss_func, vars=model.vars())
+  grad_f = bm.grad(model.loss_func, dyn_vars=model.vars(),
+                   grad_vars=model.train_vars(), return_value=True)
 
   @bm.jit
   @bp.math.function(nodes=(model, opt))
   def train_op(x, y, mask):
-    _, grads = vg(x, y, mask)
+    grads, _ = grad_f(x, y, mask)
     capped_gs = dict()
     for key, grad in grads.items():
       if 'w_rr' in key:

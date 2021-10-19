@@ -63,7 +63,7 @@ def plot_examples(num_time, inputs, hiddens, outputs, targets, num_example=1, nu
 
   for bidx in range(num_example):
     plt.subplot(3, num_example, bidx + 1)
-    plt.plot(inputs[bidx, :], 'k')
+    plt.plot(inputs[:, bidx], 'k')
     plt.xlim([0, num_time])
     plt.title('Example %d' % bidx)
     if bidx == 0: plt.ylabel('Input Units')
@@ -71,14 +71,14 @@ def plot_examples(num_time, inputs, hiddens, outputs, targets, num_example=1, nu
   closeness = 0.25
   for bidx in range(num_example):
     plt.subplot(3, num_example, num_example + bidx + 1)
-    plt.plot(hiddens[bidx, :, 0:num_plot] + closeness * np.arange(num_plot), 'b')
+    plt.plot(hiddens[:, bidx, 0:num_plot] + closeness * np.arange(num_plot), 'b')
     plt.xlim([0, num_time])
     if bidx == 0: plt.ylabel('Hidden Units')
 
   for bidx in range(num_example):
     plt.subplot(3, num_example, 2 * num_example + bidx + 1)
-    plt.plot(outputs[bidx, :, :], 'r', label='predict')
-    plt.plot(targets[bidx, :, :], 'k', label='target')
+    plt.plot(outputs[:, bidx, :], 'r', label='predict')
+    plt.plot(targets[:, bidx, :], 'k', label='target')
     plt.xlim([0, num_time])
     plt.xlabel('Time steps')
     plt.legend()
@@ -179,7 +179,7 @@ def plot_data(num_time, inputs, targets=None, outputs=None, errors=None, num_plo
 
 
 # %%
-@partial(bm.jit, vars=bp.ArrayCollector({'a': bm.random.DEFAULT}), static_argnums=(2, 3, 4))
+@partial(bm.jit, dyn_vars=bp.ArrayCollector({'a': bm.random.DEFAULT}))
 def build_inputs_and_targets(mean, scale):
   """Build white noise input and integration targets."""
 
@@ -238,9 +238,6 @@ class IntegratorRNN(bp.DynamicalSystem):
     self.l2_loss = bm.Variable(bm.zeros(1))
     self.mse_loss = bm.Variable(bm.zeros(1))
 
-    # functions
-    self.val_and_grad = bm.value_and_grad(self.loss)
-
   def update(self, x, **kwargs):
     self.h.value = bm.tanh(self.h @ self.w_rr + x @ self.w_ir + self.b_rr)
     self.o.value = self.h @ self.w_ro + self.b_ro
@@ -276,7 +273,8 @@ optimizer = bm.optimizers.Adam(lr=lr, train_vars=net.train_vars(), eps=1e-1)
 @bm.jit
 @bm.function(nodes=(net, optimizer))
 def train(inputs, targets):
-  loss, grads = net.val_and_grad(inputs, targets)
+  grad_f = bm.grad(net.loss, vars=net.vars(), return_value=True)
+  grads, loss =grad_f(inputs, targets)
   clipped_grads = bm.clip_by_norm(grads, max_grad_norm)
   optimizer.update(clipped_grads)
   return loss
