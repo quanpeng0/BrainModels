@@ -10,23 +10,6 @@ In such a way, once your new model is created, it can be easily shared
 with other BrainPy users.
 
 
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Examples from paper
-
-   examples/neurons/_index
-   examples/cann/_index
-   examples/ei_nets/_index
-   examples/gj_nets/_index
-   examples/oscillation_synchronization/_index
-   examples/working_memory/_index
-   examples/decision_making/_index
-   examples/recurrent_networks/_index
-
-.. examples/_index
-
-
 .. toctree::
    :maxdepth: 3
    :caption: API documentation
