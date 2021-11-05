@@ -3,12 +3,14 @@
 import brainpy as bp
 import brainpy.math as bm
 
+from .base import Neuron
+
 __all__ = [
   'GIF'
 ]
 
 
-class GIF(bp.NeuGroup):
+class GIF(Neuron):
   r"""Generalized Integrate-and-Fire model.
 
   **Model Descriptions**
@@ -37,7 +39,7 @@ class GIF(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Detailed examples to reproduce different firing patterns <../../examples/neurons/Niebur_2009_GIF.ipynb>`_
+  - `Detailed examples to reproduce different firing patterns <https://brainpy-examples.readthedocs.io/en/latest/neurons/Niebur_2009_GIF.html>`_
 
   **Model Parameters**
 
@@ -92,9 +94,9 @@ class GIF(bp.NeuGroup):
 
   def __init__(self, size, V_rest=-70., V_reset=-70., V_th_inf=-50., V_th_reset=-60.,
                R=20., tau=20., a=0., b=0.01, k1=0.2, k2=0.02, R1=0., R2=1., A1=0.,
-               A2=0., num_batch=None, **kwargs):
+               A2=0., method='exponential_euler', **kwargs):
     # initialization
-    super(GIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
+    super(GIF, self).__init__(size=size, method=method, **kwargs)
 
     # params
     self.V_rest = V_rest
@@ -113,16 +115,14 @@ class GIF(bp.NeuGroup):
     self.A2 = A2
 
     # vars
-    self.I1 = bm.Variable(bm.zeros(self.shape))
-    self.I2 = bm.Variable(bm.zeros(self.shape))
-    self.V = bm.Variable(bm.ones(self.shape) * -70.)
-    self.V_th = bm.Variable(bm.ones(self.shape) * -50.)
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.I1 = bm.Variable(bm.zeros(self.num))
+    self.I2 = bm.Variable(bm.zeros(self.num))
+    self.V_th = bm.Variable(bm.ones(self.num) * -50.)
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, I1, I2, V_th, V, t, Iext):
+    # integral
+    self.integral = bp.odeint(method=method, f=self.derivative)
+
+  def derivative(self, I1, I2, V_th, V, t, Iext):
     dI1dt = - self.k1 * I1
     dI2dt = - self.k2 * I2
     dVthdt = self.a * (V - self.V_rest) - self.b * (V_th - self.V_th_inf)

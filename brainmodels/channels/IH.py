@@ -3,13 +3,14 @@
 
 import brainpy as bp
 import brainpy.math as bm
+from .base import Channel
 
 __all__ = [
   'Ih',
 ]
 
 
-class Ih(bp.Channel):
+class Ih(Channel):
   r"""The hyperpolarization-activated cation current model.
 
   The hyperpolarization-activated cation current model is adopted from (Huguenard, et, al., 1992) [1]_.
@@ -52,13 +53,13 @@ class Ih(bp.Channel):
     self.phi = phi
     self.g_max = g_max
     self.E = E
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
   def init(self, host, **kwargs):
     super(Ih, self).init(host)
     self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, p, t, V):
+  def derivative(self, p, t, V):
     p_inf = 1. / (1. + bm.exp((V + 75.) / 5.5))
     p_tau = 1. / (bm.exp(-0.086 * V - 14.59) + bm.exp(0.0701 * V - 1.87))
     dpdt = self.phi * (p_inf - p) / p_tau

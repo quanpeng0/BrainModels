@@ -2,6 +2,7 @@
 
 import brainpy as bp
 import brainpy.math as bm
+from .base import Channel
 
 __all__ = [
   'IDR',
@@ -9,7 +10,7 @@ __all__ = [
 ]
 
 
-class IDR(bp.Channel):
+class IDR(Channel):
   r"""The delayed rectifier potassium channel current.
 
   The potassium current model is adopted from (Bazhenov, et, al. 2002) [1]_.
@@ -81,19 +82,19 @@ class IDR(bp.Channel):
     self.host.V_linear -= g
 
 
-class IK2(bp.Channel):
+class IK2(Channel):
   def __init__(self, E, g_max, **kwargs):
     super(IK2, self).__init__(**kwargs)
 
     self.E = E
     self.g_max = g_max
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
   def init(self, host, **kwargs):
     super(IK2, self).init(host)
     self.n = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, n, t, V):
+  def derivative(self, n, t, V):
     alpha = 0.01 * (V + 55) / (1 - bp.math.exp(-(V + 55) / 10))
     beta = 0.125 * bp.math.exp(-(V + 65) / 80)
     dndt = alpha * (1 - n) - beta * n

@@ -2,6 +2,7 @@
 
 import brainpy as bp
 import brainpy.math as bm
+from .base import Channel
 
 __all__ = [
   'Ca',
@@ -14,7 +15,7 @@ __all__ = [
 ]
 
 
-class BaseCa(bp.Channel):
+class BaseCa(Channel):
   """The base calcium dynamics."""
   E = None
   I_Ca = None
@@ -165,6 +166,16 @@ class DynCa(BaseCa):
     self.tau = tau
     self.C_rest = C_rest
     self.C_0 = C_0
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
+
+  def derivative(self, C, t, ICa):
+    dCdt = - ICa / (2 * self.F * self.d) + (self.C_rest - C) / self.tau
+    return dCdt
+
+  def update(self, _t, _dt, **kwargs):
+    self.C[:] = self.integral(self.C, _t, self.I_Ca, dt=_dt)
+    self.E[:] = self.R * (273.15 + self.T) / (2 * self.F) * bm.log(self.C_0 / self.C)
+    self.I_Ca[:] = 0.
 
   def init(self, host, **kwargs):
     super(DynCa, self).init(host)
@@ -175,18 +186,10 @@ class DynCa(BaseCa):
     # Used to receive all Calcium currents
     self.I_Ca = bm.Variable(bm.zeros(self.host.shape, dtype=bm.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, C, t, ICa):
-    dCdt = - ICa / (2 * self.F * self.d) + (self.C_rest - C) / self.tau
-    return dCdt
-
-  def update(self, _t, _dt, **kwargs):
-    self.C[:] = self.integral(self.C, _t, self.I_Ca, dt=_dt)
-    self.E[:] = self.R * (273.15 + self.T) / (2 * self.F) * bm.log(self.C_0 / self.C)
-    self.I_Ca[:] = 0.
 
 
-class IAHP(bp.Channel):
+
+class IAHP(Channel):
   r"""The calcium-dependent potassium current model.
 
   The dynamics of the calcium-dependent potassium current model is given by:
@@ -235,14 +238,15 @@ class IAHP(bp.Channel):
 
     self.E = E
     self.g_max = g_max
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
+
 
   def init(self, host, **kwargs):
     super(IAHP, self).init(host)
     assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
     self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, p, t, C):
+  def derivative(self, p, t, C):
     C2 = 48 * C ** 2
     phi_p = C2 / (C2 + 0.09)
     p_inf = 1 / (C2 + 0.09)
@@ -256,7 +260,7 @@ class IAHP(bp.Channel):
     self.host.V_linear -= g
 
 
-class ICaN(bp.Channel):
+class ICaN(Channel):
   r"""The calcium-activated non-selective cation channel model.
 
   The dynamics of the calcium-activated non-selective cation channel model is given by:
@@ -298,14 +302,14 @@ class ICaN(bp.Channel):
     self.E = E
     self.g_max = g_max
     self.phi = phi
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
   def init(self, host, **kwargs):
     super(ICaN, self).init(host)
     assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
     self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, p, t, V):
+  def derivative(self, p, t, V):
     phi_p = 1.0 / (1 + bm.exp(-(V + 43.) / 5.2))
     p_inf = 2.7 / (bm.exp(-(V + 55.) / 15.) + bm.exp((V + 55.) / 15.)) + 1.6
     dpdt = self.phi * (phi_p - p) / p_inf
@@ -319,7 +323,7 @@ class ICaN(bp.Channel):
     self.host.V_linear -= g
 
 
-class ICaT(bp.Channel):
+class ICaT(Channel):
   r"""The low-threshold T-type calcium current model.
 
   The dynamics of the low-threshold T-type calcium current model [1]_ is given by:
@@ -367,6 +371,7 @@ class ICaT(bp.Channel):
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
   def init(self, host, **kwargs):
     super(ICaT, self).init(host)
@@ -374,8 +379,7 @@ class ICaT(bp.Channel):
     self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
     self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, p, q, t, V):
+  def derivative(self, p, q, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
     p_inf = 1. / (1 + bm.exp(-(V + 59. - self.V_sh) / 6.2))
     p_tau = 1. / (bm.exp(-(V + 132. - self.V_sh) / 16.7) + bm.exp((V + 16.8 - self.V_sh) / 18.2)) + 0.612
@@ -399,7 +403,7 @@ class ICaT(bp.Channel):
     self.host.ca.I_Ca -= I
 
 
-class ICaT_RE(bp.Channel):
+class ICaT_RE(Channel):
   r"""The low-threshold T-type calcium current model in thalamic reticular nucleus.
 
   The dynamics of the low-threshold T-type calcium current model [1]_ [2]_ in thalamic
@@ -451,6 +455,7 @@ class ICaT_RE(bp.Channel):
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
   def init(self, host, **kwargs):
     super(ICaT_RE, self).init(host)
@@ -458,8 +463,7 @@ class ICaT_RE(bp.Channel):
     self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
     self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, p, q, t, V):
+  def derivative(self, p, q, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
     p_inf = 1. / (1. + bm.exp(-(V + 52. - self.V_sh) / 7.4))
     p_tau = 3. + 1. / (bm.exp((V + 27. - self.V_sh) / 10.) + bm.exp(-(V + 102. - self.V_sh) / 15.))
@@ -481,7 +485,7 @@ class ICaT_RE(bp.Channel):
     self.host.ca.I_Ca -= I
 
 
-class ICaHT(bp.Channel):
+class ICaHT(Channel):
   r"""The high-threshold T-type calcium current model.
 
   The high-threshold T-type calcium current model is adopted from [1]_.
@@ -533,6 +537,7 @@ class ICaHT(bp.Channel):
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
   def init(self, host, **kwargs):
     super(ICaHT, self).init(host)
@@ -540,8 +545,7 @@ class ICaHT(bp.Channel):
     self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
     self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, p, q, t, V):
+  def derivative(self, p, q, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
     p_inf = 1. / (1. + bm.exp(-(V + 59. - self.V_sh) / 6.2))
     p_tau = 1. / (bm.exp(-(V + 132. - self.V_sh) / 16.7) + bm.exp((V + 16.8 - self.V_sh) / 18.2)) + 0.612
@@ -565,7 +569,7 @@ class ICaHT(bp.Channel):
     self.host.ca.I_Ca -= I
 
 
-class ICaL(bp.Channel):
+class ICaL(Channel):
   r"""The L-type calcium channel model.
 
   The L-type calcium channel model is adopted from (Inoue, et, al., 2008) [1]_.
@@ -613,6 +617,7 @@ class ICaL(bp.Channel):
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
   def init(self, host, **kwargs):
     super(ICaL, self).init(host)
@@ -620,8 +625,7 @@ class ICaL(bp.Channel):
     self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
     self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, p, q, t, V):
+  def derivative(self, p, q, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
     p_inf = 1. / (1 + bm.exp(-(V + 10. - self.V_sh) / 4.))
     p_tau = 0.4 + .7 / (bm.exp(-(V + 5. - self.V_sh) / 15.) + bm.exp((V + 5. - self.V_sh) / 15.))

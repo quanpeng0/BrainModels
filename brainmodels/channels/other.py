@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
-
+from .base import Channel
 
 __all__ = [
   'IL',
@@ -9,7 +8,7 @@ __all__ = [
 ]
 
 
-class IL(bp.Channel):
+class IL(Channel):
   """The leakage channel current.
 
   Parameters

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+from .base import Neuron
 
 __all__ = [
   'ExpIF'
 ]
 
 
-class ExpIF(bp.NeuGroup):
+class ExpIF(Neuron):
   r"""Exponential integrate-and-fire neuron model.
 
   **Model Descriptions**
@@ -51,7 +51,15 @@ class ExpIF(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Illustrated example <../neurons/ExpIF.ipynb>`_
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> group = brainmodels.neurons.ExpIF(1, monitors=['V'])
+    >>> group.run(300., inputs=('input', 10.))
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, ylabel='V', show=True)
+
 
   **Model Parameters**
 
@@ -99,9 +107,9 @@ class ExpIF(bp.NeuGroup):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
-               R=1., tau=10., tau_ref=1.7, num_batch=None, **kwargs):
+               R=1., tau=10., tau_ref=1.7, method='euler', **kwargs):
     # initialize
-    super(ExpIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
+    super(ExpIF, self).__init__(size=size, method=method, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -114,14 +122,9 @@ class ExpIF(bp.NeuGroup):
     self.tau_ref = tau_ref
 
     # variables
-    self.V = bm.Variable(bm.ones(self.shape) * V_rest)
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
 
-  @bp.odeint
-  def integral(self, V, t, Iext):
+  def derivative(self, V, t, Iext):
     exp_v = self.delta_T * bm.exp((V - self.V_T) / self.delta_T)
     dvdt = (- (V - self.V_rest) + exp_v + self.R * Iext) / self.tau
     return dvdt
