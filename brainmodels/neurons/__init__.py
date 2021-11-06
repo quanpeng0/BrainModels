@@ -11,3 +11,4 @@ from .Izhikevich import *
 from .LIF import *
 from .MorrisLecar import *
 from .QuaIF import *
+from .base import *

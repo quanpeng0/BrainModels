@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+from .base import Neuron
 
 __all__ = [
   'HindmarshRose'
 ]
 
 
-class HindmarshRose(bp.NeuGroup):
+class HindmarshRose(Neuron):
   r"""Hindmarsh-Rose neuron model.
 
   **Model Descriptions**
@@ -34,7 +34,29 @@ class HindmarshRose(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Illustrated examples to reproduce different firing patterns <../neurons/HindmarshRose_model.ipynb>`_
+  >>> import brainpy as bp
+  >>> import brainmodels
+  >>> import matplotlib.pyplot as plt
+  >>>
+  >>> bp.math.set_dt(dt=0.01)
+  >>> bp.set_default_odeint('rk4')
+  >>>
+  >>> types = ['quiescence', 'spiking', 'bursting', 'irregular_spiking', 'irregular_bursting']
+  >>> bs = bp.math.array([1.0, 3.5, 2.5, 2.95, 2.8])
+  >>> Is = bp.math.array([2.0, 5.0, 3.0, 3.3, 3.7])
+  >>>
+  >>> # define neuron type
+  >>> group = brainmodels.neurons.HindmarshRose(len(types), b=bs, monitors=['V'])
+  >>> group = bp.math.jit(group)
+  >>> group.run(1e3, inputs=['input', Is], report=0.1)
+  >>>
+  >>> fig, gs = bp.visualize.get_figure(row_num=3, col_num=2, row_len=3, col_len=5)
+  >>> for i, mode in enumerate(types):
+  >>>     fig.add_subplot(gs[i // 2, i % 2])
+  >>>     plt.plot(group.mon.ts, group.mon.V[:, i])
+  >>>     plt.title(mode)
+  >>>     plt.xlabel('Time [ms]')
+  >>> plt.show()
 
   **Model Parameters**
 
@@ -83,9 +105,9 @@ class HindmarshRose(bp.NeuGroup):
   """
 
   def __init__(self, size, a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6,
-               V_th=1.0, num_batch=None, **kwargs):
+               V_th=1.0, method='euler', **kwargs):
     # initialization
-    super(HindmarshRose, self).__init__(size=size, num_batch=num_batch, **kwargs)
+    super(HindmarshRose, self).__init__(size=size, method=method, **kwargs)
 
     # parameters
     self.a = a
@@ -98,15 +120,10 @@ class HindmarshRose(bp.NeuGroup):
     self.V_rest = V_rest
 
     # variables
-    self.z = bm.Variable(bm.zeros(self.shape))
-    self.V = bm.Variable(bm.ones(self.shape) * -1.6)
-    self.y = bm.Variable(bm.ones(self.shape) * -10.)
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.z = bm.Variable(bm.zeros(self.num))
+    self.y = bm.Variable(bm.ones(self.num) * -10.)
 
-  @bp.odeint
-  def integral(self, V, y, z, t, Iext):
+  def derivative(self, V, y, z, t, Iext):
     dVdt = y - self.a * V * V * V + self.b * V * V - z + Iext
     dydt = self.c - self.d * V * V - y
     dzdt = self.r * (self.s * (V - self.V_rest) - z)

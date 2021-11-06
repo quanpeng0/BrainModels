@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+
+from .base import Neuron
 
 __all__ = [
   'LIF'
 ]
 
 
-class LIF(bp.NeuGroup):
+class LIF(Neuron):
   r"""Leaky integrate-and-fire neuron model.
 
   **Model Descriptions**
@@ -29,8 +30,22 @@ class LIF(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Illustrated example <../neurons/LIF.ipynb>`_
-  - `(Brette, Romain. 2004) LIF phase locking <../../examples/neurons/Romain_2004_LIF_phase_locking.ipynb>`_
+  - `(Brette, Romain. 2004) LIF phase locking <https://brainpy-examples.readthedocs.io/en/latest/neurons/Romain_2004_LIF_phase_locking.html>`_
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainmodels
+    >>> import brainpy as bp
+    >>>
+    >>> group = bp.math.jit(brainmodels.neurons.LIF(100, monitors=['V']))
+    >>>
+    >>> group.run(duration=200., inputs=('input', 26.), report=0.1)
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, legend='0-200 ms')
+    >>>
+    >>> group.run(duration=(200, 400.), report=0.1)
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, legend='200-400 ms', show=True)
+
 
   **Model Parameters**
 
@@ -63,9 +78,9 @@ class LIF(bp.NeuGroup):
   """
 
   def __init__(self, size, V_rest=0., V_reset=-5., V_th=20., tau=10.,
-               tau_ref=1., num_batch=None, **kwargs):
+               tau_ref=1., method='exponential_euler', **kwargs):
     # initialization
-    super(LIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
+    super(LIF, self).__init__(size=size, method=method, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -75,14 +90,9 @@ class LIF(bp.NeuGroup):
     self.tau_ref = tau_ref
 
     # variables
-    self.V = bm.Variable(bm.ones(self.shape) * V_rest)
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, V, t, Iext):
+  def derivative(self, V, t, Iext):
     dvdt = (-V + self.V_rest + Iext) / self.tau
     return dvdt
 

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+from .base import Neuron
 
 __all__ = [
   'AdQuaIF'
 ]
 
 
-class AdQuaIF(bp.NeuGroup):
+class AdQuaIF(Neuron):
   r"""Adaptive quadratic integrate-and-fire neuron model.
 
   **Model Descriptions**
@@ -31,7 +31,18 @@ class AdQuaIF(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Simple example <../neurons/AdQuaIF.ipynb>`_
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> group = brainmodels.neurons.AdQuaIF(1, monitors=['V', 'w'])
+    >>> group.run(300, inputs=('input', 30.))
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 8)
+    >>> fig.add_subplot(gs[0, 0])
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, ylabel='V')
+    >>> fig.add_subplot(gs[1, 0])
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.w, ylabel='w', show=True)
 
   **Model Parameters**
 
@@ -75,8 +86,8 @@ class AdQuaIF(bp.NeuGroup):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0, a=1., b=.1,
-               c=.07, tau=10., tau_w=10., num_batch=None, **kwargs):
-    super(AdQuaIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
+               c=.07, tau=10., tau_w=10., method='euler', **kwargs):
+    super(AdQuaIF, self).__init__(size=size, method=method, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -90,26 +101,16 @@ class AdQuaIF(bp.NeuGroup):
     self.tau_w = tau_w
 
     # variables
-    self.V = bm.Variable(bm.ones(self.shape) * V_reset)
-    self.w = bm.Variable(bm.zeros(self.shape))
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.w = bm.Variable(bm.zeros(self.num))
+    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
 
-  @bp.odeint
-  def int_V(self, V, t, w, Iext):
+  def derivative(self, V, w, t, Iext):
     dVdt = (self.c * (V - self.V_rest) * (V - self.V_c) - w + Iext) / self.tau
-    return dVdt
-
-  @bp.odeint(method='exponential_euler')
-  def int_w(self, w, t, V):
     dwdt = (self.a * (V - self.V_rest) - w) / self.tau_w
-    return dwdt
+    return dVdt, dwdt
 
   def update(self, _t, _dt):
-    w = self.int_w(self.w, _t, self.V, dt=_dt)
-    V = self.int_V(self.V, _t, self.w, self.input, dt=_dt)
+    V, w = self.integral(self.V, self.w, _t, self.input, dt=_dt)
     spike = self.V_th <= V
     self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
     self.V[:] = bm.where(spike, self.V_reset, V)

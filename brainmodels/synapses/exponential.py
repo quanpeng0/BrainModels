@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
+
 import brainpy.math as bm
+
+from .base import Synapse
 
 __all__ = [
   'ExpCUBA', 'ExpCOBA'
 ]
 
 
-class ExpCUBA(bp.TwoEndConn):
+class ExpCUBA(Synapse):
   r"""Current-based exponential decay synapse model.
 
   **Model Descriptions**
@@ -78,64 +80,42 @@ class ExpCUBA(bp.TwoEndConn):
   """
 
   def __init__(self, pre, post, conn, g_max=1., delay=0., tau=8.0,
-               update_type='sparse', **kwargs):
-
-    # initialization
-    super(ExpCUBA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
-
-    # checking
-    assert hasattr(self.pre, 'spike'), 'Pre-synaptic group must has "spike" variable.'
-    assert hasattr(self.post, 'input'), 'Post-synaptic group must has "input" variable.'
+               method='exponential_euler', **kwargs):
+    super(ExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
 
     # parameters
     self.tau = tau
     self.delay = delay
     self.g_max = g_max
 
-    # connections
-    if update_type == 'sparse':
-      self.pre_slice, self.post_ids = self.conn.requires('pre_slice', 'post_ids')
-      self.steps.replace('update', self._sparse_update)
-      self.size = self.post.num
-      self.target_backend = 'numpy'
-
-    elif update_type == 'dense':
-      self.conn_mat = self.conn.requires('conn_mat')
-      self.steps.replace('update', self._dense_update)
-      self.size = self.conn_mat.shape
-
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # variables
-    self.g = bm.Variable(bm.zeros(self.size))
-    self.pre_spike = self.register_constant_delay('pre_spike', self.pre.shape, delay)
+    self.g = bm.Variable(bm.zeros(self.post.num))
+    self.pre_spike = self.register_constant_delay('pre_spike', self.pre.num, delay)
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, g, t):
+  def derivative(self, g, t):
     dg = -g / self.tau
     return dg
 
-  def _sparse_update(self, _t, _dt):
+  def numpy_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
-
     self.g[:] = self.integral(self.g, _t, dt=_dt)
-    spike_pre_ids = bm.where(pre_spike)[0]
-    for pre_id in spike_pre_ids:
-      start, end = self.pre_slice[pre_id]
-      post_ids = self.post_ids[start: end]
-      self.g[post_ids] += self.g_max
+    for i in range(self.num):
+      pre_id = self.pre_ids[i]
+      if pre_spike[pre_id]:
+        post_id = self.post_ids[i]
+        self.g[post_id] += self.g_max
     self.post.input[:] += self.g
 
-  def _dense_update(self, _t, _dt):
+  def jax_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
-    pre_spike = self.pre_spike.pull()
-
-    self.g[:] = self.integral(self.g, _t, dt=_dt)
-    for i in range(self.pre.num):
-      i_spike = pre_spike[i]
-      if i_spike: self.g[i] += self.conn_mat[i] * self.g_max
+    delayed_pre_spike = self.pre_spike.pull()
+    self.g.value = self.integral(self.g.value, _t, dt=_dt)
+    fsp = bm.vmap(lambda pre_i, pre_sp: pre_sp[pre_i], in_axes=(0, None))
+    spikes = fsp(self.pre_ids.value, delayed_pre_spike)
+    post_sp = bm.segment_sum(spikes, self.post_ids, self.post.num)
+    self.g.value += post_sp * self.g_max
+    self.post.input.value += self.g.value
 
 
 class ExpCOBA(ExpCUBA):
@@ -190,33 +170,28 @@ class ExpCOBA(ExpCUBA):
   """
 
   def __init__(self, pre, post, conn, g_max=1., delay=0., tau=8.0, E=0.,
-               update_type='sparse', **kwargs):
+               method='exponential_euler', **kwargs):
     super(ExpCOBA, self).__init__(pre=pre, post=post, conn=conn,
                                   g_max=g_max, delay=delay, tau=tau,
-                                  update_type=update_type, **kwargs)
+                                  method=method, **kwargs)
 
     self.E = E
-    assert hasattr(self.post, 'V'), 'Post-synaptic group must has "V" variable.'
 
-  def _sparse_update(self, _t, _dt):
+  def numpy_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
-
     self.g[:] = self.integral(self.g, _t, dt=_dt)
-    for pre_id in range(self.pre.num):
-      if pre_spike[pre_id]:
-        start, end = self.pre_slice[pre_id]
-        for post_id in self.post_ids[start: end]:
-          self.g[post_id] += self.g_max
-
-    self.post.input[:] += self.g * (self.E - self.post.V)
-
-  def _loop_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    pre_spike = self.pre_spike.pull()
-
-    self.g[:] = self.integral(self.g, _t, dt=_dt)
-    for i in range(self.size):
+    for i in range(self.num):
       pre_i, post_i = self.pre_ids[i], self.post_ids[i]
       if pre_spike[pre_i]: self.g[i] += self.g_max
       self.post.input[post_i] += self.g * (self.E - self.post.V)
+
+  def jax_update(self, _t, _dt):
+    self.pre_spike.push(self.pre.spike)
+    delayed_pre_spike = self.pre_spike.pull()
+    self.g.value = self.integral(self.g.value, _t, dt=_dt)
+    fsp = bm.vmap(lambda pre_i, pre_sp: pre_sp[pre_i], in_axes=(0, None))
+    spikes = fsp(self.pre_ids.value, delayed_pre_spike)
+    post_sp = bm.segment_sum(spikes, self.post_ids, self.post.num)
+    self.g.value += post_sp * self.g_max
+    self.post.input.value += self.g * (self.E - self.post.V)

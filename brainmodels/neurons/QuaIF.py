@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+from .base import Neuron
 
 __all__ = [
   'QuaIF'
 ]
 
 
-class QuaIF(bp.NeuGroup):
+class QuaIF(Neuron):
   r"""Quadratic Integrate-and-Fire neuron model.
 
   **Model Descriptions**
@@ -29,7 +29,20 @@ class QuaIF(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Illustrated example <../neurons/QuaIF.ipynb>`_
+  .. plot::
+    :include-source: True
+
+    >>> import brainmodels
+    >>> import brainpy as bp
+    >>>
+    >>> group = brainmodels.neurons.QuaIF(1, monitors=['V'])
+    >>>
+    >>> group.run(duration=200., inputs=('input', 20.), report=0.1)
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
+    >>>
+    >>> group.run(duration=(200, 400.), report=0.1)
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
+
 
   **Model Parameters**
   
@@ -66,9 +79,9 @@ class QuaIF(bp.NeuGroup):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0, c=.07,
-               R=1., tau=10., tau_ref=0., update_type='vector', num_batch=None, **kwargs):
+               R=1., tau=10., tau_ref=0., method='euler', **kwargs):
     # initialization
-    super(QuaIF, self).__init__(size=size, num_batch=num_batch, **kwargs)
+    super(QuaIF, self).__init__(size=size, method=method, **kwargs)
 
     # parameters
     self.V_rest = V_rest
@@ -80,26 +93,10 @@ class QuaIF(bp.NeuGroup):
     self.tau = tau
     self.tau_ref = tau_ref
 
-    # update method
-    self.update_type = update_type
-    if update_type == 'loop':
-      self.steps.replace('update', self._loop_update)
-      self.target_backend = 'numpy'
-    elif update_type == 'vector':
-      self.steps.replace('update', self._vector_update)
-      self.target_backend = 'general'
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # variables
-    self.V = bm.Variable(bm.ones(self.shape) * V_reset)
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
 
-  @bp.odeint
-  def integral(self, V, t, Iext):
+  def derivative(self, V, t, Iext):
     dVdt = (self.c * (V - self.V_rest) * (V - self.V_c) + self.R * Iext) / self.tau
     return dVdt
 

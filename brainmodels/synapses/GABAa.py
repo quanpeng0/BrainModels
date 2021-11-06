@@ -63,7 +63,7 @@ class GABAa(AMPA):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=0.04, E=-80., alpha=0.53,
-               beta=0.18, T=1., T_duration=1., update_type='sparse', **kwargs):
+               beta=0.18, T=1., T_duration=1., method='exponential_euler', **kwargs):
     super(GABAa, self).__init__(pre, post, conn,
                                 delay=delay,
                                 g_max=g_max,
@@ -72,5 +72,5 @@ class GABAa(AMPA):
                                 beta=beta,
                                 T=T,
                                 T_duration=T_duration,
-                                update_type=update_type,
+                                method=method,
                                 **kwargs)

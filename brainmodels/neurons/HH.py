@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 
-import brainpy as bp
 import brainpy.math as bm
+from .base import Neuron
 
 __all__ = [
   'HH'
 ]
 
 
-class HH(bp.NeuGroup):
+class HH(Neuron):
   r"""Hodgkin–Huxley neuron model.
 
   **Model Descriptions**
@@ -100,7 +100,50 @@ class HH(bp.NeuGroup):
 
   **Model Examples**
 
-  - `An illustrated example <../neurons/HH_model.ipynb>`_
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> group = bp.math.jit(brainmodels.neurons.HH(2, monitors=['V']))
+    >>> group.run(200., inputs=('input', 10.), report=0.1)
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
+    >>> group.run(200., report=0.1)
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> group = bp.math.jit(brainmodels.neurons.HH(2, monitors=bp.Monitor(variables=['V'], intervals=[1.])))
+    >>> group.run(200., inputs=('input', 10.), report=0.1)
+    >>> bp.visualize.line_plot(group.mon['V.t'], group.mon.V, show=True)
+
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> group = bp.math.jit(brainmodels.neurons.HH(2, monitors=['V']))
+    >>> I1 = bp.inputs.spike_input(sp_times=[500., 550., 1000, 1030, 1060, 1100, 1200], sp_lens=5, sp_sizes=5., duration=2000, )
+    >>> I2 = bp.inputs.spike_input(sp_times=[600.,       900, 950, 1500], sp_lens=5, sp_sizes=5., duration=2000, )
+    >>> I1 += bp.math.random.normal(0, 3, size=I1.shape)
+    >>> I2 += bp.math.random.normal(0, 3, size=I2.shape)
+    >>> I = bp.math.stack((I1, I2), axis=-1)
+    >>> group.run(2000., inputs=('input', I, 'iter'), report=0.1)
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(1, 1, 3, 8)
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(group.mon.ts, group.mon.V[:, 0])
+    >>> plt.plot(group.mon.ts, group.mon.V[:, 1] + 130)
+    >>> plt.xlim(10, 2000)
+    >>> plt.xticks([])
+    >>> plt.yticks([])
+    >>> plt.show()
 
 
   **Model Parameters**
@@ -143,10 +186,10 @@ class HH(bp.NeuGroup):
          The Journal of Mathematical Neuroscience 6, no. 1 (2016): 1-92.
   """
 
-  def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36., EL=-54.387,  gL=0.03,
-              V_th=20., C=1.0, num_batch=None, **kwargs):
+  def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36., EL=-54.387, gL=0.03,
+               V_th=20., C=1.0, method='exponential_euler', **kwargs):
     # initialization
-    super(HH, self).__init__(size=size, num_batch=num_batch, **kwargs)
+    super(HH, self).__init__(size=size, method=method, **kwargs)
 
     # parameters
     self.ENa = ENa
@@ -159,16 +202,11 @@ class HH(bp.NeuGroup):
     self.V_th = V_th
 
     # variables
-    self.V = bm.Variable(-65. * bm.ones(self.shape))
-    self.m = bm.Variable(0.5 * bm.ones(self.shape))
-    self.h = bm.Variable(0.6 * bm.ones(self.shape))
-    self.n = bm.Variable(0.32 * bm.ones(self.shape))
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.m = bm.Variable(0.5 * bm.ones(self.num))
+    self.h = bm.Variable(0.6 * bm.ones(self.num))
+    self.n = bm.Variable(0.32 * bm.ones(self.num))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, V, m, h, n, t, Iext):
+  def derivative(self, V, m, h, n, t, Iext):
     alpha = 0.1 * (V + 40) / (1 - bm.exp(-(V + 40) / 10))
     beta = 4.0 * bm.exp(-(V + 65) / 18)
     dmdt = alpha * (1 - m) - beta * m

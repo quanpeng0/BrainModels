@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+from .base import Neuron
 
 __all__ = [
   'FHN'
 ]
 
 
-class FHN(bp.NeuGroup):
+class FHN(Neuron):
   r"""FitzHugh-Nagumo neuron model.
 
   **Model Descriptions**
@@ -47,7 +47,18 @@ class FHN(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Illustrated example <../neurons/FHN.ipynb>`_
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>>
+    >>> # simulation
+    >>> fnh = brainmodels.neurons.FHN(1, monitors=['V', 'w'])
+    >>> fnh.run(100., inputs=('input', 1.), report=0.1)
+    >>> bp.visualize.line_plot(fnh.mon.ts, fnh.mon.w, legend='w')
+    >>> bp.visualize.line_plot(fnh.mon.ts, fnh.mon.V, legend='V', show=True)
+
 
   **Model Parameters**
 
@@ -83,9 +94,9 @@ class FHN(bp.NeuGroup):
 
   """
 
-  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8, num_batch=None, **kwargs):
+  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8, method='euler', **kwargs):
     # initialization
-    super(FHN, self).__init__(size=size, num_batch=num_batch, **kwargs)
+    super(FHN, self).__init__(size=size, method=method, ** kwargs)
 
     # parameters
     self.a = a
@@ -94,14 +105,9 @@ class FHN(bp.NeuGroup):
     self.Vth = Vth
 
     # variables
-    self.V = bm.Variable(bm.zeros(self.shape))
-    self.w = bm.Variable(bm.zeros(self.shape))
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.w = bm.Variable(bm.zeros(self.num))
 
-  @bp.odeint
-  def integral(self, V, w, t, Iext):
+  def derivative(self, V, w, t, Iext):
     dw = (V + self.a - self.b * w) / self.tau
     dV = V - V * V * V / 3 - w + Iext
     return dV, dw

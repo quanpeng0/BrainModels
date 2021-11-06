@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+
+from .base import Synapse
 
 __all__ = [
   'DualExpCUBA', 'DualExpCOBA',
 ]
 
 
-class DualExpCUBA(bp.TwoEndConn):
+class DualExpCUBA(Synapse):
   r"""Current-based dual exponential synapse model.
 
   **Model Descriptions**
@@ -81,14 +82,9 @@ class DualExpCUBA(bp.TwoEndConn):
 
   """
 
-  def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0,
-               tau_rise=1., update_type='sparse', **kwargs):
-    # initialization
-    super(DualExpCUBA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
-
-    # checking
-    assert hasattr(pre, 'spike'), 'Pre-synaptic group must has "spike" variable.'
-    assert hasattr(post, 'input'), 'Post-synaptic group must has "input" variable.'
+  def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0, tau_rise=1.,
+               method='exponential_euler', **kwargs):
+    super(DualExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
 
     # parameters
     self.tau_rise = tau_rise
@@ -96,39 +92,33 @@ class DualExpCUBA(bp.TwoEndConn):
     self.delay = delay
     self.g_max = g_max
 
-    # connections
-    if update_type == 'sparse':
-      self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.steps.replace('update', self._sparse_update)
-      self.size = len(self.pre_ids)
-      self.target_backend = 'numpy'
-
-    elif update_type == 'dense':
-      raise NotImplementedError
-
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # variables
-    self.g = bm.Variable(bm.zeros(self.size))
-    self.h = bm.Variable(bm.zeros(self.size))
-    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.shape, delay=delay)
+    self.g = bm.Variable(bm.zeros(self.num))
+    self.h = bm.Variable(bm.zeros(self.num))
+    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, g, h, t):
+  def derivative(self, g, h, t):
     dgdt = -g / self.tau_decay + h
     dhdt = -h / self.tau_rise
     return dgdt, dhdt
 
-  def _sparse_update(self, _t, _dt):
+  def numpy_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
-
     self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
-    for i in range(self.size):
+    for i in range(self.num):
       pre_id, post_id = self.pre_ids[i], self.post_ids[i]
       self.h[i] += pre_spike[pre_id]
       self.post.input[post_id] += self.g_max * self.g[i]
+
+  def jax_update(self, _t, _dt):
+    self.pre_spike.push(self.pre.spike)
+    delayed_pre_spikes = self.pre_spike.pull()
+    self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
+    f_h = bm.vmap(lambda pre_id, pre_spike: pre_spike[pre_id], in_axes=(0, None))
+    self.h.value += f_h(self.pre_ids.value, delayed_pre_spikes)
+    self.post.input += self.g_max * bm.segment_sum(self.g, self.post_ids, self.post.num)
+
 
 
 class DualExpCOBA(DualExpCUBA):
@@ -182,21 +172,31 @@ class DualExpCOBA(DualExpCUBA):
          Cambridge: Cambridge UP, 2011. 172-95. Print.
 
   """
-  def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0,
-               tau_rise=1., E=0., update_type='sparse', **kwargs):
+  def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0, tau_rise=1.,
+               E=0., method='exponential_euler', **kwargs):
     super(DualExpCOBA, self).__init__(pre, post, conn, delay=delay, g_max=g_max,
                                       tau_decay=tau_decay, tau_rise=tau_rise,
-                                      update_type=update_type, **kwargs)
+                                      method=method, **kwargs)
 
     self.E = E
-    assert hasattr(post, 'V'), 'Post-synaptic group must has "V" variable.'
 
-  def _sparse_update(self, _t, _dt):
+  def numpy_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
 
     self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
-    for i in range(self.size):
+    for i in range(self.num):
       pre_id, post_id = self.pre_ids[i], self.post_ids[i]
       self.h[i] += pre_spike[pre_id]
       self.post.input[post_id] += self.g_max * self.g[i] * (self.E - self.post.V[post_id])
+
+  def jax_update(self, _t, _dt):
+    self.pre_spike.push(self.pre.spike)
+    delayed_pre_spikes = self.pre_spike.pull()
+    self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
+    f_h = bm.vmap(lambda pre_i, pre_spike: pre_spike[pre_i],
+                  in_axes=(0, None))
+    self.h.value += f_h(self.pre_ids.value, delayed_pre_spikes)
+    post_g = bm.segment_sum(self.g, self.post_ids, self.post.num)
+    self.post.input += self.g_max * post_g * (self.E - self.post.V)
+

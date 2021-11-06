@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+from .base import Neuron
 
 __all__ = [
   'MorrisLecar'
 ]
 
 
-class MorrisLecar(bp.NeuGroup):
+class MorrisLecar(Neuron):
   r"""The Morris-Lecar neuron model.
 
   **Model Descriptions**
@@ -38,7 +38,21 @@ class MorrisLecar(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Illustrated example <../neurons/MorrisLecar.ipynb>`_
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>>
+    >>> group = brainmodels.neurons.MorrisLecar(1, monitors=['V', 'W'], method='rk4')
+    >>> group.run(1000, inputs=('input', 100.), dt=0.05)
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 8)
+    >>> fig.add_subplot(gs[0, 0])
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.W, ylabel='W')
+    >>> fig.add_subplot(gs[1, 0])
+    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, ylabel='V', show=True)
+
 
   **Model Parameters**
 
@@ -85,9 +99,9 @@ class MorrisLecar(bp.NeuGroup):
 
   def __init__(self, size, V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_leak=-60.,
                g_leak=2., C=20., V1=-1.2, V2=18., V3=2., V4=30., phi=0.04,
-               V_th=10., num_batch=None, **kwargs):
+               V_th=10., method='euler', **kwargs):
     # initialization
-    super(MorrisLecar, self).__init__(size=size, num_batch=num_batch, **kwargs)
+    super(MorrisLecar, self).__init__(size=size, method=method, **kwargs)
 
     # params
     self.V_Ca = V_Ca
@@ -105,14 +119,9 @@ class MorrisLecar(bp.NeuGroup):
     self.V_th = V_th
 
     # vars
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.V = bm.Variable(bm.ones(self.shape) * -20.)
-    self.W = bm.Variable(bm.ones(self.shape) * 0.02)
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.W = bm.Variable(bm.ones(self.num) * 0.02)
 
-  @bp.odeint
-  def integral(self, V, W, t, I_ext):
+  def derivative(self, V, W, t, I_ext):
     M_inf = (1 / 2) * (1 + bm.tanh((V - self.V1) / self.V2))
     I_Ca = self.g_Ca * M_inf * (V - self.V_Ca)
     I_K = self.g_K * W * (V - self.V_K)

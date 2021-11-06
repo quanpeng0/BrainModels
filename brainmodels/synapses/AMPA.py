@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+
+from .base import Synapse
 
 __all__ = [
   'AMPA',
 ]
 
 
-class AMPA(bp.TwoEndConn):
+class AMPA(Synapse):
   r"""AMPA conductance-based synapse model.
 
   **Model Descriptions**
@@ -87,15 +88,8 @@ class AMPA(bp.TwoEndConn):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=0.42, E=0., alpha=0.98,
-               beta=0.18, T=0.5, T_duration=0.5, update_type='sparse', **kwargs):
-
-    # initialization
-    super(AMPA, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
-
-    # checking
-    assert hasattr(pre, 't_last_spike'), 'Pre-synaptic group must has "t_last_spike" variable.'
-    assert hasattr(post, 'V'), 'Post-synaptic group must has "V" variable.'
-    assert hasattr(post, 'input'), 'Post-synaptic group must has "input" variable.'
+               beta=0.18, T=0.5, T_duration=0.5, method='exponential_euler', **kwargs):
+    super(AMPA, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
 
     # parameters
     self.delay = delay
@@ -106,37 +100,34 @@ class AMPA(bp.TwoEndConn):
     self.T = T
     self.T_duration = T_duration
 
-    # connections
-    if update_type == 'sparse':
-      self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.steps.replace('update', self._sparse_update)
-      self.size = len(self.pre_ids)
-      self.target_backend = 'numpy'
-
-    elif update_type == 'dense':
-      raise NotImplementedError
-
-    else:
-      raise bp.errors.UnsupportedError(f'Do not support {update_type} method.')
-
     # variables
-    self.g = bm.Variable(bm.zeros(self.size))
-    self.pre_spike = self.register_constant_delay('ps', self.pre.shape, delay)
+    self.g = bm.Variable(bm.zeros(self.num))
+    self.pre_spike = self.register_constant_delay('ps', self.pre.num, delay)
     self.spike_arrival_time = bm.Variable(bm.ones(self.pre.num) * -1e7)
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, g, t, TT):
+  def derivative(self, g, t, TT):
     dg = self.alpha * TT * (1 - g) - self.beta * g
     return dg
 
-  def _sparse_update(self, _t, _dt):
+  def numpy_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
     self.spike_arrival_time[:] = bm.where(delayed_pre_spike, _t, self.spike_arrival_time)
-    for i in range(self.size):
+    for i in range(self.num):
       pre_id, post_id = self.pre_ids[i], self.post_ids[i]
       # update
       TT = ((_t - self.spike_arrival_time[pre_id]) < self.T_duration) * self.T
       self.g[i] = self.integral(self.g[i], _t, TT, dt=_dt)
       # output
       self.post.input[post_id] -= self.g_max * self.g[i] * (self.post.V[post_id] - self.E)
+
+  def jax_update(self, _t, _dt):
+    self.pre_spike.push(self.pre.spike)
+    delayed_pre_spike = self.pre_spike.pull()
+    self.spike_arrival_time.value = bm.where(delayed_pre_spike, _t, self.spike_arrival_time)
+    ft = bm.vmap(lambda pre_i, sp_times: ((_t - sp_times[pre_i]) < self.T_duration) * self.T,
+                 in_axes=(0, None))
+    TT = ft(self.pre_ids.value, self.spike_arrival_time.value)
+    self.g.value = self.integral(self.g.value, _t, TT, dt=_dt)
+    g_post = bm.segment_sum(self.g, self.post_ids, self.post.num)
+    self.post.input -= self.g_max * g_post * (self.post.V - self.E)

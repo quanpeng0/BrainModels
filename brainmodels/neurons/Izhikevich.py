@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+from .base import Neuron
 
 __all__ = [
   'Izhikevich'
 ]
 
 
-class Izhikevich(bp.NeuGroup):
+class Izhikevich(Neuron):
   r"""The Izhikevich neuron model.
 
   **Model Descriptions**
@@ -29,7 +29,7 @@ class Izhikevich(bp.NeuGroup):
 
   **Model Examples**
 
-  - `Detailed examples to reproduce different firing patterns <../../examples/neurons/Izhikevich_2003_Izhikevich_model.ipynb>`_
+  - `Detailed examples to reproduce different firing patterns <https://brainpy-examples.readthedocs.io/en/latest/neurons/Izhikevich_2003_Izhikevich_model.html>`_
 
   **Model Parameters**
 
@@ -77,9 +77,9 @@ class Izhikevich(bp.NeuGroup):
   """
 
   def __init__(self, size, a=0.02, b=0.20, c=-65., d=8., tau_ref=0.,
-               V_th=30., num_batch=None, **kwargs):
+               V_th=30., method='euler', **kwargs):
     # initialization
-    super(Izhikevich, self).__init__(size=size, num_batch=num_batch, **kwargs)
+    super(Izhikevich, self).__init__(size=size, method=method, **kwargs)
 
     # params
     self.a = a
@@ -90,26 +90,16 @@ class Izhikevich(bp.NeuGroup):
     self.tau_ref = tau_ref
 
     # vars
-    self.V = bm.Variable(bm.ones(self.shape) * -65.)
-    self.u = bm.Variable(bm.ones(self.shape))
-    self.input = bm.Variable(bm.zeros(self.shape))
-    self.spike = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.refractory = bm.Variable(bm.zeros(self.shape, dtype=bool))
-    self.t_last_spike = bm.Variable(bm.ones(self.shape) * -1e7)
+    self.u = bm.Variable(bm.ones(self.num))
+    self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
 
-  @bp.odeint
-  def int_V(self, V, t, u, Iext):
+  def derivative(self, V, u, t, Iext):
     dVdt = 0.04 * V * V + 5 * V + 140 - u + Iext
-    return dVdt
-
-  @bp.odeint
-  def int_u(self, u, t, V):
     dudt = self.a * (self.b * V - u)
-    return dudt
+    return dVdt, dudt
 
   def update(self, _t, _dt):
-    V = self.int_V(self.V, _t, self.u, self.input, dt=_dt)
-    u = self.int_u(self.u, _t, self.V, dt=_dt)
+    V, u = self.integral(self.V, self.u, _t, self.input, dt=_dt)
     refractory = (_t - self.t_last_spike) <= self.tau_ref
     V = bm.where(refractory, self.V, V)
     spike = self.V_th <= V

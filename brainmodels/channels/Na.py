@@ -2,6 +2,7 @@
 
 import brainpy as bp
 import brainpy.math as bm
+from .base import Channel
 
 __all__ = [
   'INa',
@@ -9,7 +10,7 @@ __all__ = [
 ]
 
 
-class INa(bp.Channel):
+class INa(Channel):
   r"""The sodium current model.
 
   The sodium current model is adopted from (Bazhenov, et, al. 2002) [1]_.
@@ -66,14 +67,14 @@ class INa(bp.Channel):
     self.E = E
     self.g_max = g_max
     self.V_sh = V_sh
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
   def init(self, host, **kwargs):
     super(INa, self).init(host)
     self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
     self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, p, q, t, V):
+  def derivative(self, p, q, t, V):
     phi = 3 ** ((self.T - 36) / 10)
     alpha_p = 0.32 * (V - self.V_sh - 13.) / (1. - bm.exp(-(V - self.V_sh - 13.) / 4.))
     beta_p = -0.28 * (V - self.V_sh - 40.) / (1. - bm.exp((V - self.V_sh - 40.) / 5.))
@@ -97,14 +98,14 @@ class INa2(bp.Channel):
 
     self.E = E
     self.g_max = g_max
+    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
   def init(self, host, **kwargs):
     super(INa2, self).init(host)
     self.m = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
     self.h = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, m, h, t, V):
+  def derivative(self, m, h, t, V):
     alpha = 0.1 * (V + 40) / (1 - bp.math.exp(-(V + 40) / 10))
     beta = 4.0 * bp.math.exp(-(V + 65) / 18)
     dmdt = alpha * (1 - m) - beta * m
