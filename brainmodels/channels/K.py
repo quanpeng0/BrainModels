@@ -63,12 +63,13 @@ class IDR(Channel):
     self.g_max = g_max
     self.V_sh = V_sh
 
+    self.integral = bp.odeint(self.derivative, method='exponential_euler')
+
   def init(self, host, **kwargs):
     super(IDR, self).init(host)
     self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
-  @bp.odeint(method='exponential_euler')
-  def integral(self, p, t, V):
+  def derivative(self, p, t, V):
     phi = self.T_base ** ((self.T - 36) / 10)
     alpha_p = 0.032 * (V - self.V_sh - 15.) / (1. - bm.exp(-(V - self.V_sh - 15.) / 5.))
     beta_p = 0.5 * bm.exp(-(V - self.V_sh - 10.) / 40.)
