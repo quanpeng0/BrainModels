@@ -58,8 +58,7 @@ class VoltageJump(Synapse):
     assert bm.size(w) == 1, 'This implementation only support scalar weight. '
     self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
 
-  def derivative(self, a, t):
-    pass
+  def derivative(self, a, t): pass
 
   def numpy_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
