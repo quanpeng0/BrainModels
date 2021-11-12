@@ -148,8 +148,7 @@ class NMDA(Synapse):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
     self.g[:], self.x[:] = self.integral(self.g, self.x, _t, dt=_dt)
-    fsp = bm.vmap(lambda pre_i, pre_sp: pre_sp[pre_i], in_axes=(0, None))
-    self.x.value += fsp(self.pre_ids.value, delayed_pre_spike)
-    post_g = bm.segment_sum(self.g, self.post_ids, self.post.num)
+    self.x.value += bm.pre2syn(delayed_pre_spike, self.pre_ids)
+    post_g = bm.syn2post(self.g, self.post_ids, self.post.num)
     g_inf = 1 + self.cc_Mg / self.beta * bm.exp(-self.alpha * self.post.V)
     self.post.input.value -= self.g_max * post_g * (self.post.V - self.E) / g_inf

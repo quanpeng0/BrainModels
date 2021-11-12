@@ -142,5 +142,12 @@ class STP(Synapse):
     self.delayed_I.push(self.I)
 
   def jax_update(self, _t, _dt):
-    pass
-
+    delayed_I = self.delayed_I.pull()
+    self.post.input += bm.syn2post(delayed_I, self.post_ids, self.post.num)
+    self.I.value, u, x = self.integral(self.I.value, self.u.value, self.x.value, _t, dt=_dt)
+    u += self.U * (1 - self.u)
+    x -= u * self.x
+    self.I.value += self.A * u * self.x * bm.pre2syn(self.pre.spike, self.pre_ids)
+    self.u.value = u
+    self.x.value = x
+    self.delayed_I.push(self.I.value)

@@ -2,7 +2,8 @@
 
 import brainpy as bp
 import brainpy.math as bm
-from .base import Channel
+
+from .base import MolChannel, IonChannel
 
 __all__ = [
   'Ca',
@@ -15,16 +16,13 @@ __all__ = [
 ]
 
 
-class BaseCa(Channel):
+class BaseCa(MolChannel):
   """The base calcium dynamics."""
   E = None
   I_Ca = None
 
-  def __init__(self, **kwargs):
-    super(BaseCa, self).__init__(**kwargs)
-
-  def init(self, host, **kwargs):
-    super(BaseCa, self).init(host)
+  def __init__(self, host, method, **kwargs):
+    super(BaseCa, self).__init__(host, method, **kwargs)
 
   def update(self, _t, _dt, **kwargs):
     raise NotImplementedError
@@ -36,17 +34,20 @@ class FixCa(BaseCa):
   This calcium model has no dynamics. It only hold a fixed reversal potential :math:`E`.
   """
 
-  def __init__(self, E=120., **kwargs):
-    super(FixCa, self).__init__(E=E, **kwargs)
+  def __init__(self, host, method, E=120., **kwargs):
+    super(FixCa, self).__init__(host, method, E=E, **kwargs)
 
     self.E = E
-
-  def init(self, host, **kwargs):
-    super(FixCa, self).init(host)
     self.input = bm.Variable(bm.zeros(self.host.shape, dtype=bm.float_))
 
-  def update(self, _t, _dt, **kwargs):
+  def update(self, _t, _dt):
     self.input[:] = 0.
+
+  @classmethod
+  def make(cls, **params):
+    for key in params.keys():
+      assert key in ['E']
+    return (cls, params)
 
 
 class DynCa(BaseCa):
@@ -156,8 +157,8 @@ class DynCa(BaseCa):
 
   """
 
-  def __init__(self, d=1., F=96.489, C_rest=0.05, tau=5., C_0=2., T=36., R=8.31441, **kwargs):
-    super(DynCa, self).__init__(**kwargs)
+  def __init__(self, host, method, d=1., F=96.489, C_rest=0.05, tau=5., C_0=2., T=36., R=8.31441, **kwargs):
+    super(DynCa, self).__init__(host, method, **kwargs)
 
     self.R = R  # gas constant, J*mol-1*K-1
     self.T = T
@@ -166,30 +167,25 @@ class DynCa(BaseCa):
     self.tau = tau
     self.C_rest = C_rest
     self.C_0 = C_0
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
+
+    # Concentration of the Calcium
+    self.C = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * self.C_rest)
+    # The dynamical reversal potential
+    self.E = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * 120.)
+    # Used to receive all Calcium currents
+    self.I_Ca = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
 
   def derivative(self, C, t, ICa):
     dCdt = - ICa / (2 * self.F * self.d) + (self.C_rest - C) / self.tau
     return dCdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.C[:] = self.integral(self.C, _t, self.I_Ca, dt=_dt)
-    self.E[:] = self.R * (273.15 + self.T) / (2 * self.F) * bm.log(self.C_0 / self.C)
+  def update(self, _t, _dt):
+    self.C.value = self.integral(self.C.value, _t, self.I_Ca.value, dt=_dt)
+    self.E.value = self.R * (273.15 + self.T) / (2 * self.F) * bm.log(self.C_0 / self.C.value)
     self.I_Ca[:] = 0.
 
-  def init(self, host, **kwargs):
-    super(DynCa, self).init(host)
-    # Concentration of the Calcium
-    self.C = bm.Variable(bm.ones(self.host.shape, dtype=bm.float_) * self.C_rest)
-    # The dynamical reversal potential
-    self.E = bm.Variable(bm.ones(self.host.shape, dtype=bm.float_) * 120.)
-    # Used to receive all Calcium currents
-    self.I_Ca = bm.Variable(bm.zeros(self.host.shape, dtype=bm.float_))
 
-
-
-
-class IAHP(Channel):
+class IAHP(IonChannel):
   r"""The calcium-dependent potassium current model.
 
   The dynamics of the calcium-dependent potassium current model is given by:
@@ -233,18 +229,14 @@ class IAHP(Channel):
 
   """
 
-  def __init__(self, E=-80., g_max=1., **kwargs):
-    super(IAHP, self).__init__(**kwargs)
+  def __init__(self, host, method, E=-80., g_max=1., **kwargs):
+    super(IAHP, self).__init__(host, method, **kwargs)
 
     self.E = E
     self.g_max = g_max
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-
-  def init(self, host, **kwargs):
-    super(IAHP, self).init(host)
     assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
 
   def derivative(self, p, t, C):
     C2 = 48 * C ** 2
@@ -260,7 +252,7 @@ class IAHP(Channel):
     self.host.V_linear -= g
 
 
-class ICaN(Channel):
+class ICaN(IonChannel):
   r"""The calcium-activated non-selective cation channel model.
 
   The dynamics of the calcium-activated non-selective cation channel model is given by:
@@ -323,7 +315,7 @@ class ICaN(Channel):
     self.host.V_linear -= g
 
 
-class ICaT(Channel):
+class ICaT(IonChannel):
   r"""The low-threshold T-type calcium current model.
 
   The dynamics of the low-threshold T-type calcium current model [1]_ is given by:
@@ -403,7 +395,7 @@ class ICaT(Channel):
     self.host.ca.I_Ca -= I
 
 
-class ICaT_RE(Channel):
+class ICaT_RE(IonChannel):
   r"""The low-threshold T-type calcium current model in thalamic reticular nucleus.
 
   The dynamics of the low-threshold T-type calcium current model [1]_ [2]_ in thalamic
@@ -485,7 +477,7 @@ class ICaT_RE(Channel):
     self.host.ca.I_Ca -= I
 
 
-class ICaHT(Channel):
+class ICaHT(IonChannel):
   r"""The high-threshold T-type calcium current model.
 
   The high-threshold T-type calcium current model is adopted from [1]_.
@@ -569,7 +561,7 @@ class ICaHT(Channel):
     self.host.ca.I_Ca -= I
 
 
-class ICaL(Channel):
+class ICaL(IonChannel):
   r"""The L-type calcium channel model.
 
   The L-type calcium channel model is adopted from (Inoue, et, al., 2008) [1]_.

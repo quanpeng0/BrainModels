@@ -114,13 +114,10 @@ class GIF(Neuron):
     self.A1 = A1
     self.A2 = A2
 
-    # vars
+    # variables
     self.I1 = bm.Variable(bm.zeros(self.num))
     self.I2 = bm.Variable(bm.zeros(self.num))
     self.V_th = bm.Variable(bm.ones(self.num) * -50.)
-
-    # integral
-    self.integral = bp.odeint(method=method, f=self.derivative)
 
   def derivative(self, I1, I2, V_th, V, t, Iext):
     dI1dt = - self.k1 * I1
