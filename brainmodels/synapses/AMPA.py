@@ -124,9 +124,8 @@ class AMPA(Synapse):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
     self.spike_arrival_time.value = bm.where(delayed_pre_spike, _t, self.spike_arrival_time)
-    ft = bm.vmap(lambda pre_i, sp_times, t: ((t - sp_times[pre_i]) < self.T_duration) * self.T,
-                 in_axes=(0, None, None))
-    TT = ft(self.pre_ids.value, self.spike_arrival_time.value, _t)
+    syn_st = bm.pre2syn(self.spike_arrival_time, self.pre_ids)
+    TT = ((_t - syn_st) < self.T_duration) * self.T
     self.g.value = self.integral(self.g.value, _t, TT, dt=_dt)
-    g_post = bm.segment_sum(self.g, self.post_ids, self.post.num)
+    g_post = bm.syn2post(self.g, self.post_ids, self.post.num)
     self.post.input -= self.g_max * g_post * (self.post.V - self.E)

@@ -2,7 +2,7 @@
 
 import brainpy as bp
 import brainpy.math as bm
-from .base import Channel
+from .base import IonChannel
 
 __all__ = [
   'INa',
@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 
-class INa(Channel):
+class INa(IonChannel):
   r"""The sodium current model.
 
   The sodium current model is adopted from (Bazhenov, et, al. 2002) [1]_.
@@ -60,19 +60,16 @@ class INa(Channel):
 
   """
 
-  def __init__(self, E=50., g_max=90., T=36., V_sh=-50., **kwargs):
-    super(INa, self).__init__(**kwargs)
+  def __init__(self, host, method, E=50., g_max=90., T=36., V_sh=-50., **kwargs):
+    super(INa, self).__init__(host, method, **kwargs)
 
     self.T = T
     self.E = E
     self.g_max = g_max
     self.V_sh = V_sh
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-  def init(self, host, **kwargs):
-    super(INa, self).init(host)
-    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    self.q = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
 
   def derivative(self, p, q, t, V):
     phi = 3 ** ((self.T - 36) / 10)
@@ -85,23 +82,22 @@ class INa(Channel):
     dqdt = phi * (alpha_q * (1. - q) - beta_q * q)
     return dpdt, dqdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    g = self.g_max * self.p ** 3 * self.q
-    self.host.I_ion += g * (self.E - self.host.V)
-    self.host.V_linear -= g
+  def update(self, _t, _dt):
+    p, q = self.integral(self.p.value, self.q.value, _t, self.host.V.value, dt=_dt)
+    self.p.value, self.q.value = p, q
+
+  def current(self):
+    g = self.g_max * self.p.value ** 3 * self.q.value
+    return g * (self.E - self.host.V.value)
 
 
-class INa2(bp.Channel):
-  def __init__(self, E=50., g_max=120., **kwargs):
-    super(INa2, self).__init__(**kwargs)
+class INa2(IonChannel):
+  def __init__(self, host, method, E=50., g_max=120., **kwargs):
+    super(INa2, self).__init__(host, method, **kwargs)
 
     self.E = E
     self.g_max = g_max
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-  def init(self, host, **kwargs):
-    super(INa2, self).init(host)
     self.m = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
     self.h = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
@@ -121,3 +117,5 @@ class INa2(bp.Channel):
     g = self.g_max * self.m ** 3 * self.h
     self.host.I_ion += g * (self.E - self.host.V)
     self.host.V_linear -= g
+
+

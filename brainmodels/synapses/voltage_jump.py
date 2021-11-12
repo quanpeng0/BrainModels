@@ -74,9 +74,8 @@ class VoltageJump(Synapse):
   def jax_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
-    fsp = bm.vmap(lambda pre_i, pre_sp: pre_sp[pre_i], in_axes=(0, None))
-    spikes = fsp(self.pre_ids.value, delayed_pre_spike)
-    post_sp = bm.segment_sum(spikes, self.post_ids, self.post.num)
+    spikes = bm.pre2syn(delayed_pre_spike, self.pre_ids)
+    post_sp = bm.syn2post(spikes, self.post_ids, self.post.num)
     target = getattr(self.post, self.post_key)
     if self.post_has_ref:
       target += self.w * post_sp * (1. - self.post.refractory)

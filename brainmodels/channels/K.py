@@ -2,7 +2,7 @@
 
 import brainpy as bp
 import brainpy.math as bm
-from .base import Channel
+from .base import IonChannel
 
 __all__ = [
   'IDR',
@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 
-class IDR(Channel):
+class IDR(IonChannel):
   r"""The delayed rectifier potassium channel current.
 
   The potassium current model is adopted from (Bazhenov, et, al. 2002) [1]_.
@@ -19,12 +19,9 @@ class IDR(Channel):
   .. math::
 
       \begin{aligned}
-      I_{\mathrm{K}} &= g_{\mathrm{max}} * p^4
-      \\
-      \frac{dp}{dt} &= \phi * (\alpha_p (1-p) - \beta_p p)
-      \\
-      \alpha_{p} &=\frac{0.032\left(V-V_{sh}-15\right)}{1-\exp \left(-\left(V-V_{sh}-15\right) / 5\right)}
-      \\
+      I_{\mathrm{K}} &= g_{\mathrm{max}} * p^4 \\
+      \frac{dp}{dt} &= \phi * (\alpha_p (1-p) - \beta_p p) \\
+      \alpha_{p} &=\frac{0.032\left(V-V_{sh}-15\right)}{1-\exp \left(-\left(V-V_{sh}-15\right) / 5\right)} \\
       \beta_p &= 0.5 \exp \left(-\left(V-V_{sh}-10\right) / 40\right)
       \end{aligned}
 
@@ -54,8 +51,8 @@ class IDR(Channel):
 
   """
 
-  def __init__(self, E=-90., g_max=10., T=36., T_base=3., V_sh=-50., **kwargs):
-    super(IDR, self).__init__(**kwargs)
+  def __init__(self, host, method, E=-90., g_max=10., T=36., T_base=3., V_sh=-50., **kwargs):
+    super(IDR, self).__init__(host, method, **kwargs)
 
     self.T = T
     self.T_base = T_base
@@ -63,11 +60,7 @@ class IDR(Channel):
     self.g_max = g_max
     self.V_sh = V_sh
 
-    self.integral = bp.odeint(self.derivative, method='exponential_euler')
-
-  def init(self, host, **kwargs):
-    super(IDR, self).init(host)
-    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.p = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
 
   def derivative(self, p, t, V):
     phi = self.T_base ** ((self.T - 36) / 10)
@@ -76,14 +69,19 @@ class IDR(Channel):
     dpdt = phi * (alpha_p * (1. - p) - beta_p * p)
     return dpdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.p[:] = self.integral(self.p, _t, self.host.V, dt=_dt)
-    g = self.g_max * self.p ** 4
-    self.host.I_ion += g * (self.E - self.host.V)
-    self.host.V_linear -= g
+  def update(self, _t, _dt):
+    self.p.value = self.integral(self.p.value, _t, self.host.V.value, dt=_dt)
+
+  def current(self):
+    return self.g_max * self.p.value ** 4 * (self.E - self.host.V.value)
+
+  @classmethod
+  def make(cls, **params):
+    for p in params: assert p in ['E', 'g_max', 'T', 'T_base', 'V_sh']
+    return cls, params
 
 
-class IK2(Channel):
+class IK2(IonChannel):
   def __init__(self, E, g_max, **kwargs):
     super(IK2, self).__init__(**kwargs)
 
