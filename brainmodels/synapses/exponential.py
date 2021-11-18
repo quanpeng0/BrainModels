@@ -87,6 +87,7 @@ class ExpCUBA(Synapse):
     self.tau = tau
     self.delay = delay
     self.g_max = g_max
+    self.num = self.post.num
 
     # variables
     self.g = bm.Variable(bm.zeros(self.post.num))
@@ -105,7 +106,7 @@ class ExpCUBA(Synapse):
       if pre_spike[pre_id]:
         post_id = self.post_ids[i]
         self.g[post_id] += self.g_max
-    self.post.input[:] += self.g
+    self.post.input += self.g
 
   def jax_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
@@ -113,7 +114,7 @@ class ExpCUBA(Synapse):
     spikes = bm.pre2syn(delayed_pre_spike, self.pre_ids)
     post_sp = bm.syn2post(spikes, self.post_ids, self.post.num)
     self.g.value = self.integral(self.g.value, _t, dt=_dt) + post_sp * self.g_max
-    self.post.input.value += self.g.value
+    self.post.input.value += self.g
 
 
 class ExpCOBA(ExpCUBA):
@@ -181,8 +182,9 @@ class ExpCOBA(ExpCUBA):
     self.g[:] = self.integral(self.g, _t, dt=_dt)
     for i in range(self.num):
       pre_i, post_i = self.pre_ids[i], self.post_ids[i]
-      if pre_spike[pre_i]: self.g[i] += self.g_max
-      self.post.input[post_i] += self.g * (self.E - self.post.V)
+      if pre_spike[pre_i]:
+        self.g[post_i] += self.g_max
+      self.post.input[post_i] += self.g[post_i] * (self.E - self.post.V[post_i])
 
   def jax_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)

@@ -8,17 +8,75 @@ from brainpy.simulation import brainobjects
 
 from brainmodels.neurons.base import Neuron
 
-
 __all__ = [
-  'cond_neuron',
-  'CondNeuGroup',
   'Channel',
   'MolChannel',
   'IonChannel',
+  'CalChannel',
+
+  'CondNeuGroup',
 ]
 
 
-def cond_neuron(**channels):
+class Channel(brainobjects.Channel):
+  """Base class to model ion channels.
+
+  Notes
+  -----
+
+  The ``__init__()`` function in :py:class:`Channel` is used to specify
+  the parameters of the channel. The ``__call__()`` function
+  is used to initialize the variables in this channel.
+  """
+  target_backend = 'jax'
+  allowed_params = None
+
+  def __init__(self, size, method, **kwargs):
+    super(Channel, self).__init__(**kwargs)
+
+    self.size = size
+    self.method = method
+    self.num = bp.tools.size2num(size)
+
+    self.integral = bp.odeint(self.derivative, method=method)
+
+  def update(self, _t, _dt):
+    """The function to specify the updating rule."""
+    raise NotImplementedError(f'Subclass must implement "update" function.')
+
+  def derivative(self, *args, **kwargs):
+    raise NotImplementedError
+
+  @classmethod
+  def make(cls, **params):
+    """Set the default parameters for later class initialization.
+    Return a tuple of `(cls, params)`. """
+    if cls.allowed_params is None:
+      return cls, params
+    else:
+      assert isinstance(cls.allowed_params, (tuple, list))
+      allowed_params = tuple(cls.allowed_params) + ('monitors',)
+      for p in params:
+        assert p in allowed_params, f'{p} is not allowed to pre-define in {cls}. ' \
+                                    f'The allowed params include: {allowed_params}'
+      return cls, params
+
+
+class MolChannel(Channel):
+  pass
+
+
+class IonChannel(Channel):
+  def current(self, *args, **kwargs):
+    raise NotImplementedError
+
+
+class CalChannel(IonChannel):
+  pass
+
+
+
+class Cluster(bp.DynamicalSystem):
   pass
 
 
@@ -85,34 +143,41 @@ class CondNeuGroup(Neuron):
     _channels = dict()
     for key in channels.items():
       assert isinstance(key, str), f'Key must be a str, but got {type(key)}: {key}'
-      item = channels[key]
-      assert isinstance(item, (tuple, list)) and len(item) == 2
-      assert isinstance(item[1], dict)
-      channels[key][1]['host'] = self
-      channels[key][1]['method'] = method
+      assert isinstance(channels[key], (tuple, list)) and len(channels[key]) == 2
+      assert isinstance(channels[key][0], type)
+      assert isinstance(channels[key][1], dict)
+      cls = channels[key][0]
+      params = channels[key][1].copy()
+      params['host'] = self
+      params['method'] = method
+      _channels[key] = (cls, params)
 
     # initialize children channels
     self.channels = Collector()
-    for key, (ch, params) in channels.items():
+    for key, (ch, params) in _channels.items():
       self.channels[key] = ch(**params)
       if not isinstance(self.channels[key], Channel):
         raise errors.BrainPyError(f'{self.__class__.__name__} only receives {Channel} instance, '
                                   f'while we got {type(self.channels[key])}: {self.channels[key]}.')
 
-  def update(self, _t, _dt, **kwargs):
+    self.ion_channels = self.channels.subset(IonChannel)
+    self.mol_channels = self.channels.subset(MolChannel)
+
+  def derivative(self, V, t, Iext):
+    self.V.value = V
+    Iext *= (1e-3 / self.A)
+    for ch in self.ion_channels.values():
+      Iext += ch.current()
+    return Iext / self.C
+
+  def update(self, _t, _dt):
     # update variables in channels
-    for ch in self.child_channels.values():
+    for ch in self.ion_channels.values():
       ch.update(_t, _dt)
 
-    # update V using Exponential Euler method
-    dvdt = self.I_ion / self.C + self.input * (1e-3 / self.A / self.C)
-    linear = self.V_linear / self.C
-    V = self.V + dvdt * (bm.exp(linear * _dt) - 1) / linear
-
-    # update other variables
+    # update neuron variables
+    V = self.integral(self.V.value, _t, self.input.value, dt=_dt)
     self.spike[:] = bm.logical_and(V >= self.V_th, self.V < self.V_th)
-    self.V_linear[:] = 0.
-    self.I_ion[:] = 0.
     self.input[:] = 0.
     self.V[:] = V
 
@@ -124,45 +189,18 @@ class CondNeuGroup(Neuron):
     else:
       return super(CondNeuGroup, self).__getattribute__(item)
 
-
-class Channel(brainobjects.Channel):
-  """Base class to model ion channels.
-
-  Notes
-  -----
-
-  The ``__init__()`` function in :py:class:`Channel` is used to specify
-  the parameters of the channel. The ``__call__()`` function
-  is used to initialize the variables in this channel.
-  """
-  target_backend = 'jax'
-
-  def __init__(self, host, method, **kwargs):
-    super(Channel, self).__init__(**kwargs)
-
-    self.host = host
-    if not isinstance(host, CondNeuGroup):
-      raise bp.errors.BrainPyError(f'Only support host with instance of {str(CondNeuGroup)}, while we got {host}')
-    self.integral = bp.odeint(self.derivative, method=method)
-
-  def update(self, _t, _dt, **kwargs):
-    """The function to specify the updating rule."""
-    raise NotImplementedError(f'Subclass must implement "update" function.')
-
-  def derivative(self, *args, **kwargs):
-    raise NotImplementedError
-
   @classmethod
-  def make(cls, **params):
-    """Set the default parameters for later class initialization.
-    Return a tuple of `(cls, params)`. """
-    raise NotImplementedError
+  def make(cls, C=1., A=1e-3, V_th=0., **channels):
+    for name, ch in channels.items():
+      assert len(ch) == 2
+      assert isinstance(ch[0], type)
+      assert isinstance(ch[1], dict)
 
+    def generate_cond_neuron_group(size, method='euler', monitors=None, name=None):
+      return cls(
+        C=C, A=A, V_th=V_th,  # membrane potential parameters
+        size=size, method=method, monitors=monitors, name=name,  # initialization parameters
+        **channels  # channel settings
+      )
 
-class MolChannel(Channel):
-  pass
-
-
-class IonChannel(Channel):
-  def current(self, *args, **kwargs):
-    raise NotImplementedError
+    return generate_cond_neuron_group

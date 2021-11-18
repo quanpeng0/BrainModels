@@ -2,6 +2,7 @@
 
 import brainpy as bp
 import brainpy.math as bm
+
 from .base import IonChannel
 
 __all__ = [
@@ -50,16 +51,19 @@ class IDR(IonChannel):
          and transitions to activated states." Journal of neuroscience 22.19 (2002): 8691-8704.
 
   """
+  allowed_params = ('E', 'g_max', 'T', 'T_base', 'V_sh')
 
   def __init__(self, host, method, E=-90., g_max=10., T=36., T_base=3., V_sh=-50., **kwargs):
     super(IDR, self).__init__(host, method, **kwargs)
 
+    # parameters
     self.T = T
     self.T_base = T_base
     self.E = E
     self.g_max = g_max
     self.V_sh = V_sh
 
+    # variables
     self.p = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
 
   def derivative(self, p, t, V):
@@ -75,22 +79,15 @@ class IDR(IonChannel):
   def current(self):
     return self.g_max * self.p.value ** 4 * (self.E - self.host.V.value)
 
-  @classmethod
-  def make(cls, **params):
-    for p in params: assert p in ['E', 'g_max', 'T', 'T_base', 'V_sh']
-    return cls, params
-
 
 class IK2(IonChannel):
-  def __init__(self, E, g_max, **kwargs):
-    super(IK2, self).__init__(**kwargs)
+
+  def __init__(self, host, method, E, g_max, **kwargs):
+    super(IK2, self).__init__(host, method, **kwargs)
 
     self.E = E
     self.g_max = g_max
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-  def init(self, host, **kwargs):
-    super(IK2, self).init(host)
     self.n = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
 
   def derivative(self, n, t, V):
@@ -99,8 +96,9 @@ class IK2(IonChannel):
     dndt = alpha * (1 - n) - beta * n
     return dndt
 
-  def update(self, _t, _dt, **kwargs):
-    self.n[:] = self.integral(self.n, _t, self.host.V, dt=_dt)
-    g = self.g_max * self.n ** 4
-    self.host.I_ion += g * (self.E - self.host.V)
-    self.host.V_linear -= g
+  def update(self, _t, _dt):
+    self.n.value = self.integral(self.n.value, _t, self.host.V.value, dt=_dt)
+
+  def current(self):
+    g = self.g_max * self.n.value ** 4
+    return g * (self.E - self.host.V.value)

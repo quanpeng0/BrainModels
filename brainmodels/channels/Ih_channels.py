@@ -3,14 +3,14 @@
 
 import brainpy as bp
 import brainpy.math as bm
-from .base import Channel
+from .base import IonChannel
 
 __all__ = [
   'Ih',
 ]
 
 
-class Ih(Channel):
+class Ih(IonChannel):
   r"""The hyperpolarization-activated cation current model.
 
   The hyperpolarization-activated cation current model is adopted from (Huguenard, et, al., 1992) [1]_.
@@ -46,18 +46,16 @@ class Ih(Channel):
          of neurophysiology 68, no. 4 (1992): 1373-1383.
 
   """
+  allowed_params = ('g_max', 'E', 'phi')
 
-  def __init__(self, g_max=10., E=-90., phi=1., **kwargs):
-    super(Ih, self).__init__(**kwargs)
+  def __init__(self, host, method, g_max=10., E=-90., phi=1., **kwargs):
+    super(Ih, self).__init__(host, method, **kwargs)
 
     self.phi = phi
     self.g_max = g_max
     self.E = E
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-  def init(self, host, **kwargs):
-    super(Ih, self).init(host)
-    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    self.p = bm.Variable(bm.zeros(host.shape, dtype=bm.float_))
 
   def derivative(self, p, t, V):
     p_inf = 1. / (1. + bm.exp((V + 75.) / 5.5))
@@ -65,8 +63,9 @@ class Ih(Channel):
     dpdt = self.phi * (p_inf - p) / p_tau
     return dpdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.p[:] = self.integral(self.p, _t, self.host.V, dt=_dt)
-    g = self.g_max * self.p
-    self.host.I_ion += g * (self.E - self.host.V)
-    self.host.V_linear -= g
+  def update(self, _t, _dt):
+    self.p.value = self.integral(self.p.value, _t, self.host.V.value, dt=_dt)
+
+  def current(self):
+    g = self.g_max * self.p.value
+    return g * (self.E - self.host.V.value)
