@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
+
 from .base import Synapse
 
 __all__ = [
@@ -145,9 +145,10 @@ class STP(Synapse):
     delayed_I = self.delayed_I.pull()
     self.post.input += bm.syn2post(delayed_I, self.post_ids, self.post.num)
     self.I.value, u, x = self.integral(self.I.value, self.u.value, self.x.value, _t, dt=_dt)
-    u += self.U * (1 - self.u)
-    x -= u * self.x
-    self.I.value += self.A * u * self.x * bm.pre2syn(self.pre.spike, self.pre_ids)
+    syn_sps = bm.pre2syn(self.pre.spike, self.pre_ids)
+    u = bm.where(syn_sps, u + self.U * (1 - self.u), u)
+    x = bm.where(syn_sps, x - u * self.x, x)
+    self.I.value = bm.where(syn_sps, self.I, self.I.value + self.A * u * self.x)
     self.u.value = u
     self.x.value = x
     self.delayed_I.push(self.I.value)

@@ -2,6 +2,7 @@
 
 import brainpy as bp
 import brainpy.math as bm
+
 from .base import IonChannel
 
 __all__ = [
@@ -60,6 +61,8 @@ class INa(IonChannel):
 
   """
 
+  allowed_params = ('T', 'E', 'g_max', 'V_sh')
+
   def __init__(self, host, method, E=50., g_max=90., T=36., V_sh=-50., **kwargs):
     super(INa, self).__init__(host, method, **kwargs)
 
@@ -92,6 +95,8 @@ class INa(IonChannel):
 
 
 class INa2(IonChannel):
+  allowed_params = ('E', 'g_max')
+
   def __init__(self, host, method, E=50., g_max=120., **kwargs):
     super(INa2, self).__init__(host, method, **kwargs)
 
@@ -113,9 +118,9 @@ class INa2(IonChannel):
     return dmdt, dhdt
 
   def update(self, _t, _dt, **kwargs):
-    self.m[:], self.h[:] = self.integral(self.m, self.h, _t, self.host.V, dt=_dt)
-    g = self.g_max * self.m ** 3 * self.h
-    self.host.I_ion += g * (self.E - self.host.V)
-    self.host.V_linear -= g
+    m, h = self.integral(self.m.value, self.h.value, _t, self.host.V.value, dt=_dt)
+    self.m.value, self.h.value = m, h
 
-
+  def current(self):
+    g = self.g_max * self.m.value ** 3 * self.h.value
+    return g * (self.E - self.host.V.value)

@@ -1,58 +1,51 @@
 # -*- coding: utf-8 -*-
 
-import brainpy as bp
 import brainpy.math as bm
 
-from .base import MolChannel, IonChannel
+from .base import MolChannel, CalChannel
 
 __all__ = [
   'Ca',
+  'CaFix',
+  'CaDyn',
+
   'IAHP',
   'ICaN',
-  'ICaL',
   'ICaT',
   'ICaT_RE',
   'ICaHT',
+  'ICaL',
 ]
 
 
-class BaseCa(MolChannel):
+class Ca(MolChannel):
   """The base calcium dynamics."""
   E = None
   I_Ca = None
 
   def __init__(self, host, method, **kwargs):
-    super(BaseCa, self).__init__(host, method, **kwargs)
-
-  def update(self, _t, _dt, **kwargs):
-    raise NotImplementedError
+    super(Ca, self).__init__(host, method, **kwargs)
 
 
-class FixCa(BaseCa):
+class CaFix(Ca):
   """Fixed Calcium dynamics.
 
   This calcium model has no dynamics. It only hold a fixed reversal potential :math:`E`.
   """
+  allowed_params = ('E',)
 
   def __init__(self, host, method, E=120., **kwargs):
-    super(FixCa, self).__init__(host, method, E=E, **kwargs)
+    super(CaFix, self).__init__(host, method, E=E, **kwargs)
 
     self.E = E
-    self.input = bm.Variable(bm.zeros(self.host.shape, dtype=bm.float_))
+    self.input = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
 
   def update(self, _t, _dt):
     self.input[:] = 0.
 
-  @classmethod
-  def make(cls, **params):
-    for key in params.keys():
-      assert key in ['E']
-    return (cls, params)
 
-
-class DynCa(BaseCa):
+class CaDyn(Ca):
   r"""Dynamical Calcium model.
-
 
   **1. The dynamics of intracellular** :math:`Ca^{2+}`
 
@@ -156,9 +149,10 @@ class DynCa(BaseCa):
   .. [2] Bazhenov, Maxim, Igor Timofeev, Mircea Steriade, and Terrence J. Sejnowski. "Cellular and network models for intrathalamic augmenting responses during 10-Hz stimulation." Journal of neurophysiology 79, no. 5 (1998): 2730-2748.
 
   """
+  allowed_params = ('d', 'F', 'C_rest', 'tau', 'C_0', 'T', 'R')
 
-  def __init__(self, host, method, d=1., F=96.489, C_rest=0.05, tau=5., C_0=2., T=36., R=8.31441, **kwargs):
-    super(DynCa, self).__init__(host, method, **kwargs)
+  def __init__(self, size, method, d=1., F=96.489, C_rest=0.05, tau=5., C_0=2., T=36., R=8.31441, **kwargs):
+    super(CaDyn, self).__init__(size, method, **kwargs)
 
     self.R = R  # gas constant, J*mol-1*K-1
     self.T = T
@@ -169,11 +163,11 @@ class DynCa(BaseCa):
     self.C_0 = C_0
 
     # Concentration of the Calcium
-    self.C = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * self.C_rest)
+    self.C = bm.Variable(bm.ones(self.num, dtype=bm.float_) * self.C_rest)
     # The dynamical reversal potential
-    self.E = bm.Variable(bm.ones(self.host.num, dtype=bm.float_) * 120.)
+    self.E = bm.Variable(bm.ones(self.num, dtype=bm.float_) * 120.)
     # Used to receive all Calcium currents
-    self.I_Ca = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
+    self.I_Ca = bm.Variable(bm.zeros(self.num, dtype=bm.float_))
 
   def derivative(self, C, t, ICa):
     dCdt = - ICa / (2 * self.F * self.d) + (self.C_rest - C) / self.tau
@@ -185,7 +179,7 @@ class DynCa(BaseCa):
     self.I_Ca[:] = 0.
 
 
-class IAHP(IonChannel):
+class IAHP(CalChannel):
   r"""The calcium-dependent potassium current model.
 
   The dynamics of the calcium-dependent potassium current model is given by:
@@ -229,14 +223,19 @@ class IAHP(IonChannel):
 
   """
 
-  def __init__(self, host, method, E=-80., g_max=1., **kwargs):
-    super(IAHP, self).__init__(host, method, **kwargs)
+  allowed_params = ('E', 'g_max')
 
+  def __init__(self, ca, size, method='exponential_euler', E=-80., g_max=1., **kwargs):
+    super(IAHP, self).__init__(size, method, **kwargs)
+
+    # parameters
     self.E = E
     self.g_max = g_max
+    self.ca = ca
+    assert isinstance(ca, CaDyn)
 
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.num, dtype=bp.math.float_))
+    # variables
+    self.p = bm.Variable(bm.zeros(self.num, dtype=bm.float_))
 
   def derivative(self, p, t, C):
     C2 = 48 * C ** 2
@@ -245,14 +244,15 @@ class IAHP(IonChannel):
     dpdt = (phi_p - p) / p_inf
     return dpdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.p[:] = self.integral(self.p, _t, C=self.host.ca.C, dt=_dt)
-    g = self.g_max * self.p
-    self.host.I_ion += g * (self.E - self.host.V)
-    self.host.V_linear -= g
+  def update(self, _t, _dt):
+    self.p.value = self.integral(self.p.value, _t, C=self.ca.C.value, dt=_dt)
+
+  def current(self, V):
+    g = self.g_max * self.p.value
+    return g * (self.E - V)
 
 
-class ICaN(IonChannel):
+class ICaN(CalChannel):
   r"""The calcium-activated non-selective cation channel model.
 
   The dynamics of the calcium-activated non-selective cation channel model is given by:
@@ -287,19 +287,17 @@ class ICaN(IonChannel):
          increase in the excitability of olfactory bulb interneurons.
          J Neurophysiol 99: 187–199.
   """
+  allowed_params = ('E', 'g_max', 'phi')
 
-  def __init__(self, E=10., g_max=1., phi=1., **kwargs):
-    super(ICaN, self).__init__(**kwargs)
+  def __init__(self, host, method, E=10., g_max=1., phi=1., **kwargs):
+    super(ICaN, self).__init__(host, method, **kwargs)
 
     self.E = E
     self.g_max = g_max
     self.phi = phi
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-  def init(self, host, **kwargs):
-    super(ICaN, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, CaDyn)
+    self.p = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
 
   def derivative(self, p, t, V):
     phi_p = 1.0 / (1 + bm.exp(-(V + 43.) / 5.2))
@@ -307,15 +305,16 @@ class ICaN(IonChannel):
     dpdt = self.phi * (phi_p - p) / p_inf
     return dpdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.p[:] = self.integral(self.p, _t, self.host.V, dt=_dt)
-    M = self.host.ca.C / (self.host.ca.C + 0.2)
-    g = self.g_max * M * self.p
-    self.host.I_ion += g * (self.E - self.host.V)
-    self.host.V_linear -= g
+  def update(self, _t, _dt):
+    self.p.value = self.integral(self.p.value, _t, self.host.V.value, dt=_dt)
+
+  def current(self):
+    M = self.host.ca.C.value / (self.host.ca.C.value + 0.2)
+    g = self.g_max * M * self.p.value
+    return g * (self.E - self.host.V.value)
 
 
-class ICaT(IonChannel):
+class ICaT(CalChannel):
   r"""The low-threshold T-type calcium current model.
 
   The dynamics of the low-threshold T-type calcium current model [1]_ is given by:
@@ -356,20 +355,17 @@ class ICaT(IonChannel):
 
   """
 
-  def __init__(self, T=36., T_base_p=3.55, T_base_q=3., g_max=2., V_sh=-3., **kwargs):
-    super(ICaT, self).__init__(**kwargs)
+  def __init__(self, host, method, T=36., T_base_p=3.55, T_base_q=3., g_max=2., V_sh=-3., **kwargs):
+    super(ICaT, self).__init__(host, method, **kwargs)
     self.T = T
     self.T_base_p = T_base_p
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-  def init(self, host, **kwargs):
-    super(ICaT, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, Ca)
+    self.p = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
+    self.q = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
 
   def derivative(self, p, q, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
@@ -386,16 +382,16 @@ class ICaT(IonChannel):
 
     return dpdt, dqdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    g = self.g_max * self.p ** 2 * self.q
-    I = g * (self.host.ca.E - self.host.V)
-    self.host.I_ion += I
-    self.host.V_linear -= g
-    self.host.ca.I_Ca -= I
+  def update(self, _t, _dt):
+    p, q = self.integral(self.p.value, self.q.value, _t, self.host.V.value, dt=_dt)
+    self.p.value, self.q.value = p, q
+
+  def current(self):
+    g = self.g_max * self.p.value ** 2 * self.q.value
+    return g * (self.host.ca.E - self.host.V.value)
 
 
-class ICaT_RE(IonChannel):
+class ICaT_RE(CalChannel):
   r"""The low-threshold T-type calcium current model in thalamic reticular nucleus.
 
   The dynamics of the low-threshold T-type calcium current model [1]_ [2]_ in thalamic
@@ -440,20 +436,18 @@ class ICaT_RE(IonChannel):
 
   """
 
-  def __init__(self, T=36., T_base_p=5., T_base_q=3., g_max=1.75, V_sh=-3., **kwargs):
-    super(ICaT_RE, self).__init__(**kwargs)
+  def __init__(self, host, method, T=36., T_base_p=5., T_base_q=3.,
+               g_max=1.75, V_sh=-3., **kwargs):
+    super(ICaT_RE, self).__init__(host, method, **kwargs)
     self.T = T
     self.T_base_p = T_base_p
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-  def init(self, host, **kwargs):
-    super(ICaT_RE, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, Ca)
+    self.p = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
+    self.q = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
 
   def derivative(self, p, q, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
@@ -468,16 +462,16 @@ class ICaT_RE(IonChannel):
 
     return dpdt, dqdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    g = self.g_max * self.p ** 2 * self.q
-    I = g * (self.host.ca.E - self.host.V)
-    self.host.I_ion += I
-    self.host.V_linear -= g
-    self.host.ca.I_Ca -= I
+  def update(self, _t, _dt):
+    p, q = self.integral(self.p.value, self.q.value, _t, self.host.V.value, dt=_dt)
+    self.p.value, self.q.value = p, q
+
+  def current(self):
+    g = self.g_max * self.p.value ** 2 * self.q.value
+    return g * (self.host.ca.E - self.host.V.value)
 
 
-class ICaHT(IonChannel):
+class ICaHT(CalChannel):
   r"""The high-threshold T-type calcium current model.
 
   The high-threshold T-type calcium current model is adopted from [1]_.
@@ -521,21 +515,19 @@ class ICaHT(IonChannel):
          rhythmic oscillations in thalamic relay neurons. J Neurophysiol 68:1373–1383.
   """
 
-  def __init__(self, T=36., T_base_p=3.55, T_base_q=3., g_max=2., V_sh=25., **kwargs):
-    super(ICaHT, self).__init__(**kwargs)
+  def __init__(self, host, method, T=36., T_base_p=3.55,
+               T_base_q=3., g_max=2., V_sh=25., **kwargs):
+    super(ICaHT, self).__init__(host, method, **kwargs)
 
     self.T = T
     self.T_base_p = T_base_p
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-  def init(self, host, **kwargs):
-    super(ICaHT, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, Ca)
+    self.p = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
+    self.q = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
 
   def derivative(self, p, q, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
@@ -552,16 +544,16 @@ class ICaHT(IonChannel):
 
     return dpdt, dqdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    g = self.g_max * self.p ** 2 * self.q
-    I = g * (self.host.ca.E - self.host.V)
-    self.host.I_ion += I
-    self.host.V_linear -= g
-    self.host.ca.I_Ca -= I
+  def update(self, _t, _dt):
+    p, q = self.integral(self.p.value, self.q.value, _t, self.host.V.value, dt=_dt)
+    self.p.value, self.q.value = p, q
+
+  def current(self):
+    g = self.g_max * self.p.value ** 2 * self.q.value
+    return g * (self.host.ca.E - self.host.V.value)
 
 
-class ICaL(IonChannel):
+class ICaL(CalChannel):
   r"""The L-type calcium channel model.
 
   The L-type calcium channel model is adopted from (Inoue, et, al., 2008) [1]_.
@@ -602,20 +594,18 @@ class ICaL(IonChannel):
          neurophysiology 99, no. 1 (2008): 187-199.
   """
 
-  def __init__(self, T=36., T_base_p=3.55, T_base_q=3., g_max=1., V_sh=0., **kwargs):
-    super(ICaL, self).__init__(**kwargs)
+  def __init__(self, host, method, T=36., T_base_p=3.55,
+               T_base_q=3., g_max=1., V_sh=0., **kwargs):
+    super(ICaL, self).__init__(host, method, **kwargs)
     self.T = T
     self.T_base_p = T_base_p
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
-    self.integral = bp.ode.ExponentialEuler(self.derivative)
 
-  def init(self, host, **kwargs):
-    super(ICaL, self).init(host)
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, BaseCa)
-    self.p = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
-    self.q = bp.math.Variable(bp.math.zeros(host.shape, dtype=bp.math.float_))
+    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, Ca)
+    self.p = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
+    self.q = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
 
   def derivative(self, p, q, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
@@ -630,10 +620,10 @@ class ICaL(IonChannel):
 
     return dpdt, dqdt
 
-  def update(self, _t, _dt, **kwargs):
-    self.p[:], self.q[:] = self.integral(self.p, self.q, _t, self.host.V, dt=_dt)
-    g = self.g_max * self.p ** 2 * self.q
-    I = g * (self.host.ca.E - self.host.V)
-    self.host.I_ion += I
-    self.host.V_linear -= g
-    self.host.ca.I_Ca -= I
+  def update(self, _t, _dt):
+    p, q = self.integral(self.p.value, self.q.value, _t, self.host.V.value, dt=_dt)
+    self.p.value, self.q.value = p, q
+
+  def current(self):
+    g = self.g_max * self.p.value ** 2 * self.q.value
+    return g * (self.host.ca.E - self.host.V.value)
