@@ -81,13 +81,22 @@ class ExpCUBA(Synapse):
 
   def __init__(self, pre, post, conn, g_max=1., delay=0., tau=8.0,
                method='exponential_euler', **kwargs):
-    super(ExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
+    super(ExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method,
+                                  build_conn=False, **kwargs)
 
     # parameters
     self.tau = tau
     self.delay = delay
     self.g_max = g_max
+
+    # connection
     self.num = self.post.num
+    if bm.is_numpy_backend():
+      self.pre2post = self.conn.require('pre2post')
+      self.target_backend = 'numpy'
+    else:
+      self.post2pre_mat = self.conn.require('post2pre_mat')
+      self.target_backend = 'jax'
 
     # variables
     self.g = bm.Variable(bm.zeros(self.post.num))
@@ -101,20 +110,18 @@ class ExpCUBA(Synapse):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
     self.g[:] = self.integral(self.g, _t, dt=_dt)
-    for i in range(self.num):
-      pre_id = self.pre_ids[i]
+    for pre_id in range(self.pre.num):
       if pre_spike[pre_id]:
-        post_id = self.post_ids[i]
-        self.g[post_id] += self.g_max
+        post_ids = self.pre2post[pre_id]
+        self.g[post_ids] += self.g_max
     self.post.input += self.g
 
   def jax_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    delayed_pre_spike = self.pre_spike.pull()
-    spikes = bm.pre2syn(delayed_pre_spike, self.pre_ids)
-    post_sp = bm.syn2post(spikes, self.post_ids, self.post.num)
-    self.g.value = self.integral(self.g.value, _t, dt=_dt) + post_sp * self.g_max
-    self.post.input.value += self.g
+      self.pre_spike.push(self.pre.spike)
+      delayed_pre_spike = self.pre_spike.pull()
+      post_sp = bm.pre2post(delayed_pre_spike, self.post2pre_mat)
+      self.g.value = self.integral(self.g.value, _t, dt=_dt) + post_sp * self.g_max
+      self.post.input += self.g
 
 
 class ExpCOBA(ExpCUBA):
@@ -180,16 +187,15 @@ class ExpCOBA(ExpCUBA):
     self.pre_spike.push(self.pre.spike)
     pre_spike = self.pre_spike.pull()
     self.g[:] = self.integral(self.g, _t, dt=_dt)
-    for i in range(self.num):
-      pre_i, post_i = self.pre_ids[i], self.post_ids[i]
-      if pre_spike[pre_i]:
-        self.g[post_i] += self.g_max
-      self.post.input[post_i] += self.g[post_i] * (self.E - self.post.V[post_i])
+    for pre_id in range(self.pre.num):
+      if pre_spike[pre_id]:
+        post_ids = self.pre2post[pre_id]
+        self.g[post_ids] += self.g_max
+    self.post.input += self.g * (self.E - self.post.V)
 
   def jax_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
-    spikes = bm.pre2syn(delayed_pre_spike, self.pre_ids)
-    post_sp = bm.syn2post(spikes, self.post_ids, self.post.num)
+    post_sp = bm.pre2post(delayed_pre_spike, self.post2pre_mat)
     self.g.value = self.integral(self.g.value, _t, dt=_dt) + post_sp * self.g_max
-    self.post.input.value += self.g * (self.E - self.post.V)
+    self.post.input += self.g * (self.E - self.post.V)

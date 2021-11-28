@@ -147,7 +147,7 @@ class NMDA(Synapse):
   def jax_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
-    self.g[:], self.x[:] = self.integral(self.g, self.x, _t, dt=_dt)
+    self.g.value, self.x.value = self.integral(self.g, self.x, _t, dt=_dt)
     self.x.value += bm.pre2syn(delayed_pre_spike, self.pre_ids)
     post_g = bm.syn2post(self.g, self.post_ids, self.post.num)
     g_inf = 1 + self.cc_Mg / self.beta * bm.exp(-self.alpha * self.post.V)

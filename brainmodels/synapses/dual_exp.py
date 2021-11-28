@@ -114,7 +114,7 @@ class DualExpCUBA(Synapse):
   def jax_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spikes = self.pre_spike.pull()
-    self.g.value, self.h.value = self.integral(self.g.value, self.h.value, _t, dt=_dt)
+    self.g.value, self.h.value = self.integral(self.g, self.h, _t, dt=_dt)
     self.h.value += bm.pre2syn(delayed_pre_spikes, self.pre_ids)
     self.post.input += self.g_max * bm.syn2post(self.g, self.post_ids, self.post.num)
 
@@ -191,7 +191,7 @@ class DualExpCOBA(DualExpCUBA):
   def jax_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spikes = self.pre_spike.pull()
-    self.g.value, self.h.value = self.integral(self.g.value, self.h.value, _t, dt=_dt)
+    self.g.value, self.h.value = self.integral(self.g, self.h, _t, dt=_dt)
     self.h.value += bm.pre2syn(delayed_pre_spikes, self.pre_ids)
     post_g = bm.syn2post(self.g, self.post_ids, self.post.num)
     self.post.input += self.g_max * post_g * (self.E - self.post.V)

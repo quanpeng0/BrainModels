@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import brainpy.math as bm
+
 from .base import Synapse
 
 __all__ = [
-  'VoltageJump'
+  'VoltageJump',
+  'DeltaSynapse',
 ]
 
 
 class VoltageJump(Synapse):
-  """Voltage jump synapse model.
+  """Voltage Jump Synapse Model, or alias of Delta Synapse Model.
 
   **Model Descriptions**
 
@@ -40,7 +42,8 @@ class VoltageJump(Synapse):
 
   def __init__(self, pre, post, conn, delay=0., post_has_ref=False, w=1.,
                post_key='V', **kwargs):
-    super(VoltageJump, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
+    super(VoltageJump, self).__init__(pre=pre, post=post, conn=conn, build_conn=False,
+                                      build_integral=False, **kwargs)
 
     # checking
     if post_has_ref:
@@ -53,31 +56,40 @@ class VoltageJump(Synapse):
     self.post_key = post_key
     self.post_has_ref = post_has_ref
 
+    # connections
+    self.num = self.post.num
+    if bm.is_numpy_backend():
+      self.pre2post = self.conn.require('pre2post')
+      self.target_backend = 'numpy'
+    else:
+      self.post2pre_mat = self.conn.require('post2pre_mat')
+      self.target_backend = 'jax'
+
     # variables
     self.w = w
     assert bm.size(w) == 1, 'This implementation only support scalar weight. '
     self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
 
-  def derivative(self, a, t): pass
-
   def numpy_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
-    delayed_pre_spike = self.pre_spike.pull()
-    for i in range(self.num):
-      pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      if delayed_pre_spike[pre_id]:
+    pre_spike = self.pre_spike.pull()
+    for pre_id in range(self.pre.num):
+      if pre_spike[pre_id]:
+        post_ids = self.pre2post[pre_id]
         if self.post_has_ref:
-          self.post.V[post_id] += self.w * (1. - self.post.refractory[post_id])
+          self.post.V[post_ids] += self.w * (1. - self.post.refractory[post_ids])
         else:
-          self.post.V[post_id] += self.w
+          self.post.V[post_ids] += self.w
 
   def jax_update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
-    spikes = bm.pre2syn(delayed_pre_spike, self.pre_ids)
-    post_sp = bm.syn2post(spikes, self.post_ids, self.post.num)
+    spikes = bm.pre2post(delayed_pre_spike, self.post2pre_mat) * self.w
     target = getattr(self.post, self.post_key)
     if self.post_has_ref:
-      target += self.w * post_sp * (1. - self.post.refractory)
+      target += spikes * (1. - self.post.refractory)
     else:
-      target += self.w * post_sp
+      target += spikes
+
+
+DeltaSynapse = VoltageJump
