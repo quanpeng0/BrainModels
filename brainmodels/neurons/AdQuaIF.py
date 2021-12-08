@@ -113,7 +113,7 @@ class AdQuaIF(Neuron):
     V, w = self.integral(self.V, self.w, _t, self.input, dt=_dt)
     spike = self.V_th <= V
     self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
-    self.V[:] = bm.where(spike, self.V_reset, V)
-    self.w[:] = bm.where(spike, w + self.b, w)
-    self.spike[:] = spike
+    self.V.value = bm.where(spike, self.V_reset, V)
+    self.w.value = bm.where(spike, w + self.b, w)
+    self.spike.value = spike
     self.input[:] = 0.

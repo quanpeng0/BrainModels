@@ -134,9 +134,9 @@ class MorrisLecar(Neuron):
     return dVdt, dWdt
 
   def update(self, _t, _dt):
-    V, self.W[:] = self.integral(self.V, self.W, _t, self.input, dt=_dt)
+    V, self.W.value = self.integral(self.V, self.W, _t, self.input, dt=_dt)
     spike = bm.logical_and(self.V < self.V_th, V >= self.V_th)
-    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
-    self.V[:] = V
-    self.spike[:] = spike
+    self.t_last_spike.value = bm.where(spike, _t, self.t_last_spike)
+    self.V.value = V
+    self.spike.value = spike
     self.input[:] = 0.

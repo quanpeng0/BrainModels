@@ -113,8 +113,8 @@ class FHN(Neuron):
     return dV, dw
 
   def update(self, _t, _dt):
-    V, self.w[:] = self.integral(self.V, self.w, _t, self.input, dt=_dt)
-    self.spike[:] = bm.logical_and(V >= self.Vth, self.V < self.Vth)
-    self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)
-    self.V[:] = V
+    V, self.w.value = self.integral(self.V, self.w, _t, self.input, dt=_dt)
+    self.spike.value = bm.logical_and(V >= self.Vth, self.V < self.Vth)
+    self.t_last_spike.value = bm.where(self.spike, _t, self.t_last_spike)
+    self.V.value = V
     self.input[:] = 0.

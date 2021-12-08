@@ -228,10 +228,10 @@ class HH(Neuron):
 
   def update(self, _t, _dt):
     V, m, h, n = self.integral(self.V, self.m, self.h, self.n, _t, self.input, dt=_dt)
-    self.spike[:] = bm.logical_and(self.V < self.V_th, V >= self.V_th)
-    self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)
-    self.V[:] = V
-    self.m[:] = m
-    self.h[:] = h
-    self.n[:] = n
+    self.spike.value = bm.logical_and(self.V < self.V_th, V >= self.V_th)
+    self.t_last_spike.value = bm.where(self.spike, _t, self.t_last_spike)
+    self.V.value = V
+    self.m.value = m
+    self.h.value = h
+    self.n.value = n
     self.input[:] = 0.

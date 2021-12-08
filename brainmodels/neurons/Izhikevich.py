@@ -103,9 +103,9 @@ class Izhikevich(Neuron):
     refractory = (_t - self.t_last_spike) <= self.tau_ref
     V = bm.where(refractory, self.V, V)
     spike = self.V_th <= V
-    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
-    self.V[:] = bm.where(spike, self.c, V)
-    self.u[:] = bm.where(spike, u + self.d, u)
-    self.refractory[:] = bm.logical_or(refractory, spike)
+    self.t_last_spike.value = bm.where(spike, _t, self.t_last_spike)
+    self.V.value = bm.where(spike, self.c, V)
+    self.u.value = bm.where(spike, u + self.d, u)
+    self.refractory.value = bm.logical_or(refractory, spike)
+    self.spike.value = spike
     self.input[:] = 0.
-    self.spike[:] = spike

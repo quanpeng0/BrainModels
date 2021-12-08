@@ -130,8 +130,8 @@ class HindmarshRose(Neuron):
     return dVdt, dydt, dzdt
 
   def update(self, _t, _dt):
-    V, self.y[:], self.z[:] = self.integral(self.V, self.y, self.z, _t, self.input, dt=_dt)
-    self.spike[:] = bm.logical_and(V >= self.V_th, self.V < self.V_th)
-    self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)
+    V, self.y.value, self.z.value = self.integral(self.V, self.y, self.z, _t, self.input, dt=_dt)
+    self.spike.value = bm.logical_and(V >= self.V_th, self.V < self.V_th)
+    self.t_last_spike.value = bm.where(self.spike, _t, self.t_last_spike)
     self.input[:] = 0.
-    self.V[:] = V
+    self.V.value = V
