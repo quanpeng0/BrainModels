@@ -29,25 +29,5 @@ class Synapse(bp.TwoEndConn):
     if build_integral:
       self.integral = bp.odeint(method=method, f=self.derivative)
 
-    # functions
-    if bm.is_numpy_backend():
-      self.steps.replace('update', self.numpy_update)
-      self.target_backend = 'numpy'
-
-    elif bm.is_jax_backend():
-      self.steps.replace('update', self.jax_update)
-      self.target_backend = 'jax'
-
-    else:
-      raise bp.errors.UnsupportedError(
-        f'Do not support {bm.get_backend_name()} backend '
-        f'for synapse model {self}.')
-
   def derivative(self, *args, **kwargs):
-    raise NotImplementedError
-
-  def numpy_update(self, _t, _dt):
-    raise NotImplementedError
-
-  def jax_update(self, _t, _dt):
     raise NotImplementedError
