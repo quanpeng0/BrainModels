@@ -16,7 +16,6 @@ with other BrainPy users.
 
    apis/neurons
    apis/synapses
-   apis/channels
 
 
 
