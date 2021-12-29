@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -105,9 +106,9 @@ class HindmarshRose(Neuron):
   """
 
   def __init__(self, size, a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6,
-               V_th=1.0, method='euler', **kwargs):
+               V_th=1.0, method='exp_auto', name=None):
     # initialization
-    super(HindmarshRose, self).__init__(size=size, method=method, **kwargs)
+    super(HindmarshRose, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.a = a
@@ -123,15 +124,23 @@ class HindmarshRose(Neuron):
     self.z = bm.Variable(bm.zeros(self.num))
     self.y = bm.Variable(bm.ones(self.num) * -10.)
 
+  def dV(self, V, t, y, z, Iext):
+    return y - self.a * V * V * V + self.b * V * V - z + Iext
+
+  def dy(self, y, t, V):
+    return self.c - self.d * V * V - y
+
+  def dz(self, z, t, V):
+    return self.r * (self.s * (V - self.V_rest) - z)
+
   def derivative(self, V, y, z, t, Iext):
-    dVdt = y - self.a * V * V * V + self.b * V * V - z + Iext
-    dydt = self.c - self.d * V * V - y
-    dzdt = self.r * (self.s * (V - self.V_rest) - z)
-    return dVdt, dydt, dzdt
+    return bp.JointEq([self.dV, self.dy, self.dz])(V, y, z, t, Iext)
 
   def update(self, _t, _dt):
-    V, self.y.value, self.z.value = self.integral(self.V, self.y, self.z, _t, self.input, dt=_dt)
+    V, y, z = self.integral(self.V, self.y, self.z, _t, self.input, dt=_dt)
     self.spike.value = bm.logical_and(V >= self.V_th, self.V < self.V_th)
     self.t_last_spike.value = bm.where(self.spike, _t, self.t_last_spike)
-    self.input[:] = 0.
     self.V.value = V
+    self.y.value = y
+    self.z.value = z
+    self.input[:] = 0.

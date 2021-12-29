@@ -79,9 +79,9 @@ class QuaIF(Neuron):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0, c=.07,
-               R=1., tau=10., tau_ref=0., method='euler', **kwargs):
+               R=1., tau=10., tau_ref=0., method='exp_auto', name=None):
     # initialization
-    super(QuaIF, self).__init__(size=size, method=method, **kwargs)
+    super(QuaIF, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.V_rest = V_rest

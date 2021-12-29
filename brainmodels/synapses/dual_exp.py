@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 
 from .base import Synapse
@@ -83,8 +84,10 @@ class DualExpCUBA(Synapse):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0, tau_rise=1.,
-               method='exponential_euler', **kwargs):
-    super(DualExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
+               method='exp_auto', name=None):
+    super(DualExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method, name=name)
+    self.check_pre_attrs('spike')
+    self.check_post_attrs('input')
 
     # parameters
     self.tau_rise = tau_rise
@@ -92,26 +95,20 @@ class DualExpCUBA(Synapse):
     self.delay = delay
     self.g_max = g_max
 
+    # connections
+    self.pre_ids, self.post_ids = self.conn.require('pre_ids', 'post_ids')
+
     # variables
-    self.g = bm.Variable(bm.zeros(self.num))
-    self.h = bm.Variable(bm.zeros(self.num))
-    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
+    self.g = bm.Variable(bm.zeros( len(self.pre_ids)))
+    self.h = bm.Variable(bm.zeros( len(self.pre_ids)))
+    self.pre_spike = bp.ConstantDelay(self.pre.num, delay, dtype=pre.spike.dtype)
 
   def derivative(self, g, h, t):
-    dgdt = -g / self.tau_decay + h
-    dhdt = -h / self.tau_rise
-    return dgdt, dhdt
+    dg = lambda g, t: -g / self.tau_decay + h
+    dh = lambda h, t: -h / self.tau_rise
+    return bp.JointEq([dg, dh])(g, h, t)
 
-  def numpy_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    pre_spike = self.pre_spike.pull()
-    self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
-    for i in range(self.num):
-      pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      self.h[i] += pre_spike[pre_id]
-      self.post.input[post_id] += self.g_max * self.g[i]
-
-  def jax_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spikes = self.pre_spike.pull()
     self.g.value, self.h.value = self.integral(self.g, self.h, _t, dt=_dt)
@@ -171,24 +168,16 @@ class DualExpCOBA(DualExpCUBA):
 
   """
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0, tau_rise=1.,
-               E=0., method='exponential_euler', **kwargs):
+               E=0., method='exp_auto', name=None):
     super(DualExpCOBA, self).__init__(pre, post, conn, delay=delay, g_max=g_max,
                                       tau_decay=tau_decay, tau_rise=tau_rise,
-                                      method=method, **kwargs)
+                                      method=method, name=name)
+    self.check_post_attrs('V')
 
+    # parameters
     self.E = E
 
-  def numpy_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    pre_spike = self.pre_spike.pull()
-
-    self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
-    for i in range(self.num):
-      pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      self.h[i] += pre_spike[pre_id]
-      self.post.input[post_id] += self.g_max * self.g[i] * (self.E - self.post.V[post_id])
-
-  def jax_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spikes = self.pre_spike.pull()
     self.g.value, self.h.value = self.integral(self.g, self.h, _t, dt=_dt)

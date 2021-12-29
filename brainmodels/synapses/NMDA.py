@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Synapse
 
@@ -110,8 +111,10 @@ class NMDA(Synapse):
 
   def __init__(self, pre, post, conn, delay=0., g_max=0.15, E=0., cc_Mg=1.2,
                alpha=0.062, beta=3.57, tau_decay=100., a=0.5, tau_rise=2.,
-               method='exponential_euler', **kwargs):
-    super(NMDA, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
+               method='exp_auto', name=None):
+    super(NMDA, self).__init__(pre=pre, post=post, conn=conn, method=method, name=name)
+    self.check_pre_attrs('spike')
+    self.check_post_attrs('input', 'V')
 
     # parameters
     self.g_max = g_max
@@ -124,31 +127,25 @@ class NMDA(Synapse):
     self.a = a
     self.delay = delay
 
+    # connections
+    self.pre_ids, self.post_ids = self.conn.require('pre_ids', 'post_ids')
+
     # variables
-    self.pre_spike = self.register_constant_delay('ps', self.pre.num, delay)
-    self.g = bm.Variable(bm.zeros(self.num, dtype=bm.float_))
-    self.x = bm.Variable(bm.zeros(self.num, dtype=bm.float_))
+    num = len(self.pre_ids)
+    self.pre_spike = bp.ConstantDelay(self.pre.num, delay, pre.spike.dtype)
+    self.g = bm.Variable(bm.zeros(num, dtype=bm.float_))
+    self.x = bm.Variable(bm.zeros(num, dtype=bm.float_))
 
   def derivative(self, g, x, t):
-    dxdt = -x / self.tau_rise
-    dgdt = -g / self.tau_decay + self.a * x * (1 - g)
-    return dgdt, dxdt
+    dg = lambda g, t, x: -g / self.tau_decay + self.a * x * (1 - g)
+    dx = lambda x, t:  -x / self.tau_rise
+    return bp.JointEq([dg, dx])(g, x, t)
 
-  def numpy_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    delayed_pre_spike = self.pre_spike.pull()
-    self.g[:], self.x[:] = self.integral(self.g, self.x, _t, dt=_dt)
-    for i in range(self.num):
-      pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      self.x[i] += delayed_pre_spike[pre_id]
-      g_inf = 1 + self.cc_Mg / self.beta * bm.exp(-self.alpha * self.post.V[post_id])
-      self.post.input[post_id] -= self.g_max * self.g[i] * (self.post.V[post_id] - self.E) / g_inf
-
-  def jax_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
     self.g.value, self.x.value = self.integral(self.g, self.x, _t, dt=_dt)
-    self.x.value += bm.pre2syn(delayed_pre_spike, self.pre_ids)
+    self.x += bm.pre2syn(delayed_pre_spike, self.pre_ids)
     post_g = bm.syn2post(self.g, self.post_ids, self.post.num)
     g_inf = 1 + self.cc_Mg / self.beta * bm.exp(-self.alpha * self.post.V)
-    self.post.input.value -= self.g_max * post_g * (self.post.V - self.E) / g_inf
+    self.post.input -= self.g_max * post_g * (self.post.V - self.E) / g_inf

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -187,9 +188,9 @@ class HH(Neuron):
   """
 
   def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36., EL=-54.387, gL=0.03,
-               V_th=20., C=1.0, method='exponential_euler', **kwargs):
+               V_th=20., C=1.0, method='exp_auto', name=None):
     # initialization
-    super(HH, self).__init__(size=size, method=method, **kwargs)
+    super(HH, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.ENa = ENa
@@ -206,25 +207,33 @@ class HH(Neuron):
     self.h = bm.Variable(0.6 * bm.ones(self.num))
     self.n = bm.Variable(0.32 * bm.ones(self.num))
 
-  def derivative(self, V, m, h, n, t, Iext):
+  def dm(self, m, t, V):
     alpha = 0.1 * (V + 40) / (1 - bm.exp(-(V + 40) / 10))
     beta = 4.0 * bm.exp(-(V + 65) / 18)
     dmdt = alpha * (1 - m) - beta * m
+    return dmdt
 
+  def dh(self, h, t, V):
     alpha = 0.07 * bm.exp(-(V + 65) / 20.)
     beta = 1 / (1 + bm.exp(-(V + 35) / 10))
     dhdt = alpha * (1 - h) - beta * h
+    return dhdt
 
+  def dn(self, n, t, V):
     alpha = 0.01 * (V + 55) / (1 - bm.exp(-(V + 55) / 10))
     beta = 0.125 * bm.exp(-(V + 65) / 80)
     dndt = alpha * (1 - n) - beta * n
+    return dndt
 
+  def dV(self, V, t, m, h, n, Iext):
     I_Na = (self.gNa * m ** 3.0 * h) * (V - self.ENa)
     I_K = (self.gK * n ** 4.0) * (V - self.EK)
     I_leak = self.gL * (V - self.EL)
     dVdt = (- I_Na - I_K - I_leak + Iext) / self.C
+    return dVdt
 
-    return dVdt, dmdt, dhdt, dndt
+  def derivative(self, V, m, h, n, t, Iext):
+    return bp.JointEq([self.dV, self.dm, self.dh, self.dn])(V, m, h, n, t, Iext)
 
   def update(self, _t, _dt):
     V, m, h, n = self.integral(self.V, self.m, self.h, self.n, _t, self.input, dt=_dt)

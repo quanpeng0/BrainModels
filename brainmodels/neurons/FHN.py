@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -94,9 +95,9 @@ class FHN(Neuron):
 
   """
 
-  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8, method='euler', **kwargs):
+  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8, method='exp_auto', name=None):
     # initialization
-    super(FHN, self).__init__(size=size, method=method, ** kwargs)
+    super(FHN, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.a = a
@@ -107,14 +108,19 @@ class FHN(Neuron):
     # variables
     self.w = bm.Variable(bm.zeros(self.num))
 
+  def dV(self, V, t, w, Iext):
+    return  V - V * V * V / 3 - w + Iext
+
+  def dw(self, w, t, V):
+    return (V + self.a - self.b * w) / self.tau
+
   def derivative(self, V, w, t, Iext):
-    dw = (V + self.a - self.b * w) / self.tau
-    dV = V - V * V * V / 3 - w + Iext
-    return dV, dw
+    return bp.JointEq([self.dV, self.dw])(V, w, t, Iext)
 
   def update(self, _t, _dt):
-    V, self.w.value = self.integral(self.V, self.w, _t, self.input, dt=_dt)
+    V, w = self.integral(self.V, self.w, _t, self.input, dt=_dt)
     self.spike.value = bm.logical_and(V >= self.Vth, self.V < self.Vth)
     self.t_last_spike.value = bm.where(self.spike, _t, self.t_last_spike)
     self.V.value = V
+    self.w.value = w
     self.input[:] = 0.

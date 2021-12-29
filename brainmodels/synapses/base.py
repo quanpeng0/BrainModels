@@ -10,7 +10,7 @@ __all__ = [
 
 
 class Synapse(bp.TwoEndConn):
-  def __init__(self, pre, post, conn, method='euler', build_conn=True, build_integral=True, **kwargs):
+  def __init__(self, pre, post, conn, method='exp_auto', build_integral=True, **kwargs):
     super(Synapse, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     if not isinstance(pre, Neuron):
@@ -19,11 +19,6 @@ class Synapse(bp.TwoEndConn):
       raise bp.errors.BrainPyError(f'"post" must be an instance of {Neuron}.')
     self.pre = pre
     self.post = post
-
-    # connections
-    if build_conn:
-      self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-      self.num = len(self.pre_ids)
 
     # integrals
     if build_integral:

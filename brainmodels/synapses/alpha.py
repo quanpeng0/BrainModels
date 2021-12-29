@@ -69,14 +69,14 @@ class AlphaCUBA(DualExpCUBA):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0,
-               method='exponential_euler', **kwargs):
+               method='exp_auto', name=None):
     super(AlphaCUBA, self).__init__(pre=pre, post=post, conn=conn,
                                     delay=delay,
                                     g_max=g_max,
                                     tau_decay=tau_decay,
                                     tau_rise=tau_decay,
                                     method=method,
-                                    **kwargs)
+                                    name=name)
 
 
 class AlphaCOBA(DualExpCOBA):
@@ -132,7 +132,7 @@ class AlphaCOBA(DualExpCOBA):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0,
-               E=0., method='exponential_euler', **kwargs):
+               E=0., method='exp_auto', name=None):
     super(AlphaCOBA, self).__init__(pre=pre, post=post, conn=conn,
                                     delay=delay,
                                     g_max=g_max,
@@ -140,4 +140,4 @@ class AlphaCOBA(DualExpCOBA):
                                     tau_decay=tau_decay,
                                     tau_rise=tau_decay,
                                     method=method,
-                                    **kwargs)
+                                    name=name)

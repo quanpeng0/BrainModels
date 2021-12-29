@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 
 from .base import Synapse
@@ -10,7 +11,7 @@ __all__ = [
 ]
 
 
-class VoltageJump(Synapse):
+class DeltaSynapse(Synapse):
   """Voltage Jump Synapse Model, or alias of Delta Synapse Model.
 
   **Model Descriptions**
@@ -40,16 +41,12 @@ class VoltageJump(Synapse):
 
   """
 
-  def __init__(self, pre, post, conn, delay=0., post_has_ref=False, w=1.,
-               post_key='V', **kwargs):
-    super(VoltageJump, self).__init__(pre=pre, post=post, conn=conn, build_conn=False,
-                                      build_integral=False, **kwargs)
-
-    # checking
+  def __init__(self, pre, post, conn, delay=0., post_has_ref=False, w=1., post_key='V', name=None):
+    super(DeltaSynapse, self).__init__(pre=pre, post=post, conn=conn, build_integral=False, name=name)
+    self.check_pre_attrs('spike')
+    self.check_post_attrs(post_key)
     if post_has_ref:
-      assert hasattr(post, 'refractory'), 'Post-synaptic group must has "refractory" variable.'
-    if bm.is_numpy_backend():
-      assert post_key == 'V', f'"NumPy" backend only supports "V"'
+      self.check_post_attrs('refractory')
 
     # parameters
     self.delay = delay
@@ -57,39 +54,26 @@ class VoltageJump(Synapse):
     self.post_has_ref = post_has_ref
 
     # connections
-    self.num = self.post.num
-    if bm.is_numpy_backend():
-      self.pre2post = self.conn.require('pre2post')
-      self.target_backend = 'numpy'
-    else:
-      self.post2pre_mat = self.conn.require('post2pre_mat')
-      self.target_backend = 'jax'
+    self.pre2post = self.conn.require('pre2post')
 
     # variables
     self.w = w
-    assert bm.size(w) == 1, 'This implementation only support scalar weight. '
-    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
+    self.pre_spike = bp.ConstantDelay(pre.num, delay, dtype=pre.spike.dtype)
 
-  def numpy_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    pre_spike = self.pre_spike.pull()
-    for pre_id in range(self.pre.num):
-      if pre_spike[pre_id]:
-        post_ids = self.pre2post[pre_id]
-        if self.post_has_ref:
-          self.post.V[post_ids] += self.w * (1. - self.post.refractory[post_ids])
-        else:
-          self.post.V[post_ids] += self.w
-
-  def jax_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
-    spikes = bm.pre2post(delayed_pre_spike, self.post2pre_mat) * self.w
+    post_vs = bm.pre2post_event_sum(delayed_pre_spike, self.pre2post, self.post.num, self.w)
     target = getattr(self.post, self.post_key)
     if self.post_has_ref:
-      target += spikes * (1. - self.post.refractory)
+      target += post_vs * (1. - self.post.refractory)
     else:
-      target += spikes
+      target += post_vs
 
 
-DeltaSynapse = VoltageJump
+class VoltageJump(DeltaSynapse):
+  def __init__(self, pre, post, conn, delay=0., post_has_ref=False, w=1., name=None):
+    super(VoltageJump, self).__init__(pre=pre, post=post, conn=conn, delay=delay,
+                                      post_has_ref=post_has_ref, w=w, name=name)
+
+

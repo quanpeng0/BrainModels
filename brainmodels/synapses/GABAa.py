@@ -63,7 +63,7 @@ class GABAa(AMPA):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=0.04, E=-80., alpha=0.53,
-               beta=0.18, T=1., T_duration=1., method='exponential_euler', **kwargs):
+               beta=0.18, T=1., T_duration=1., method='exp_auto', name=None):
     super(GABAa, self).__init__(pre, post, conn,
                                 delay=delay,
                                 g_max=g_max,
@@ -73,4 +73,4 @@ class GABAa(AMPA):
                                 T=T,
                                 T_duration=T_duration,
                                 method=method,
-                                **kwargs)
+                                name=name)

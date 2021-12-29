@@ -78,9 +78,9 @@ class LIF(Neuron):
   """
 
   def __init__(self, size, V_rest=0., V_reset=-5., V_th=20., tau=10.,
-               tau_ref=1., method='exponential_euler', **kwargs):
+               tau_ref=1., method='exp_auto', name=None):
     # initialization
-    super(LIF, self).__init__(size=size, method=method, **kwargs)
+    super(LIF, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.V_rest = V_rest

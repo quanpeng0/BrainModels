@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -99,9 +100,9 @@ class MorrisLecar(Neuron):
 
   def __init__(self, size, V_Ca=130., g_Ca=4.4, V_K=-84., g_K=8., V_leak=-60.,
                g_leak=2., C=20., V1=-1.2, V2=18., V3=2., V4=30., phi=0.04,
-               V_th=10., method='euler', **kwargs):
+               V_th=10., method='exp_auto', name=None):
     # initialization
-    super(MorrisLecar, self).__init__(size=size, method=method, **kwargs)
+    super(MorrisLecar, self).__init__(size=size, method=method, name=name)
 
     # params
     self.V_Ca = V_Ca
@@ -121,17 +122,22 @@ class MorrisLecar(Neuron):
     # vars
     self.W = bm.Variable(bm.ones(self.num) * 0.02)
 
-  def derivative(self, V, W, t, I_ext):
+  def dV(self, V, t, W, Iext):
     M_inf = (1 / 2) * (1 + bm.tanh((V - self.V1) / self.V2))
     I_Ca = self.g_Ca * M_inf * (V - self.V_Ca)
     I_K = self.g_K * W * (V - self.V_K)
     I_Leak = self.g_leak * (V - self.V_leak)
-    dVdt = (- I_Ca - I_K - I_Leak + I_ext) / self.C
+    dVdt = (- I_Ca - I_K - I_Leak + Iext) / self.C
+    return dVdt
 
+  def dW(self, W, t, V):
     tau_W = 1 / (self.phi * bm.cosh((V - self.V3) / (2 * self.V4)))
     W_inf = (1 / 2) * (1 + bm.tanh((V - self.V3) / self.V4))
     dWdt = (W_inf - W) / tau_W
-    return dVdt, dWdt
+    return dWdt
+
+  def derivative(self, V, W, t, Iext):
+    return bp.JointEq([self.dW, self.dW])(V, W, t, Iext)
 
   def update(self, _t, _dt):
     V, self.W.value = self.integral(self.V, self.W, _t, self.input, dt=_dt)

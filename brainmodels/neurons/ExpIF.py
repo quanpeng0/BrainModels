@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -107,9 +108,9 @@ class ExpIF(Neuron):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
-               R=1., tau=10., tau_ref=1.7, method='euler', **kwargs):
+               R=1., tau=10., tau_ref=1.7, method='exp_auto', name=None):
     # initialize
-    super(ExpIF, self).__init__(size=size, method=method, **kwargs)
+    super(ExpIF, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.V_rest = V_rest

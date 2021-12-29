@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -86,8 +87,8 @@ class AdQuaIF(Neuron):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0, a=1., b=.1,
-               c=.07, tau=10., tau_w=10., method='euler', **kwargs):
-    super(AdQuaIF, self).__init__(size=size, method=method, **kwargs)
+               c=.07, tau=10., tau_w=10., method='exp_auto', name=None):
+    super(AdQuaIF, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.V_rest = V_rest
@@ -104,15 +105,21 @@ class AdQuaIF(Neuron):
     self.w = bm.Variable(bm.zeros(self.num))
     self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
 
-  def derivative(self, V, w, t, Iext):
+  def dV(self, V, t, w, Iext):
     dVdt = (self.c * (V - self.V_rest) * (V - self.V_c) - w + Iext) / self.tau
+    return dVdt
+
+  def dw(self, w, t, V):
     dwdt = (self.a * (V - self.V_rest) - w) / self.tau_w
-    return dVdt, dwdt
+    return dwdt
+
+  def derivative(self, V, w, t, Iext):
+    return bp.JointEq([self.dV, self.dw])(V, w, t, Iext)
 
   def update(self, _t, _dt):
     V, w = self.integral(self.V, self.w, _t, self.input, dt=_dt)
     spike = self.V_th <= V
-    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
+    self.t_last_spike.value = bm.where(spike, _t, self.t_last_spike)
     self.V.value = bm.where(spike, self.V_reset, V)
     self.w.value = bm.where(spike, w + self.b, w)
     self.spike.value = spike
