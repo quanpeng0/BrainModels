@@ -35,13 +35,11 @@ class QuaIF(Neuron):
     >>> import brainmodels
     >>> import brainpy as bp
     >>>
-    >>> group = brainmodels.neurons.QuaIF(1, monitors=['V'])
+    >>> group = brainmodels.neurons.QuaIF(1,)
     >>>
-    >>> group.run(duration=200., inputs=('input', 20.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
-    >>>
-    >>> group.run(duration=(200, 400.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
+    >>> runner = bp.StructRunner(group, monitors=['V'], inputs=('input', 20.))
+    >>> runner.run(duration=200.)
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.V, show=True)
 
 
   **Model Parameters**

@@ -57,9 +57,10 @@ class ExpIF(Neuron):
 
     >>> import brainpy as bp
     >>> import brainmodels
-    >>> group = brainmodels.neurons.ExpIF(1, monitors=['V'])
-    >>> group.run(300., inputs=('input', 10.))
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, ylabel='V', show=True)
+    >>> group = brainmodels.neurons.ExpIF(1)
+    >>> runner = bp.StructRunner(group, monitors=['V'], inputs=('input', 10.))
+    >>> runner.run(300., )
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.V, ylabel='V', show=True)
 
 
   **Model Parameters**

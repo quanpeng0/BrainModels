@@ -38,13 +38,11 @@ class LIF(Neuron):
     >>> import brainmodels
     >>> import brainpy as bp
     >>>
-    >>> group = bp.math.jit(brainmodels.neurons.LIF(100, monitors=['V']))
+    >>> group = brainmodels.neurons.LIF(1)
     >>>
-    >>> group.run(duration=200., inputs=('input', 26.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, legend='0-200 ms')
-    >>>
-    >>> group.run(duration=(200, 400.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, legend='200-400 ms', show=True)
+    >>> runner = bp.StructRunner(group, monitors=['V'], inputs=('input', 26.))
+    >>> runner.run(duration=200.)
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.V, legend='0-200 ms', show=True)
 
 
   **Model Parameters**

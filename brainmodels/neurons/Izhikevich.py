@@ -100,8 +100,9 @@ class Izhikevich(Neuron):
   def du(self, u, t, V):
     return self.a * (self.b * V - u)
 
-  def derivative(self, V, u, t, Iext):
-    return bp.JointEq([self.dV, self.du])(V, u, t, Iext)
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dV, self.du])
 
   def update(self, _t, _dt):
     V, u = self.integral(self.V, self.u, _t, self.input, dt=_dt)

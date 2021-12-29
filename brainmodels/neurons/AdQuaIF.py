@@ -37,13 +37,14 @@ class AdQuaIF(Neuron):
 
     >>> import brainpy as bp
     >>> import brainmodels
-    >>> group = brainmodels.neurons.AdQuaIF(1, monitors=['V', 'w'])
-    >>> group.run(300, inputs=('input', 30.))
+    >>> group = brainmodels.neurons.AdQuaIF(1, )
+    >>> runner = bp.StructRunner(group, monitors=['V', 'w'], inputs=('input', 30.))
+    >>> runner.run(300)
     >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 8)
     >>> fig.add_subplot(gs[0, 0])
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, ylabel='V')
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.V, ylabel='V')
     >>> fig.add_subplot(gs[1, 0])
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.w, ylabel='w', show=True)
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.w, ylabel='w', show=True)
 
   **Model Parameters**
 
@@ -113,8 +114,9 @@ class AdQuaIF(Neuron):
     dwdt = (self.a * (V - self.V_rest) - w) / self.tau_w
     return dwdt
 
-  def derivative(self, V, w, t, Iext):
-    return bp.JointEq([self.dV, self.dw])(V, w, t, Iext)
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dV, self.dw])
 
   def update(self, _t, _dt):
     V, w = self.integral(self.V, self.w, _t, self.input, dt=_dt)

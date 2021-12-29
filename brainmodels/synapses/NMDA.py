@@ -64,7 +64,36 @@ class NMDA(Synapse):
 
   **Model Examples**
 
-  - `Simple illustrated example <../synapses/nmda.ipynb>`_
+  - `(Wang, 2002) Decision making spiking model <https://brainpy-examples.readthedocs.io/en/latest/decision_making/Wang_2002_decision_making_spiking.html>`_
+
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.HH(1)
+    >>> neu2 = brainmodels.neurons.HH(1)
+    >>> syn1 = brainmodels.synapses.NMDA(neu1, neu2, bp.connect.All2All(), E=0.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 5.)], monitors=['pre.V', 'post.V', 'syn.g', 'syn.x'])
+    >>> runner.run(150.)
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 8)
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['pre.V'], label='pre-V')
+    >>> plt.plot(runner.mon.ts, runner.mon['post.V'], label='post-V')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.g'], label='g')
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.x'], label='x')
+    >>> plt.legend()
+    >>> plt.show()
+
 
 
   **Model Parameters**
@@ -136,10 +165,11 @@ class NMDA(Synapse):
     self.g = bm.Variable(bm.zeros(num, dtype=bm.float_))
     self.x = bm.Variable(bm.zeros(num, dtype=bm.float_))
 
-  def derivative(self, g, x, t):
+  @property
+  def derivative(self):
     dg = lambda g, t, x: -g / self.tau_decay + self.a * x * (1 - g)
     dx = lambda x, t:  -x / self.tau_rise
-    return bp.JointEq([dg, dx])(g, x, t)
+    return bp.JointEq([dg, dx])
 
   def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)

@@ -111,8 +111,9 @@ class AdExIF(Neuron):
     dwdt = (self.a * (V - self.V_rest) - w) / self.tau_w
     return dwdt
 
-  def derivative(self, V, w, t, Iext):
-    return bp.JointEq([self.dV, self.dw])(V, w, t, Iext)
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dV, self.dw])
 
   def update(self, _t, _dt):
     V, w = self.integral(self.V, self.w, _t, self.input, dt=_dt)

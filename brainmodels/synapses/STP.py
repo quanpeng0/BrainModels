@@ -62,8 +62,74 @@ class STP(Synapse):
 
   **Model Examples**
 
-  - `Simple illustrated example <../synapses/STP.ipynb>`_
-  - `STP for Working Memory Capacity <../../examples/working_memory/Mi_2017_working_memory_capacity.ipynb>`_
+  - `STP for Working Memory Capacity <https://brainpy-examples.readthedocs.io/en/latest/working_memory/Mi_2017_working_memory_capacity.html>`_
+
+  **STD**
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.LIF(1)
+    >>> neu2 = brainmodels.neurons.LIF(1)
+    >>> syn1 = brainmodels.synapses.STP(neu1, neu2, bp.connect.All2All(), U=0.2, tau_d=150., tau_f=2.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 28.)], monitors=['syn.I', 'syn.u', 'syn.x'])
+    >>> runner.run(150.)
+    >>>
+    >>>
+    >>> # plot
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
+    >>>
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.u'][:, 0], label='u')
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.x'][:, 0], label='x')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.I'][:, 0], label='I')
+    >>> plt.legend()
+    >>>
+    >>> plt.xlabel('Time (ms)')
+    >>> plt.show()
+
+  **STF**
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.LIF(1)
+    >>> neu2 = brainmodels.neurons.LIF(1)
+    >>> syn1 = brainmodels.synapses.STP(neu1, neu2, bp.connect.All2All(), U=0.1, tau_d=10, tau_f=100.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 28.)], monitors=['syn.I', 'syn.u', 'syn.x'])
+    >>> runner.run(150.)
+    >>>
+    >>>
+    >>> # plot
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
+    >>>
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.u'][:, 0], label='u')
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.x'][:, 0], label='x')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.I'][:, 0], label='I')
+    >>> plt.legend()
+    >>>
+    >>> plt.xlabel('Time (ms)')
+    >>> plt.show()
+
 
 
   **Model Parameters**
@@ -128,11 +194,12 @@ class STP(Synapse):
     self.I = bm.Variable(bm.zeros(num, dtype=bm.float_))
     self.delayed_I = bp.ConstantDelay(num, delay=delay)
 
-  def derivative(self, I, u, x, t):
-    dIdt = -I / self.tau
-    dudt = - u / self.tau_f
-    dxdt = (1 - x) / self.tau_d
-    return dIdt, dudt, dxdt
+  @property
+  def derivative(self):
+    dI = lambda I, t: -I / self.tau
+    du = lambda u, t: - u / self.tau_f
+    dx = lambda x, t: (1 - x) / self.tau_d
+    return bp.JointEq([dI, du, dx])
 
   def update(self, _t, _dt):
     delayed_I = self.delayed_I.pull()

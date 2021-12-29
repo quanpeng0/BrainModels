@@ -119,15 +119,21 @@ class GIF(Neuron):
     self.I2 = bm.Variable(bm.zeros(self.num))
     self.V_th = bm.Variable(bm.ones(self.num) * -50.)
 
+  def dI1(self, I1, t):
+    return - self.k1 * I1
 
+  def dI2(self, I2, t):
+    return - self.k2 * I2
 
+  def dVth(self, V_th, t, V):
+    return self.a * (V - self.V_rest) - self.b * (V_th - self.V_th_inf)
 
-  def derivative(self, I1, I2, V_th, V, t, Iext):
-    dI1 = lambda I1, t: - self.k1 * I1
-    dI2 = lambda I2, t: - self.k2 * I2
-    dVth = lambda Vth, t, V: self.a * (V - self.V_rest) - self.b * (V_th - self.V_th_inf)
-    dV = lambda V, t: (- (V - self.V_rest) + self.R * Iext + self.R * I1 + self.R * I2) / self.tau
-    return bp.JointEq([dI1, dI2, dVth, dV])(I1, I2, V_th, V, t, Iext)
+  def dV(self, V, t, I1, I2, Iext):
+    return (- (V - self.V_rest) + self.R * Iext + self.R * I1 + self.R * I2) / self.tau
+
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dI1, self.dI2, self.dVth, self.dV])
 
   def update(self, _t, _dt):
     I1, I2, V_th, V = self.integral(self.I1, self.I2, self.V_th, self.V, _t, self.input, dt=_dt)

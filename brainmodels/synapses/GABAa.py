@@ -29,7 +29,7 @@ class GABAa(AMPA):
 
   **Model Examples**
 
-  - `Gamma oscillation network model <../../examples/oscillation_synchronization/Wang_1996_gamma_oscillation.ipynb>`_
+  - `Gamma oscillation network model <https://brainpy-examples.readthedocs.io/en/latest/oscillation_synchronization/Wang_1996_gamma_oscillation.html>`_
 
   **Model Parameters**
 
