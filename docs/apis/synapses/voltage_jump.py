@@ -10,16 +10,18 @@ import brainmodels
 import matplotlib.pyplot as plt
 
 # %%
-neu1 = brainmodels.neurons.LIF(1, monitors=['V', 'spike'])
-neu2 = brainmodels.neurons.LIF(1, monitors=['V'])
-syn1 = brainmodels.synapses.VoltageJump(pre=neu1, post=neu2, conn=bp.connect.All2All(), delay=2.0)
-net = bp.Network(neu1=neu1, syn1=syn1, neu2=neu2)
-net.run(150., inputs=[('neu1.input', 25.), ('neu2.input', 10.)])
+neu1 = brainmodels.neurons.LIF(1)
+neu2 = brainmodels.neurons.LIF(1)
+syn1 = brainmodels.synapses.VoltageJump(neu1, neu2, bp.connect.All2All(), w=5.)
+net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+
+runner = bp.StructRunner(net, inputs=[('pre.input', 25.), ('post.input', 10.)], monitors=['pre.V', 'post.V', 'pre.spike'])
+runner.run(150.)
 
 # %%
 fig, gs = bp.visualize.get_figure(1, 1, 3, 8)
-plt.plot(neu1.mon.ts, neu1.mon.V, label='pre-V')
-plt.plot(neu1.mon.ts, neu2.mon.V, label='post-V')
+plt.plot(runner.mon.ts, runner.mon['pre.V'], label='pre-V')
+plt.plot(runner.mon.ts, runner.mon['post.V'], label='post-V')
 plt.xlim(40, 150)
 plt.legend()
 plt.show()

@@ -60,25 +60,25 @@ import matplotlib.pyplot as plt
 # When we set the parameters $\tau_d > \tau_f$, $x$ recovers very slowly, and $u$ decays very quickly, so in the end, the transmitter is not enough to open the receptors, showing STD dominants;
 
 # %%
-neu1 = brainmodels.neurons.LIF(1, monitors=['V'], name='X')
-neu2 = brainmodels.neurons.LIF(1, monitors=['V'])
+neu1 = brainmodels.neurons.LIF(1)
+neu2 = brainmodels.neurons.LIF(1)
+syn1 = brainmodels.synapses.STP(neu1, neu2, bp.connect.All2All(), U=0.2, tau_d=150., tau_f=2.)
+net = bp.Network(pre=neu1, syn=syn1, post=neu2)
 
-# STD
-syn = brainmodels.synapses.STP(U=0.2, tau_d=150., tau_f=2., pre=neu1, post=neu2,
-                               conn=bp.connect.All2All(), monitors=['I', 'u', 'x'])
-net = bp.Network(neu1, syn, neu2)
-net.run(100., inputs=('X.input', 28.))
+runner = bp.StructRunner(net, inputs=[('pre.input', 28.)], monitors=['syn.I', 'syn.u', 'syn.x'])
+runner.run(150.)
+
 
 # plot
 fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
 
 fig.add_subplot(gs[0, 0])
-plt.plot(syn.mon.ts, syn.mon.u[:, 0], label='u')
-plt.plot(syn.mon.ts, syn.mon.x[:, 0], label='x')
+plt.plot(runner.mon.ts, runner.mon['syn.u'][:, 0], label='u')
+plt.plot(runner.mon.ts, runner.mon['syn.x'][:, 0], label='x')
 plt.legend()
 
 fig.add_subplot(gs[1, 0])
-plt.plot(syn.mon.ts, syn.mon.I[:, 0], label='I')
+plt.plot(runner.mon.ts, runner.mon['syn.I'][:, 0], label='I')
 plt.legend()
 
 plt.xlabel('Time (ms)')
@@ -91,25 +91,25 @@ plt.show()
 # When $\tau_f > \tau_d$, on the contrary, every time $x$ is used, it will be added back quickly. There are always enough transmitters available. At the same time, the decay of $u$ is very slow, so the probability of releasing transmitters is getting higher and higher, showing STF dominants.
 
 # %%
-neu1 = brainmodels.neurons.LIF(1, monitors=['V'], name='Y')
-neu2 = brainmodels.neurons.LIF(1, monitors=['V'])
+neu1 = brainmodels.neurons.LIF(1)
+neu2 = brainmodels.neurons.LIF(1)
+syn1 = brainmodels.synapses.STP(neu1, neu2, bp.connect.All2All(), U=0.1, tau_d=10, tau_f=100.)
+net = bp.Network(pre=neu1, syn=syn1, post=neu2)
 
-# STF
-syn = brainmodels.synapses.STP(U=0.1, tau_d=10, tau_f=100., pre=neu1, post=neu2,
-                               conn=bp.connect.All2All(), monitors=['I', 'u', 'x'])
-net = bp.Network(neu1, syn, neu2)
-net.run(100., inputs=('Y.input', 28.))
+runner = bp.StructRunner(net, inputs=[('pre.input', 28.)], monitors=['syn.I', 'syn.u', 'syn.x'])
+runner.run(150.)
+
 
 # plot
 fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
 
 fig.add_subplot(gs[0, 0])
-plt.plot(syn.mon.ts, syn.mon.u[:, 0], label='u')
-plt.plot(syn.mon.ts, syn.mon.x[:, 0], label='x')
+plt.plot(runner.mon.ts, runner.mon['syn.u'][:, 0], label='u')
+plt.plot(runner.mon.ts, runner.mon['syn.x'][:, 0], label='x')
 plt.legend()
 
 fig.add_subplot(gs[1, 0])
-plt.plot(syn.mon.ts, syn.mon.I[:, 0], label='I')
+plt.plot(runner.mon.ts, runner.mon['syn.I'][:, 0], label='I')
 plt.legend()
 
 plt.xlabel('Time (ms)')
