@@ -53,8 +53,8 @@ class IDR(IonChannel):
   """
   allowed_params = ('E', 'g_max', 'T', 'T_base', 'V_sh')
 
-  def __init__(self, host, method, E=-90., g_max=10., T=36., T_base=3., V_sh=-50., **kwargs):
-    super(IDR, self).__init__(host, method, **kwargs)
+  def __init__(self, host, method, E=-90., g_max=10., T=36., T_base=3., V_sh=-50., name=None):
+    super(IDR, self).__init__(host, method, name=name)
 
     # parameters
     self.T = T
@@ -82,8 +82,8 @@ class IDR(IonChannel):
 
 class IK2(IonChannel):
 
-  def __init__(self, host, method, E, g_max, **kwargs):
-    super(IK2, self).__init__(host, method, **kwargs)
+  def __init__(self, host, method, E, g_max, name=None):
+    super(IK2, self).__init__(host, method, name=name)
 
     self.E = E
     self.g_max = g_max

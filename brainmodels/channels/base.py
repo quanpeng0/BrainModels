@@ -28,11 +28,10 @@ class Channel(brainobjects.Channel):
   the parameters of the channel. The ``__call__()`` function
   is used to initialize the variables in this channel.
   """
-  target_backend = 'jax'
   allowed_params = None
 
-  def __init__(self, size, method, **kwargs):
-    super(Channel, self).__init__(**kwargs)
+  def __init__(self, size, method, name=None):
+    super(Channel, self).__init__(name=name)
 
     self.size = size
     self.method = method
@@ -55,9 +54,9 @@ class Channel(brainobjects.Channel):
       return cls, params
     else:
       assert isinstance(cls.allowed_params, (tuple, list))
-      allowed_params = tuple(cls.allowed_params) + ('monitors',)
+      allowed_params = tuple(cls.allowed_params)
       for p in params:
-        assert p in allowed_params, f'{p} is not allowed to pre-define in {cls}. ' \
+        assert p in allowed_params, f'{p} is not allowed to define in {cls}. ' \
                                     f'The allowed params include: {allowed_params}'
       return cls, params
 
@@ -73,7 +72,6 @@ class IonChannel(Channel):
 
 class CalChannel(IonChannel):
   pass
-
 
 
 class Cluster(bp.DynamicalSystem):
@@ -115,8 +113,6 @@ class CondNeuGroup(Neuron):
     The network size of this neuron group.
   num_batch : optional, int
     The batch size.
-  monitors : optional, list of str, tuple of str
-    The neuron group monitor.
   name : optional, str
     The neuron group name.
 
@@ -127,12 +123,8 @@ class CondNeuGroup(Neuron):
   the parameters of channels and this neuron group. The ``__call__()`` function
   is used to initialize the variables in this neuron group.
   """
-  target_backend = 'jax'
-
-  def __init__(self, size, C=1., A=1e-3, V_th=0., method='euler',
-               monitors=None, steps=('update',), name=None, **channels):
-    super(CondNeuGroup, self).__init__(size, method=method, steps=steps,
-                                       monitors=monitors, name=name)
+  def __init__(self, size, C=1., A=1e-3, V_th=0., method='exp_auto', name=None, **channels):
+    super(CondNeuGroup, self).__init__(size, method=method, name=name)
 
     # parameters for neurons
     self.C = C
@@ -196,10 +188,10 @@ class CondNeuGroup(Neuron):
       assert isinstance(ch[0], type)
       assert isinstance(ch[1], dict)
 
-    def generate_cond_neuron_group(size, method='euler', monitors=None, name=None):
+    def generate_cond_neuron_group(size, method='exp_auto', name=None):
       return cls(
         C=C, A=A, V_th=V_th,  # membrane potential parameters
-        size=size, method=method, monitors=monitors, name=name,  # initialization parameters
+        size=size, method=method, name=name,  # initialization parameters
         **channels  # channel settings
       )
 

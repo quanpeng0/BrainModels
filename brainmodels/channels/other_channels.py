@@ -20,8 +20,8 @@ class IL(IonChannel):
   """
   allowed_params = ('E', 'g_max')
 
-  def __init__(self, host, method, g_max=0.1, E=-70., **kwargs):
-    super(IL, self).__init__(host, method, **kwargs)
+  def __init__(self, host, method, g_max=0.1, E=-70., name=None):
+    super(IL, self).__init__(host, method, name=name)
 
     self.E = E
     self.g_max = g_max
@@ -45,8 +45,8 @@ class IKL(IL):
     The reversal potential.
   """
 
-  def __init__(self, g_max=0.005, E=-90., **kwargs):
-    super(IKL, self).__init__(g_max=g_max, E=E, **kwargs)
+  def __init__(self, g_max=0.005, E=-90., name=None):
+    super(IKL, self).__init__(g_max=g_max, E=E, name=name)
 
 
 class Potential(IonChannel):

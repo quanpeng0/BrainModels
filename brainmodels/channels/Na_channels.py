@@ -63,8 +63,8 @@ class INa(IonChannel):
 
   allowed_params = ('T', 'E', 'g_max', 'V_sh')
 
-  def __init__(self, host, method, E=50., g_max=90., T=36., V_sh=-50., **kwargs):
-    super(INa, self).__init__(host, method, **kwargs)
+  def __init__(self, host, method, E=50., g_max=90., T=36., V_sh=-50., name=None):
+    super(INa, self).__init__(host, method, name=name)
 
     self.T = T
     self.E = E
@@ -97,8 +97,8 @@ class INa(IonChannel):
 class INa2(IonChannel):
   allowed_params = ('E', 'g_max')
 
-  def __init__(self, host, method, E=50., g_max=120., **kwargs):
-    super(INa2, self).__init__(host, method, **kwargs)
+  def __init__(self, host, method, E=50., g_max=120., name=None):
+    super(INa2, self).__init__(host, method, name=name)
 
     self.E = E
     self.g_max = g_max
@@ -117,7 +117,7 @@ class INa2(IonChannel):
 
     return dmdt, dhdt
 
-  def update(self, _t, _dt, **kwargs):
+  def update(self, _t, _dt, name=None):
     m, h = self.integral(self.m.value, self.h.value, _t, self.host.V.value, dt=_dt)
     self.m.value, self.h.value = m, h
 

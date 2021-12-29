@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 
 from .base import MolChannel, CalChannel
@@ -23,8 +24,8 @@ class Ca(MolChannel):
   E = None
   I_Ca = None
 
-  def __init__(self, host, method, **kwargs):
-    super(Ca, self).__init__(host, method, **kwargs)
+  def __init__(self, host, method, name=None):
+    super(Ca, self).__init__(host, method, name=name)
 
 
 class CaFix(Ca):
@@ -34,11 +35,11 @@ class CaFix(Ca):
   """
   allowed_params = ('E',)
 
-  def __init__(self, host, method, E=120., **kwargs):
-    super(CaFix, self).__init__(host, method, E=E, **kwargs)
+  def __init__(self, host, method, E=120., name=None):
+    super(CaFix, self).__init__(host, method, E=E, name=name)
 
     self.E = E
-    self.input = bm.Variable(bm.zeros(self.host.num, dtype=bm.float_))
+    self.input = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
 
   def update(self, _t, _dt):
     self.input[:] = 0.
@@ -151,8 +152,8 @@ class CaDyn(Ca):
   """
   allowed_params = ('d', 'F', 'C_rest', 'tau', 'C_0', 'T', 'R')
 
-  def __init__(self, size, method, d=1., F=96.489, C_rest=0.05, tau=5., C_0=2., T=36., R=8.31441, **kwargs):
-    super(CaDyn, self).__init__(size, method, **kwargs)
+  def __init__(self, size, method, d=1., F=96.489, C_rest=0.05, tau=5., C_0=2., T=36., R=8.31441, name=None):
+    super(CaDyn, self).__init__(size, method, name=name)
 
     self.R = R  # gas constant, J*mol-1*K-1
     self.T = T
@@ -225,8 +226,8 @@ class IAHP(CalChannel):
 
   allowed_params = ('E', 'g_max')
 
-  def __init__(self, ca, size, method='exponential_euler', E=-80., g_max=1., **kwargs):
-    super(IAHP, self).__init__(size, method, **kwargs)
+  def __init__(self, ca, size, method='exponential_euler', E=-80., g_max=1., name=None):
+    super(IAHP, self).__init__(size, method, name=name)
 
     # parameters
     self.E = E
@@ -289,8 +290,8 @@ class ICaN(CalChannel):
   """
   allowed_params = ('E', 'g_max', 'phi')
 
-  def __init__(self, host, method, E=10., g_max=1., phi=1., **kwargs):
-    super(ICaN, self).__init__(host, method, **kwargs)
+  def __init__(self, host, method, E=10., g_max=1., phi=1., name=None):
+    super(ICaN, self).__init__(host, method, name=name)
 
     self.E = E
     self.g_max = g_max
@@ -355,8 +356,8 @@ class ICaT(CalChannel):
 
   """
 
-  def __init__(self, host, method, T=36., T_base_p=3.55, T_base_q=3., g_max=2., V_sh=-3., **kwargs):
-    super(ICaT, self).__init__(host, method, **kwargs)
+  def __init__(self, host, method, T=36., T_base_p=3.55, T_base_q=3., g_max=2., V_sh=-3., name=None):
+    super(ICaT, self).__init__(host, method, name=name)
     self.T = T
     self.T_base_p = T_base_p
     self.T_base_q = T_base_q
@@ -437,38 +438,37 @@ class ICaT_RE(CalChannel):
   """
 
   def __init__(self, host, method, T=36., T_base_p=5., T_base_q=3.,
-               g_max=1.75, V_sh=-3., **kwargs):
-    super(ICaT_RE, self).__init__(host, method, **kwargs)
+               g_max=1.75, V_sh=-3., name=None):
+    super(ICaT_RE, self).__init__(host, method, name=name)
     self.T = T
     self.T_base_p = T_base_p
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
 
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, Ca)
     self.p = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
     self.q = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
 
-  def derivative(self, p, q, t, V):
+  def dp(self, p, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
     p_inf = 1. / (1. + bm.exp(-(V + 52. - self.V_sh) / 7.4))
     p_tau = 3. + 1. / (bm.exp((V + 27. - self.V_sh) / 10.) + bm.exp(-(V + 102. - self.V_sh) / 15.))
     dpdt = phi_p * (p_inf - p) / p_tau
+    return dpdt
 
+  def dq(self, q, t, V):
     phi_q = self.T_base_q ** ((self.T - 24) / 10)
     q_inf = 1. / (1. + bm.exp((V + 80. - self.V_sh) / 5.))
     q_tau = 85. + 1. / (bm.exp((V + 48. - self.V_sh) / 4.) + bm.exp(-(V + 407. - self.V_sh) / 50.))
     dqdt = phi_q * (q_inf - q) / q_tau
+    return dqdt
 
-    return dpdt, dqdt
+  def derivative(self, p, q, t, V):
+    return bp.Join
 
-  def update(self, _t, _dt):
-    p, q = self.integral(self.p.value, self.q.value, _t, self.host.V.value, dt=_dt)
-    self.p.value, self.q.value = p, q
-
-  def current(self):
+  def current(self, V):
     g = self.g_max * self.p.value ** 2 * self.q.value
-    return g * (self.host.ca.E - self.host.V.value)
+    return g * (self.host.ca.E - V)
 
 
 class ICaHT(CalChannel):
@@ -516,8 +516,8 @@ class ICaHT(CalChannel):
   """
 
   def __init__(self, host, method, T=36., T_base_p=3.55,
-               T_base_q=3., g_max=2., V_sh=25., **kwargs):
-    super(ICaHT, self).__init__(host, method, **kwargs)
+               T_base_q=3., g_max=2., V_sh=25., name=None):
+    super(ICaHT, self).__init__(host, method, name=name)
 
     self.T = T
     self.T_base_p = T_base_p
@@ -544,13 +544,9 @@ class ICaHT(CalChannel):
 
     return dpdt, dqdt
 
-  def update(self, _t, _dt):
-    p, q = self.integral(self.p.value, self.q.value, _t, self.host.V.value, dt=_dt)
-    self.p.value, self.q.value = p, q
-
-  def current(self):
-    g = self.g_max * self.p.value ** 2 * self.q.value
-    return g * (self.host.ca.E - self.host.V.value)
+  def current(self, V, p, q):
+    g = self.g_max * p * p * q
+    return g * (self.host.ca.E - V)
 
 
 class ICaL(CalChannel):
@@ -594,36 +590,37 @@ class ICaL(CalChannel):
          neurophysiology 99, no. 1 (2008): 187-199.
   """
 
-  def __init__(self, host, method, T=36., T_base_p=3.55,
-               T_base_q=3., g_max=1., V_sh=0., **kwargs):
-    super(ICaL, self).__init__(host, method, **kwargs)
+  def __init__(self, num, T=36., T_base_p=3.55, T_base_q=3., g_max=1., V_sh=0.):
+    super(ICaL, self).__init__()
+
+    # parameters
     self.T = T
     self.T_base_p = T_base_p
     self.T_base_q = T_base_q
     self.g_max = g_max
     self.V_sh = V_sh
 
-    assert hasattr(self.host, 'ca') and isinstance(self.host.ca, Ca)
-    self.p = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
-    self.q = bm.Variable(bm.zeros(host.num, dtype=bm.float_))
+    # variables
+    self.p = bm.Variable(bm.zeros(num, dtype=bm.float_))
+    self.q = bm.Variable(bm.zeros(num, dtype=bm.float_))
 
-  def derivative(self, p, q, t, V):
+  def dp(self, p, t, V):
     phi_p = self.T_base_p ** ((self.T - 24) / 10)
     p_inf = 1. / (1 + bm.exp(-(V + 10. - self.V_sh) / 4.))
     p_tau = 0.4 + .7 / (bm.exp(-(V + 5. - self.V_sh) / 15.) + bm.exp((V + 5. - self.V_sh) / 15.))
     dpdt = phi_p * (p_inf - p) / p_tau
+    return dpdt
 
+  def dq(self, q, t, V):
     phi_q = self.T_base_q ** ((self.T - 24) / 10)
     q_inf = 1. / (1. + bm.exp((V + 25. - self.V_sh) / 2.))
     q_tau = 300. + 100. / (bm.exp((V + 40 - self.V_sh) / 9.5) + bm.exp(-(V + 40 - self.V_sh) / 9.5))
     dqdt = phi_q * (q_inf - q) / q_tau
+    return dqdt
 
-    return dpdt, dqdt
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dp, self.dq])
 
-  def update(self, _t, _dt):
-    p, q = self.integral(self.p.value, self.q.value, _t, self.host.V.value, dt=_dt)
-    self.p.value, self.q.value = p, q
-
-  def current(self):
-    g = self.g_max * self.p.value ** 2 * self.q.value
-    return g * (self.host.ca.E - self.host.V.value)
+  def current(self, V, p, q):
+    return self.g_max * p * p * q * (self.host.ca.E - V)

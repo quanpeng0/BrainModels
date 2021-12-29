@@ -48,8 +48,8 @@ class Ih(IonChannel):
   """
   allowed_params = ('g_max', 'E', 'phi')
 
-  def __init__(self, host, method, g_max=10., E=-90., phi=1., **kwargs):
-    super(Ih, self).__init__(host, method, **kwargs)
+  def __init__(self, host, method, g_max=10., E=-90., phi=1., name=None):
+    super(Ih, self).__init__(host, method, name=name)
 
     self.phi = phi
     self.g_max = g_max
