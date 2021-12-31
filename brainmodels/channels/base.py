@@ -4,7 +4,7 @@ import brainpy as bp
 import brainpy.math as bm
 from brainpy import errors
 from brainpy.base import Collector
-from brainpy.simulation import brainobjects
+from brainpy.building import brainobjects
 
 from brainmodels.neurons.base import Neuron
 
