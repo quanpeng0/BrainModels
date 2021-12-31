@@ -39,7 +39,7 @@ class DeltaSynapse(Synapse):
     >>>
     >>> neu1 = brainmodels.neurons.LIF(1)
     >>> neu2 = brainmodels.neurons.LIF(1)
-    >>> syn1 = brainmodels.synapses.VoltageJump(neu1, neu2, bp.connect.All2All(), w=5.)
+    >>> syn1 = brainmodels.synapses.DeltaSynapse(neu1, neu2, bp.connect.All2All(), w=5.)
     >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
     >>>
     >>> runner = bp.StructRunner(net, inputs=[('pre.input', 25.), ('post.input', 10.)], monitors=['pre.V', 'post.V', 'pre.spike'])
