@@ -10,7 +10,7 @@ __all__ = [
 
 
 class Synapse(bp.TwoEndConn):
-  def __init__(self, pre, post, conn, method='euler', **kwargs):
+  def __init__(self, pre, post, conn, method='exp_auto', build_integral=True, **kwargs):
     super(Synapse, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
 
     if not isinstance(pre, Neuron):
@@ -20,32 +20,9 @@ class Synapse(bp.TwoEndConn):
     self.pre = pre
     self.post = post
 
-    # connections
-    self.pre_ids, self.post_ids = self.conn.requires('pre_ids', 'post_ids')
-    self.num = len(self.pre_ids)
-
     # integrals
-    self.integral = bp.odeint(method=method, f=self.derivative)
-
-    # functions
-    if bm.is_numpy_backend():
-      self.steps.replace('update', self.numpy_update)
-      self.target_backend = 'numpy'
-
-    elif bm.is_jax_backend():
-      self.steps.replace('update', self.jax_update)
-      self.target_backend = 'jax'
-
-    else:
-      raise bp.errors.UnsupportedError(
-        f'Do not support {bm.get_backend_name()} backend '
-        f'for synapse model {self}.')
+    if build_integral:
+      self.integral = bp.odeint(method=method, f=self.derivative)
 
   def derivative(self, *args, **kwargs):
-    raise NotImplementedError
-
-  def numpy_update(self, _t, _dt):
-    raise NotImplementedError
-
-  def jax_update(self, _t, _dt):
     raise NotImplementedError

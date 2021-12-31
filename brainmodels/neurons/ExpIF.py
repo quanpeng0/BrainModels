@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -56,9 +57,10 @@ class ExpIF(Neuron):
 
     >>> import brainpy as bp
     >>> import brainmodels
-    >>> group = brainmodels.neurons.ExpIF(1, monitors=['V'])
-    >>> group.run(300., inputs=('input', 10.))
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, ylabel='V', show=True)
+    >>> group = brainmodels.neurons.ExpIF(1)
+    >>> runner = bp.StructRunner(group, monitors=['V'], inputs=('input', 10.))
+    >>> runner.run(300., )
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.V, ylabel='V', show=True)
 
 
   **Model Parameters**
@@ -107,9 +109,9 @@ class ExpIF(Neuron):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48,
-               R=1., tau=10., tau_ref=1.7, method='euler', **kwargs):
+               R=1., tau=10., tau_ref=1.7, method='exp_auto', name=None):
     # initialize
-    super(ExpIF, self).__init__(size=size, method=method, **kwargs)
+    super(ExpIF, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.V_rest = V_rest
@@ -134,8 +136,8 @@ class ExpIF(Neuron):
     V = self.integral(self.V, _t, self.input, dt=_dt)
     V = bm.where(refractory, self.V, V)
     spike = self.V_th <= V
-    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
-    self.V[:] = bm.where(spike, self.V_reset, V)
-    self.refractory[:] = bm.logical_or(refractory, spike)
-    self.spike[:] = spike
+    self.t_last_spike.value = bm.where(spike, _t, self.t_last_spike)
+    self.V.value = bm.where(spike, self.V_reset, V)
+    self.refractory.value = bm.logical_or(refractory, spike)
+    self.spike.value = spike
     self.input[:] = 0.

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -77,9 +78,9 @@ class Izhikevich(Neuron):
   """
 
   def __init__(self, size, a=0.02, b=0.20, c=-65., d=8., tau_ref=0.,
-               V_th=30., method='euler', **kwargs):
+               V_th=30., method='exp_auto', name=None):
     # initialization
-    super(Izhikevich, self).__init__(size=size, method=method, **kwargs)
+    super(Izhikevich, self).__init__(size=size, method=method, name=name)
 
     # params
     self.a = a
@@ -93,19 +94,24 @@ class Izhikevich(Neuron):
     self.u = bm.Variable(bm.ones(self.num))
     self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
 
-  def derivative(self, V, u, t, Iext):
-    dVdt = 0.04 * V * V + 5 * V + 140 - u + Iext
-    dudt = self.a * (self.b * V - u)
-    return dVdt, dudt
+  def dV(self, V, t, u, Iext):
+    return 0.04 * V * V + 5 * V + 140 - u + Iext
+
+  def du(self, u, t, V):
+    return self.a * (self.b * V - u)
+
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dV, self.du])
 
   def update(self, _t, _dt):
     V, u = self.integral(self.V, self.u, _t, self.input, dt=_dt)
     refractory = (_t - self.t_last_spike) <= self.tau_ref
     V = bm.where(refractory, self.V, V)
     spike = self.V_th <= V
-    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
-    self.V[:] = bm.where(spike, self.c, V)
-    self.u[:] = bm.where(spike, u + self.d, u)
-    self.refractory[:] = bm.logical_or(refractory, spike)
+    self.t_last_spike.value = bm.where(spike, _t, self.t_last_spike)
+    self.V.value = bm.where(spike, self.c, V)
+    self.u.value = bm.where(spike, u + self.d, u)
+    self.refractory.value = bm.logical_or(refractory, spike)
+    self.spike.value = spike
     self.input[:] = 0.
-    self.spike[:] = spike

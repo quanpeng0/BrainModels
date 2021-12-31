@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Synapse
 
@@ -63,7 +64,36 @@ class NMDA(Synapse):
 
   **Model Examples**
 
-  - `Simple illustrated example <../synapses/nmda.ipynb>`_
+  - `(Wang, 2002) Decision making spiking model <https://brainpy-examples.readthedocs.io/en/latest/decision_making/Wang_2002_decision_making_spiking.html>`_
+
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.HH(1)
+    >>> neu2 = brainmodels.neurons.HH(1)
+    >>> syn1 = brainmodels.synapses.NMDA(neu1, neu2, bp.connect.All2All(), E=0.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 5.)], monitors=['pre.V', 'post.V', 'syn.g', 'syn.x'])
+    >>> runner.run(150.)
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 8)
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['pre.V'], label='pre-V')
+    >>> plt.plot(runner.mon.ts, runner.mon['post.V'], label='post-V')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.g'], label='g')
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.x'], label='x')
+    >>> plt.legend()
+    >>> plt.show()
+
 
 
   **Model Parameters**
@@ -110,8 +140,10 @@ class NMDA(Synapse):
 
   def __init__(self, pre, post, conn, delay=0., g_max=0.15, E=0., cc_Mg=1.2,
                alpha=0.062, beta=3.57, tau_decay=100., a=0.5, tau_rise=2.,
-               method='exponential_euler', **kwargs):
-    super(NMDA, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
+               method='exp_auto', name=None):
+    super(NMDA, self).__init__(pre=pre, post=post, conn=conn, method=method, name=name)
+    self.check_pre_attrs('spike')
+    self.check_post_attrs('input', 'V')
 
     # parameters
     self.g_max = g_max
@@ -124,31 +156,26 @@ class NMDA(Synapse):
     self.a = a
     self.delay = delay
 
+    # connections
+    self.pre_ids, self.post_ids = self.conn.require('pre_ids', 'post_ids')
+
     # variables
-    self.pre_spike = self.register_constant_delay('ps', self.pre.num, delay)
-    self.g = bm.Variable(bm.zeros(self.num, dtype=bm.float_))
-    self.x = bm.Variable(bm.zeros(self.num, dtype=bm.float_))
+    num = len(self.pre_ids)
+    self.pre_spike = bp.ConstantDelay(self.pre.num, delay, pre.spike.dtype)
+    self.g = bm.Variable(bm.zeros(num, dtype=bm.float_))
+    self.x = bm.Variable(bm.zeros(num, dtype=bm.float_))
 
-  def derivative(self, g, x, t):
-    dxdt = -x / self.tau_rise
-    dgdt = -g / self.tau_decay + self.a * x * (1 - g)
-    return dgdt, dxdt
+  @property
+  def derivative(self):
+    dg = lambda g, t, x: -g / self.tau_decay + self.a * x * (1 - g)
+    dx = lambda x, t:  -x / self.tau_rise
+    return bp.JointEq([dg, dx])
 
-  def numpy_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
-    self.g[:], self.x[:] = self.integral(self.g, self.x, _t, dt=_dt)
-    for i in range(self.num):
-      pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      self.x[i] += delayed_pre_spike[pre_id]
-      g_inf = 1 + self.cc_Mg / self.beta * bm.exp(-self.alpha * self.post.V[post_id])
-      self.post.input[post_id] -= self.g_max * self.g[i] * (self.post.V[post_id] - self.E) / g_inf
-
-  def jax_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    delayed_pre_spike = self.pre_spike.pull()
-    self.g[:], self.x[:] = self.integral(self.g, self.x, _t, dt=_dt)
-    self.x.value += bm.pre2syn(delayed_pre_spike, self.pre_ids)
+    self.g.value, self.x.value = self.integral(self.g, self.x, _t, dt=_dt)
+    self.x += bm.pre2syn(delayed_pre_spike, self.pre_ids)
     post_g = bm.syn2post(self.g, self.post_ids, self.post.num)
     g_inf = 1 + self.cc_Mg / self.beta * bm.exp(-self.alpha * self.post.V)
-    self.post.input.value -= self.g_max * post_g * (self.post.V - self.E) / g_inf
+    self.post.input -= self.g_max * post_g * (self.post.V - self.E) / g_inf

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import brainpy as bp
 import brainpy.math as bm
 
 from .base import Synapse
@@ -46,11 +47,37 @@ class ExpCUBA(Synapse):
 
   **Model Examples**
 
-  - `Simple illustrated example <../synapses/exp_cuba.ipynb>`_
-  - `(Brunel & Hakim, 1999) Fast Global Oscillation <../../examples/oscillation_synchronization/Brunel_Hakim_1999_fast_oscillation.ipynb>`_
-  - `(Vreeswijk & Sompolinsky, 1996) E/I balanced network <../../examples/ei_nets/Vreeswijk_1996_EI_net.ipynb>`_
-  - `(Brette, et, al., 2007) CUBA <../../examples/ei_nets/Brette_2007_CUBA.ipynb>`_
-  - `(Tian, et al., 2020) E/I Net for fast response <../../examples/ei_nets/Tian_2020_EI_net_for_fast_response.ipynb>`_
+  - `(Brunel & Hakim, 1999) Fast Global Oscillation <https://brainpy-examples.readthedocs.io/en/latest/oscillation_synchronization/Brunel_Hakim_1999_fast_oscillation.html>`_
+  - `(Vreeswijk & Sompolinsky, 1996) E/I balanced network <https://brainpy-examples.readthedocs.io/en/latest/ei_nets/Vreeswijk_1996_EI_net.html>`_
+  - `(Brette, et, al., 2007) CUBA <https://brainpy-examples.readthedocs.io/en/latest/ei_nets/Brette_2007_CUBA.html>`_
+  - `(Tian, et al., 2020) E/I Net for fast response <https://brainpy-examples.readthedocs.io/en/latest/ei_nets/Tian_2020_EI_net_for_fast_response.html>`_
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.LIF(1)
+    >>> neu2 = brainmodels.neurons.LIF(1)
+    >>> syn1 = brainmodels.synapses.ExpCUBA(neu1, neu2, bp.connect.All2All(), g_max=5.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 25.)], monitors=['pre.V', 'post.V', 'syn.g'])
+    >>> runner.run(150.)
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 8)
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['pre.V'], label='pre-V')
+    >>> plt.plot(runner.mon.ts, runner.mon['post.V'], label='post-V')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.g'], label='g')
+    >>> plt.legend()
+    >>> plt.show()
+
 
 
   **Model Parameters**
@@ -80,41 +107,33 @@ class ExpCUBA(Synapse):
   """
 
   def __init__(self, pre, post, conn, g_max=1., delay=0., tau=8.0,
-               method='exponential_euler', **kwargs):
-    super(ExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
+               method='exp_auto', name=None):
+    super(ExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method, name=name)
+    self.check_pre_attrs('spike')
+    self.check_post_attrs('input')
 
     # parameters
     self.tau = tau
     self.delay = delay
     self.g_max = g_max
-    self.num = self.post.num
+
+    # connections
+    self.pre2post = self.conn.require('pre2post')
 
     # variables
     self.g = bm.Variable(bm.zeros(self.post.num))
-    self.pre_spike = self.register_constant_delay('pre_spike', self.pre.num, delay)
+    self.pre_spike = bp.ConstantDelay(self.pre.num, delay, dtype=pre.spike.dtype)
 
   def derivative(self, g, t):
     dg = -g / self.tau
     return dg
 
-  def numpy_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    pre_spike = self.pre_spike.pull()
-    self.g[:] = self.integral(self.g, _t, dt=_dt)
-    for i in range(self.num):
-      pre_id = self.pre_ids[i]
-      if pre_spike[pre_id]:
-        post_id = self.post_ids[i]
-        self.g[post_id] += self.g_max
-    self.post.input += self.g
-
-  def jax_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
-    spikes = bm.pre2syn(delayed_pre_spike, self.pre_ids)
-    post_sp = bm.syn2post(spikes, self.post_ids, self.post.num)
-    self.g.value = self.integral(self.g.value, _t, dt=_dt) + post_sp * self.g_max
-    self.post.input.value += self.g
+    post_sp = bm.pre2post_event_sum(delayed_pre_spike, self.conn.pre2post, self.post.num, self.g_max)
+    self.g.value = self.integral(self.g.value, _t, dt=_dt) + post_sp
+    self.post.input += self.g
 
 
 class ExpCOBA(ExpCUBA):
@@ -136,9 +155,35 @@ class ExpCOBA(ExpCUBA):
 
   **Model Examples**
 
-  - `Simple illustrated example <../synapses/exp_coba.ipynb>`_
-  - `(Brette, et, al., 2007) COBA <../../examples/ei_nets/Brette_2007_COBA.ipynb>`_
-  - `(Brette, et, al., 2007) COBAHH <../../examples/ei_nets/Brette_2007_COBAHH.ipynb>`_
+  - `(Brette, et, al., 2007) COBA <https://brainpy-examples.readthedocs.io/en/latest/ei_nets/Brette_2007_COBA.html>`_
+  - `(Brette, et, al., 2007) COBAHH <https://brainpy-examples.readthedocs.io/en/latest/ei_nets/Brette_2007_COBAHH.html>`_
+
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.HH(1)
+    >>> neu2 = brainmodels.neurons.HH(1)
+    >>> syn1 = brainmodels.synapses.ExpCOBA(neu1, neu2, bp.connect.All2All(), E=0.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 5.)], monitors=['pre.V', 'post.V', 'syn.g'])
+    >>> runner.run(150.)
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 8)
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['pre.V'], label='pre-V')
+    >>> plt.plot(runner.mon.ts, runner.mon['post.V'], label='post-V')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.g'], label='g')
+    >>> plt.legend()
+    >>> plt.show()
 
 
   **Model Parameters**
@@ -169,27 +214,17 @@ class ExpCOBA(ExpCUBA):
   """
 
   def __init__(self, pre, post, conn, g_max=1., delay=0., tau=8.0, E=0.,
-               method='exponential_euler', **kwargs):
+               method='exp_auto', name=None):
     super(ExpCOBA, self).__init__(pre=pre, post=post, conn=conn,
                                   g_max=g_max, delay=delay, tau=tau,
-                                  method=method, **kwargs)
+                                  method=method, name=name)
+    self.check_post_attrs('V')
 
     self.E = E
 
-  def numpy_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
-    pre_spike = self.pre_spike.pull()
-    self.g[:] = self.integral(self.g, _t, dt=_dt)
-    for i in range(self.num):
-      pre_i, post_i = self.pre_ids[i], self.post_ids[i]
-      if pre_spike[pre_i]:
-        self.g[post_i] += self.g_max
-      self.post.input[post_i] += self.g[post_i] * (self.E - self.post.V[post_i])
-
-  def jax_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    delayed_pre_spike = self.pre_spike.pull()
-    spikes = bm.pre2syn(delayed_pre_spike, self.pre_ids)
-    post_sp = bm.syn2post(spikes, self.post_ids, self.post.num)
-    self.g.value = self.integral(self.g.value, _t, dt=_dt) + post_sp * self.g_max
-    self.post.input.value += self.g * (self.E - self.post.V)
+    delayed_spike = self.pre_spike.pull()
+    post_sp = bm.pre2post_event_sum(delayed_spike, self.pre2post, self.post.num, self.g_max)
+    self.g.value = self.integral(self.g.value, _t, dt=_dt) + post_sp
+    self.post.input += self.g * (self.E - self.post.V)

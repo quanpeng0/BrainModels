@@ -35,13 +35,11 @@ class QuaIF(Neuron):
     >>> import brainmodels
     >>> import brainpy as bp
     >>>
-    >>> group = brainmodels.neurons.QuaIF(1, monitors=['V'])
+    >>> group = brainmodels.neurons.QuaIF(1,)
     >>>
-    >>> group.run(duration=200., inputs=('input', 20.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
-    >>>
-    >>> group.run(duration=(200, 400.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
+    >>> runner = bp.StructRunner(group, monitors=['V'], inputs=('input', 20.))
+    >>> runner.run(duration=200.)
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.V, show=True)
 
 
   **Model Parameters**
@@ -79,9 +77,9 @@ class QuaIF(Neuron):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_c=-50.0, c=.07,
-               R=1., tau=10., tau_ref=0., method='euler', **kwargs):
+               R=1., tau=10., tau_ref=0., method='exp_auto', name=None):
     # initialization
-    super(QuaIF, self).__init__(size=size, method=method, **kwargs)
+    super(QuaIF, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.V_rest = V_rest
@@ -105,8 +103,8 @@ class QuaIF(Neuron):
     V = self.integral(self.V, _t, self.input, dt=_dt)
     V = bm.where(refractory, self.V, V)
     spike = self.V_th <= V
-    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
-    self.V[:] = bm.where(spike, self.V_reset, V)
-    self.refractory[:] = bm.logical_or(refractory, spike)
-    self.spike[:] = spike
+    self.t_last_spike.value = bm.where(spike, _t, self.t_last_spike)
+    self.V.value = bm.where(spike, self.V_reset, V)
+    self.refractory.value = bm.logical_or(refractory, spike)
+    self.spike.value = spike
     self.input[:] = 0.

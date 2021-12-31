@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
+
 from .base import Synapse
 
 __all__ = [
-  'VoltageJump'
+  'VoltageJump',
+  'DeltaSynapse',
 ]
 
 
-class VoltageJump(Synapse):
-  """Voltage jump synapse model.
+class DeltaSynapse(Synapse):
+  """Voltage Jump Synapse Model, or alias of Delta Synapse Model.
 
   **Model Descriptions**
 
@@ -25,8 +28,31 @@ class VoltageJump(Synapse):
 
   **Model Examples**
 
-  - `Simple illustrated example <../synapses/voltage_jump.ipynb>`_
-  - `(Bouchacourt & Buschman, 2019) Flexible Working Memory Model <../../examples/working_memory/Bouchacourt_2019_Flexible_working_memory.ipynb>`_
+  - `(Bouchacourt & Buschman, 2019) Flexible Working Memory Model <https://brainpy-examples.readthedocs.io/en/latest/working_memory/Bouchacourt_2019_Flexible_working_memory.html>`_
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.LIF(1)
+    >>> neu2 = brainmodels.neurons.LIF(1)
+    >>> syn1 = brainmodels.synapses.DeltaSynapse(neu1, neu2, bp.connect.All2All(), w=5.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 25.), ('post.input', 10.)], monitors=['pre.V', 'post.V', 'pre.spike'])
+    >>> runner.run(150.)
+    >>>
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(1, 1, 3, 8)
+    >>> plt.plot(runner.mon.ts, runner.mon['pre.V'], label='pre-V')
+    >>> plt.plot(runner.mon.ts, runner.mon['post.V'], label='post-V')
+    >>> plt.xlim(40, 150)
+    >>> plt.legend()
+    >>> plt.show()
+
 
   **Model Parameters**
 
@@ -38,46 +64,39 @@ class VoltageJump(Synapse):
 
   """
 
-  def __init__(self, pre, post, conn, delay=0., post_has_ref=False, w=1.,
-               post_key='V', **kwargs):
-    super(VoltageJump, self).__init__(pre=pre, post=post, conn=conn, **kwargs)
-
-    # checking
+  def __init__(self, pre, post, conn, delay=0., post_has_ref=False, w=1., post_key='V', name=None):
+    super(DeltaSynapse, self).__init__(pre=pre, post=post, conn=conn, build_integral=False, name=name)
+    self.check_pre_attrs('spike')
+    self.check_post_attrs(post_key)
     if post_has_ref:
-      assert hasattr(post, 'refractory'), 'Post-synaptic group must has "refractory" variable.'
-    if bm.is_numpy_backend():
-      assert post_key == 'V', f'"NumPy" backend only supports "V"'
+      self.check_post_attrs('refractory')
 
     # parameters
     self.delay = delay
     self.post_key = post_key
     self.post_has_ref = post_has_ref
 
+    # connections
+    self.pre2post = self.conn.require('pre2post')
+
     # variables
     self.w = w
-    assert bm.size(w) == 1, 'This implementation only support scalar weight. '
-    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
+    self.pre_spike = bp.ConstantDelay(pre.num, delay, dtype=pre.spike.dtype)
 
-  def derivative(self, a, t): pass
-
-  def numpy_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spike = self.pre_spike.pull()
-    for i in range(self.num):
-      pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      if delayed_pre_spike[pre_id]:
-        if self.post_has_ref:
-          self.post.V[post_id] += self.w * (1. - self.post.refractory[post_id])
-        else:
-          self.post.V[post_id] += self.w
-
-  def jax_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    delayed_pre_spike = self.pre_spike.pull()
-    spikes = bm.pre2syn(delayed_pre_spike, self.pre_ids)
-    post_sp = bm.syn2post(spikes, self.post_ids, self.post.num)
+    post_vs = bm.pre2post_event_sum(delayed_pre_spike, self.pre2post, self.post.num, self.w)
     target = getattr(self.post, self.post_key)
     if self.post_has_ref:
-      target += self.w * post_sp * (1. - self.post.refractory)
+      target += post_vs * (1. - self.post.refractory)
     else:
-      target += self.w * post_sp
+      target += post_vs
+
+
+class VoltageJump(DeltaSynapse):
+  def __init__(self, pre, post, conn, delay=0., post_has_ref=False, w=1., name=None):
+    super(VoltageJump, self).__init__(pre=pre, post=post, conn=conn, delay=delay,
+                                      post_has_ref=post_has_ref, w=w, name=name)
+
+

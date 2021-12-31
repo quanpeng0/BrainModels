@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -34,29 +35,32 @@ class HindmarshRose(Neuron):
 
   **Model Examples**
 
-  >>> import brainpy as bp
-  >>> import brainmodels
-  >>> import matplotlib.pyplot as plt
-  >>>
-  >>> bp.math.set_dt(dt=0.01)
-  >>> bp.set_default_odeint('rk4')
-  >>>
-  >>> types = ['quiescence', 'spiking', 'bursting', 'irregular_spiking', 'irregular_bursting']
-  >>> bs = bp.math.array([1.0, 3.5, 2.5, 2.95, 2.8])
-  >>> Is = bp.math.array([2.0, 5.0, 3.0, 3.3, 3.7])
-  >>>
-  >>> # define neuron type
-  >>> group = brainmodels.neurons.HindmarshRose(len(types), b=bs, monitors=['V'])
-  >>> group = bp.math.jit(group)
-  >>> group.run(1e3, inputs=['input', Is], report=0.1)
-  >>>
-  >>> fig, gs = bp.visualize.get_figure(row_num=3, col_num=2, row_len=3, col_len=5)
-  >>> for i, mode in enumerate(types):
-  >>>     fig.add_subplot(gs[i // 2, i % 2])
-  >>>     plt.plot(group.mon.ts, group.mon.V[:, i])
-  >>>     plt.title(mode)
-  >>>     plt.xlabel('Time [ms]')
-  >>> plt.show()
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> bp.math.set_dt(dt=0.01)
+    >>> bp.set_default_odeint('rk4')
+    >>>
+    >>> types = ['quiescence', 'spiking', 'bursting', 'irregular_spiking', 'irregular_bursting']
+    >>> bs = bp.math.array([1.0, 3.5, 2.5, 2.95, 2.8])
+    >>> Is = bp.math.array([2.0, 5.0, 3.0, 3.3, 3.7])
+    >>>
+    >>> # define neuron type
+    >>> group = brainmodels.neurons.HindmarshRose(len(types), b=bs)
+    >>> runner = bp.StructRunner(group, monitors=['V'], inputs=['input', Is],)
+    >>> runner.run(1e3)
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(row_num=3, col_num=2, row_len=3, col_len=5)
+    >>> for i, mode in enumerate(types):
+    >>>     fig.add_subplot(gs[i // 2, i % 2])
+    >>>     plt.plot(runner.mon.ts, runner.mon.V[:, i])
+    >>>     plt.title(mode)
+    >>>     plt.xlabel('Time [ms]')
+    >>> plt.show()
 
   **Model Parameters**
 
@@ -105,9 +109,9 @@ class HindmarshRose(Neuron):
   """
 
   def __init__(self, size, a=1., b=3., c=1., d=5., r=0.01, s=4., V_rest=-1.6,
-               V_th=1.0, method='euler', **kwargs):
+               V_th=1.0, method='exp_auto', name=None):
     # initialization
-    super(HindmarshRose, self).__init__(size=size, method=method, **kwargs)
+    super(HindmarshRose, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.a = a
@@ -123,15 +127,24 @@ class HindmarshRose(Neuron):
     self.z = bm.Variable(bm.zeros(self.num))
     self.y = bm.Variable(bm.ones(self.num) * -10.)
 
-  def derivative(self, V, y, z, t, Iext):
-    dVdt = y - self.a * V * V * V + self.b * V * V - z + Iext
-    dydt = self.c - self.d * V * V - y
-    dzdt = self.r * (self.s * (V - self.V_rest) - z)
-    return dVdt, dydt, dzdt
+  def dV(self, V, t, y, z, Iext):
+    return y - self.a * V * V * V + self.b * V * V - z + Iext
+
+  def dy(self, y, t, V):
+    return self.c - self.d * V * V - y
+
+  def dz(self, z, t, V):
+    return self.r * (self.s * (V - self.V_rest) - z)
+
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dV, self.dy, self.dz])
 
   def update(self, _t, _dt):
-    V, self.y[:], self.z[:] = self.integral(self.V, self.y, self.z, _t, self.input, dt=_dt)
-    self.spike[:] = bm.logical_and(V >= self.V_th, self.V < self.V_th)
-    self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)
+    V, y, z = self.integral(self.V, self.y, self.z, _t, self.input, dt=_dt)
+    self.spike.value = bm.logical_and(V >= self.V_th, self.V < self.V_th)
+    self.t_last_spike.value = bm.where(self.spike, _t, self.t_last_spike)
+    self.V.value = V
+    self.y.value = y
+    self.z.value = z
     self.input[:] = 0.
-    self.V[:] = V

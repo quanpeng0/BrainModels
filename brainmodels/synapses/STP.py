@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 
 from .base import Synapse
@@ -61,8 +62,74 @@ class STP(Synapse):
 
   **Model Examples**
 
-  - `Simple illustrated example <../synapses/STP.ipynb>`_
-  - `STP for Working Memory Capacity <../../examples/working_memory/Mi_2017_working_memory_capacity.ipynb>`_
+  - `STP for Working Memory Capacity <https://brainpy-examples.readthedocs.io/en/latest/working_memory/Mi_2017_working_memory_capacity.html>`_
+
+  **STD**
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.LIF(1)
+    >>> neu2 = brainmodels.neurons.LIF(1)
+    >>> syn1 = brainmodels.synapses.STP(neu1, neu2, bp.connect.All2All(), U=0.2, tau_d=150., tau_f=2.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 28.)], monitors=['syn.I', 'syn.u', 'syn.x'])
+    >>> runner.run(150.)
+    >>>
+    >>>
+    >>> # plot
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
+    >>>
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.u'][:, 0], label='u')
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.x'][:, 0], label='x')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.I'][:, 0], label='I')
+    >>> plt.legend()
+    >>>
+    >>> plt.xlabel('Time (ms)')
+    >>> plt.show()
+
+  **STF**
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.LIF(1)
+    >>> neu2 = brainmodels.neurons.LIF(1)
+    >>> syn1 = brainmodels.synapses.STP(neu1, neu2, bp.connect.All2All(), U=0.1, tau_d=10, tau_f=100.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 28.)], monitors=['syn.I', 'syn.u', 'syn.x'])
+    >>> runner.run(150.)
+    >>>
+    >>>
+    >>> # plot
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 7)
+    >>>
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.u'][:, 0], label='u')
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.x'][:, 0], label='x')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.I'][:, 0], label='I')
+    >>> plt.legend()
+    >>>
+    >>> plt.xlabel('Time (ms)')
+    >>> plt.show()
+
 
 
   **Model Parameters**
@@ -104,8 +171,10 @@ class STP(Synapse):
   """
 
   def __init__(self, pre, post, conn, U=0.15, tau_f=1500., tau_d=200.,
-               tau=8., A=1., delay=0., method='exponential_euler', **kwargs):
-    super(STP, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
+               tau=8., A=1., delay=0., method='exp_auto', name=None):
+    super(STP, self).__init__(pre=pre, post=post, conn=conn, method=method, name=name)
+    self.check_post_attrs('input')
+    self.check_pre_attrs('spike')
 
     # parameters
     self.tau_d = tau_d
@@ -115,40 +184,31 @@ class STP(Synapse):
     self.A = A
     self.delay = delay
 
+    # connections
+    self.pre_ids, self.post_ids = self.conn.require('pre_ids', 'post_ids')
+
     # variables
-    self.x = bm.Variable(bm.ones(self.num, dtype=bm.float_))
-    self.u = bm.Variable(bm.zeros(self.num, dtype=bm.float_))
-    self.I = bm.Variable(bm.zeros(self.num, dtype=bm.float_))
-    self.delayed_I = self.register_constant_delay('dI', self.num, delay=delay)
+    num = len(self.pre_ids)
+    self.x = bm.Variable(bm.ones(num, dtype=bm.float_))
+    self.u = bm.Variable(bm.zeros(num, dtype=bm.float_))
+    self.I = bm.Variable(bm.zeros(num, dtype=bm.float_))
+    self.delayed_I = bp.ConstantDelay(num, delay=delay)
 
-  def derivative(self, I, u, x, t):
-    dIdt = -I / self.tau
-    dudt = - u / self.tau_f
-    dxdt = (1 - x) / self.tau_d
-    return dIdt, dudt, dxdt
+  @property
+  def derivative(self):
+    dI = lambda I, t: -I / self.tau
+    du = lambda u, t: - u / self.tau_f
+    dx = lambda x, t: (1 - x) / self.tau_d
+    return bp.JointEq([dI, du, dx])
 
-  def numpy_update(self, _t, _dt):
-    delayed_I = self.delayed_I.pull()
-    self.I[:], u, x = self.integral(self.I, self.u, self.x, _t, dt=_dt)
-    for i in range(self.num):
-      pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      if self.pre.spike[pre_id]:
-        u[i] += self.U * (1 - self.u[i])
-        x[i] -= u[i] * self.x[i]
-        self.I[i] += self.A * u[i] * self.x[i]
-      self.post.input[post_id] += delayed_I[i]
-    self.u[:] = u
-    self.x[:] = x
-    self.delayed_I.push(self.I)
-
-  def jax_update(self, _t, _dt):
+  def update(self, _t, _dt):
     delayed_I = self.delayed_I.pull()
     self.post.input += bm.syn2post(delayed_I, self.post_ids, self.post.num)
-    self.I.value, u, x = self.integral(self.I.value, self.u.value, self.x.value, _t, dt=_dt)
+    self.I.value, u, x = self.integral(self.I, self.u, self.x, _t, dt=_dt)
     syn_sps = bm.pre2syn(self.pre.spike, self.pre_ids)
     u = bm.where(syn_sps, u + self.U * (1 - self.u), u)
     x = bm.where(syn_sps, x - u * self.x, x)
-    self.I.value = bm.where(syn_sps, self.I, self.I.value + self.A * u * self.x)
+    self.I.value = bm.where(syn_sps, self.I, self.I + self.A * u * self.x)
     self.u.value = u
     self.x.value = x
-    self.delayed_I.push(self.I.value)
+    self.delayed_I.push(self.I)

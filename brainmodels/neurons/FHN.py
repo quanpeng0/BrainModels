@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -54,10 +55,11 @@ class FHN(Neuron):
     >>> import brainmodels
     >>>
     >>> # simulation
-    >>> fnh = brainmodels.neurons.FHN(1, monitors=['V', 'w'])
-    >>> fnh.run(100., inputs=('input', 1.), report=0.1)
-    >>> bp.visualize.line_plot(fnh.mon.ts, fnh.mon.w, legend='w')
-    >>> bp.visualize.line_plot(fnh.mon.ts, fnh.mon.V, legend='V', show=True)
+    >>> fnh = brainmodels.neurons.FHN(1)
+    >>> runner = bp.StructRunner(fnh, inputs=('input', 1.), monitors=['V', 'w'])
+    >>> runner.run(100.)
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.w, legend='w')
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.V, legend='V', show=True)
 
 
   **Model Parameters**
@@ -94,9 +96,9 @@ class FHN(Neuron):
 
   """
 
-  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8, method='euler', **kwargs):
+  def __init__(self, size, a=0.7, b=0.8, tau=12.5, Vth=1.8, method='exp_auto', name=None):
     # initialization
-    super(FHN, self).__init__(size=size, method=method, ** kwargs)
+    super(FHN, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.a = a
@@ -107,14 +109,20 @@ class FHN(Neuron):
     # variables
     self.w = bm.Variable(bm.zeros(self.num))
 
-  def derivative(self, V, w, t, Iext):
-    dw = (V + self.a - self.b * w) / self.tau
-    dV = V - V * V * V / 3 - w + Iext
-    return dV, dw
+  def dV(self, V, t, w, Iext):
+    return  V - V * V * V / 3 - w + Iext
+
+  def dw(self, w, t, V):
+    return (V + self.a - self.b * w) / self.tau
+
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dV, self.dw])
 
   def update(self, _t, _dt):
-    V, self.w[:] = self.integral(self.V, self.w, _t, self.input, dt=_dt)
-    self.spike[:] = bm.logical_and(V >= self.Vth, self.V < self.Vth)
-    self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)
-    self.V[:] = V
+    V, w = self.integral(self.V, self.w, _t, self.input, dt=_dt)
+    self.spike.value = bm.logical_and(V >= self.Vth, self.V < self.Vth)
+    self.t_last_spike.value = bm.where(self.spike, _t, self.t_last_spike)
+    self.V.value = V
+    self.w.value = w
     self.input[:] = 0.

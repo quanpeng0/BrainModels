@@ -38,13 +38,11 @@ class LIF(Neuron):
     >>> import brainmodels
     >>> import brainpy as bp
     >>>
-    >>> group = bp.math.jit(brainmodels.neurons.LIF(100, monitors=['V']))
+    >>> group = brainmodels.neurons.LIF(1)
     >>>
-    >>> group.run(duration=200., inputs=('input', 26.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, legend='0-200 ms')
-    >>>
-    >>> group.run(duration=(200, 400.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, legend='200-400 ms', show=True)
+    >>> runner = bp.StructRunner(group, monitors=['V'], inputs=('input', 26.))
+    >>> runner.run(duration=200.)
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.V, legend='0-200 ms', show=True)
 
 
   **Model Parameters**
@@ -78,9 +76,9 @@ class LIF(Neuron):
   """
 
   def __init__(self, size, V_rest=0., V_reset=-5., V_th=20., tau=10.,
-               tau_ref=1., method='exponential_euler', **kwargs):
+               tau_ref=1., method='exp_auto', name=None):
     # initialization
-    super(LIF, self).__init__(size=size, method=method, **kwargs)
+    super(LIF, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.V_rest = V_rest
@@ -101,8 +99,8 @@ class LIF(Neuron):
     V = self.integral(self.V, _t, self.input, dt=_dt)
     V = bm.where(refractory, self.V, V)
     spike = self.V_th <= V
-    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
-    self.V[:] = bm.where(spike, self.V_reset, V)
-    self.refractory[:] = bm.logical_or(refractory, spike)
+    self.t_last_spike.value = bm.where(spike, _t, self.t_last_spike)
+    self.V.value = bm.where(spike, self.V_reset, V)
+    self.refractory.value = bm.logical_or(refractory, spike)
+    self.spike.value = spike
     self.input[:] = 0.
-    self.spike[:] = spike

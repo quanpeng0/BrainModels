@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -83,8 +83,8 @@ class AdExIF(Neuron):
   """
 
   def __init__(self, size, V_rest=-65., V_reset=-68., V_th=-30., V_T=-59.9, delta_T=3.48, a=1.,
-               b=1., tau=10., tau_w=30., R=1., method='euler', **kwargs):
-    super(AdExIF, self).__init__(size=size, method=method, **kwargs)
+               b=1., tau=10., tau_w=30., R=1., method='exp_auto', name=None):
+    super(AdExIF, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.V_rest = V_rest
@@ -102,17 +102,24 @@ class AdExIF(Neuron):
     self.w = bm.Variable(bm.zeros(self.num))
     self.refractory = bm.Variable(bm.zeros(self.num, dtype=bool))
 
-  def derivative(self, V, w, t, Iext):
-    dVdt = (- V + self.V_rest + self.delta_T * bm.exp((V - self.V_T) / self.delta_T) -
-            self.R * w + self.R * Iext) / self.tau
+  def dV(self, V, t, w, Iext):
+    _tmp = self.delta_T * bm.exp((V - self.V_T) / self.delta_T)
+    dVdt = (- V + self.V_rest + _tmp - self.R * w + self.R * Iext) / self.tau
+    return dVdt
+
+  def dw(self, w, t, V):
     dwdt = (self.a * (V - self.V_rest) - w) / self.tau_w
-    return dVdt, dwdt
+    return dwdt
+
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dV, self.dw])
 
   def update(self, _t, _dt):
     V, w = self.integral(self.V, self.w, _t, self.input, dt=_dt)
     spike = V >= self.V_th
-    self.t_last_spike[:] = bm.where(spike, _t, self.t_last_spike)
-    self.V[:] = bm.where(spike, self.V_reset, V)
-    self.w[:] = bm.where(spike, w + self.b, w)
+    self.t_last_spike.value = bm.where(spike, _t, self.t_last_spike)
+    self.V.value = bm.where(spike, self.V_reset, V)
+    self.w.value = bm.where(spike, w + self.b, w)
+    self.spike.value = spike
     self.input[:] = 0.
-    self.spike[:] = spike

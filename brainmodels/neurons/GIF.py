@@ -94,9 +94,9 @@ class GIF(Neuron):
 
   def __init__(self, size, V_rest=-70., V_reset=-70., V_th_inf=-50., V_th_reset=-60.,
                R=20., tau=20., a=0., b=0.01, k1=0.2, k2=0.02, R1=0., R2=1., A1=0.,
-               A2=0., method='exponential_euler', **kwargs):
+               A2=0., method='exp_auto', name=None):
     # initialization
-    super(GIF, self).__init__(size=size, method=method, **kwargs)
+    super(GIF, self).__init__(size=size, method=method, name=name)
 
     # params
     self.V_rest = V_rest
@@ -119,25 +119,33 @@ class GIF(Neuron):
     self.I2 = bm.Variable(bm.zeros(self.num))
     self.V_th = bm.Variable(bm.ones(self.num) * -50.)
 
-  def derivative(self, I1, I2, V_th, V, t, Iext):
-    dI1dt = - self.k1 * I1
-    dI2dt = - self.k2 * I2
-    dVthdt = self.a * (V - self.V_rest) - self.b * (V_th - self.V_th_inf)
-    dVdt = (- (V - self.V_rest) + self.R * Iext + self.R * I1 + self.R * I2) / self.tau
-    return dI1dt, dI2dt, dVthdt, dVdt
+  def dI1(self, I1, t):
+    return - self.k1 * I1
+
+  def dI2(self, I2, t):
+    return - self.k2 * I2
+
+  def dVth(self, V_th, t, V):
+    return self.a * (V - self.V_rest) - self.b * (V_th - self.V_th_inf)
+
+  def dV(self, V, t, I1, I2, Iext):
+    return (- (V - self.V_rest) + self.R * Iext + self.R * I1 + self.R * I2) / self.tau
+
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dI1, self.dI2, self.dVth, self.dV])
 
   def update(self, _t, _dt):
-    I1, I2, V_th, V = self.integral(self.I1, self.I2, self.V_th,
-                                    self.V, _t, self.input, dt=_dt)
+    I1, I2, V_th, V = self.integral(self.I1, self.I2, self.V_th, self.V, _t, self.input, dt=_dt)
     spike = self.V_th <= V
     V = bm.where(spike, self.V_reset, V)
     I1 = bm.where(spike, self.R1 * I1 + self.A1, I1)
     I2 = bm.where(spike, self.R2 * I2 + self.A2, I2)
     reset_th = bm.logical_and(V_th < self.V_th_reset, spike)
     V_th = bm.where(reset_th, self.V_th_reset, V_th)
-    self.spike[:] = spike
-    self.I1[:] = I1
-    self.I2[:] = I2
-    self.V_th[:] = V_th
-    self.V[:] = V
+    self.spike.value = spike
+    self.I1.value = I1
+    self.I2.value = I2
+    self.V_th.value = V_th
+    self.V.value = V
     self.input[:] = 0.

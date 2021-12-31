@@ -9,8 +9,8 @@ __all__ = [
 
 
 class Neuron(bp.NeuGroup):
-  def __init__(self, size, method='euler', **kwargs):
-    super(Neuron, self).__init__(size=size, **kwargs)
+  def __init__(self, size, method='exp_euler_auto', name=None):
+    super(Neuron, self).__init__(size=size, name=name)
 
     # variables
     self.V = bm.Variable(bm.zeros(self.num))

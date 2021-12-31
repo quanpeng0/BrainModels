@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import brainpy as bp
 import brainpy.math as bm
 from .base import Neuron
 
@@ -105,20 +106,21 @@ class HH(Neuron):
 
     >>> import brainpy as bp
     >>> import brainmodels
-    >>> group = bp.math.jit(brainmodels.neurons.HH(2, monitors=['V']))
-    >>> group.run(200., inputs=('input', 10.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
-    >>> group.run(200., report=0.1)
-    >>> bp.visualize.line_plot(group.mon.ts, group.mon.V, show=True)
+    >>> group = brainmodels.neurons.HH(2)
+    >>> runner = bp.StructRunner(group, monitors=['V'], inputs=('input', 10.))
+    >>> runner.run(200.)
+    >>> bp.visualize.line_plot(runner.mon.ts, runner.mon.V, show=True)
 
   .. plot::
     :include-source: True
 
     >>> import brainpy as bp
     >>> import brainmodels
-    >>> group = bp.math.jit(brainmodels.neurons.HH(2, monitors=bp.Monitor(variables=['V'], intervals=[1.])))
-    >>> group.run(200., inputs=('input', 10.), report=0.1)
-    >>> bp.visualize.line_plot(group.mon['V.t'], group.mon.V, show=True)
+    >>> group = brainmodels.neurons.HH(2)
+    >>> runner = bp.ReportRunner(group, monitors=bp.Monitor(variables=['V'], intervals=[1.]),
+    >>>                          inputs=('input', 10.), jit=True)
+    >>> runner.run(200.)
+    >>> bp.visualize.line_plot(runner.mon['V.t'], runner.mon.V, show=True)
 
 
   .. plot::
@@ -128,18 +130,21 @@ class HH(Neuron):
     >>> import brainmodels
     >>> import matplotlib.pyplot as plt
     >>>
-    >>> group = bp.math.jit(brainmodels.neurons.HH(2, monitors=['V']))
+    >>> group = brainmodels.neurons.HH(2)
+    >>>
     >>> I1 = bp.inputs.spike_input(sp_times=[500., 550., 1000, 1030, 1060, 1100, 1200], sp_lens=5, sp_sizes=5., duration=2000, )
     >>> I2 = bp.inputs.spike_input(sp_times=[600.,       900, 950, 1500], sp_lens=5, sp_sizes=5., duration=2000, )
     >>> I1 += bp.math.random.normal(0, 3, size=I1.shape)
     >>> I2 += bp.math.random.normal(0, 3, size=I2.shape)
     >>> I = bp.math.stack((I1, I2), axis=-1)
-    >>> group.run(2000., inputs=('input', I, 'iter'), report=0.1)
+    >>>
+    >>> runner = bp.StructRunner(group, monitors=['V'], inputs=('input', I, 'iter'))
+    >>> runner.run(2000.)
     >>>
     >>> fig, gs = bp.visualize.get_figure(1, 1, 3, 8)
     >>> fig.add_subplot(gs[0, 0])
-    >>> plt.plot(group.mon.ts, group.mon.V[:, 0])
-    >>> plt.plot(group.mon.ts, group.mon.V[:, 1] + 130)
+    >>> plt.plot(runner.mon.ts, runner.mon.V[:, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon.V[:, 1] + 130)
     >>> plt.xlim(10, 2000)
     >>> plt.xticks([])
     >>> plt.yticks([])
@@ -187,9 +192,9 @@ class HH(Neuron):
   """
 
   def __init__(self, size, ENa=50., gNa=120., EK=-77., gK=36., EL=-54.387, gL=0.03,
-               V_th=20., C=1.0, method='exponential_euler', **kwargs):
+               V_th=20., C=1.0, method='exp_auto', name=None):
     # initialization
-    super(HH, self).__init__(size=size, method=method, **kwargs)
+    super(HH, self).__init__(size=size, method=method, name=name)
 
     # parameters
     self.ENa = ENa
@@ -206,32 +211,41 @@ class HH(Neuron):
     self.h = bm.Variable(0.6 * bm.ones(self.num))
     self.n = bm.Variable(0.32 * bm.ones(self.num))
 
-  def derivative(self, V, m, h, n, t, Iext):
+  def dm(self, m, t, V):
     alpha = 0.1 * (V + 40) / (1 - bm.exp(-(V + 40) / 10))
     beta = 4.0 * bm.exp(-(V + 65) / 18)
     dmdt = alpha * (1 - m) - beta * m
+    return dmdt
 
+  def dh(self, h, t, V):
     alpha = 0.07 * bm.exp(-(V + 65) / 20.)
     beta = 1 / (1 + bm.exp(-(V + 35) / 10))
     dhdt = alpha * (1 - h) - beta * h
+    return dhdt
 
+  def dn(self, n, t, V):
     alpha = 0.01 * (V + 55) / (1 - bm.exp(-(V + 55) / 10))
     beta = 0.125 * bm.exp(-(V + 65) / 80)
     dndt = alpha * (1 - n) - beta * n
+    return dndt
 
+  def dV(self, V, t, m, h, n, Iext):
     I_Na = (self.gNa * m ** 3.0 * h) * (V - self.ENa)
     I_K = (self.gK * n ** 4.0) * (V - self.EK)
     I_leak = self.gL * (V - self.EL)
     dVdt = (- I_Na - I_K - I_leak + Iext) / self.C
+    return dVdt
 
-    return dVdt, dmdt, dhdt, dndt
+  @property
+  def derivative(self):
+    return bp.JointEq([self.dV, self.dm, self.dh, self.dn])
 
   def update(self, _t, _dt):
     V, m, h, n = self.integral(self.V, self.m, self.h, self.n, _t, self.input, dt=_dt)
-    self.spike[:] = bm.logical_and(self.V < self.V_th, V >= self.V_th)
-    self.t_last_spike[:] = bm.where(self.spike, _t, self.t_last_spike)
-    self.V[:] = V
-    self.m[:] = m
-    self.h[:] = h
-    self.n[:] = n
+    self.spike.value = bm.logical_and(self.V < self.V_th, V >= self.V_th)
+    self.t_last_spike.value = bm.where(self.spike, _t, self.t_last_spike)
+    self.V.value = V
+    self.m.value = m
+    self.h.value = h
+    self.n.value = n
     self.input[:] = 0.

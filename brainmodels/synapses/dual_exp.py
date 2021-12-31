@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import brainpy as bp
 import brainpy.math as bm
 
 from .base import Synapse
@@ -47,7 +48,33 @@ class DualExpCUBA(Synapse):
 
   **Model Examples**
 
-  - `Simple illustrated example <../synapses/dual_exp_cuba.ipynb>`_
+
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.LIF(1)
+    >>> neu2 = brainmodels.neurons.LIF(1)
+    >>> syn1 = brainmodels.synapses.DualExpCUBA(neu1, neu2, bp.connect.All2All())
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 25.)], monitors=['pre.V', 'post.V', 'syn.g', 'syn.h'])
+    >>> runner.run(150.)
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 8)
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['pre.V'], label='pre-V')
+    >>> plt.plot(runner.mon.ts, runner.mon['post.V'], label='post-V')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.g'], label='g')
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.h'], label='h')
+    >>> plt.legend()
+    >>> plt.show()
 
 
   **Model Parameters**
@@ -83,8 +110,10 @@ class DualExpCUBA(Synapse):
   """
 
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0, tau_rise=1.,
-               method='exponential_euler', **kwargs):
-    super(DualExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method, **kwargs)
+               method='exp_auto', name=None):
+    super(DualExpCUBA, self).__init__(pre=pre, post=post, conn=conn, method=method, name=name)
+    self.check_pre_attrs('spike')
+    self.check_post_attrs('input')
 
     # parameters
     self.tau_rise = tau_rise
@@ -92,29 +121,24 @@ class DualExpCUBA(Synapse):
     self.delay = delay
     self.g_max = g_max
 
+    # connections
+    self.pre_ids, self.post_ids = self.conn.require('pre_ids', 'post_ids')
+
     # variables
-    self.g = bm.Variable(bm.zeros(self.num))
-    self.h = bm.Variable(bm.zeros(self.num))
-    self.pre_spike = self.register_constant_delay('pre_spike', size=self.pre.num, delay=delay)
+    self.g = bm.Variable(bm.zeros( len(self.pre_ids)))
+    self.h = bm.Variable(bm.zeros( len(self.pre_ids)))
+    self.pre_spike = bp.ConstantDelay(self.pre.num, delay, dtype=pre.spike.dtype)
 
-  def derivative(self, g, h, t):
-    dgdt = -g / self.tau_decay + h
-    dhdt = -h / self.tau_rise
-    return dgdt, dhdt
+  @property
+  def derivative(self):
+    dg = lambda g, t, h: -g / self.tau_decay + h
+    dh = lambda h, t: -h / self.tau_rise
+    return bp.JointEq([dg, dh])
 
-  def numpy_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    pre_spike = self.pre_spike.pull()
-    self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
-    for i in range(self.num):
-      pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      self.h[i] += pre_spike[pre_id]
-      self.post.input[post_id] += self.g_max * self.g[i]
-
-  def jax_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spikes = self.pre_spike.pull()
-    self.g.value, self.h.value = self.integral(self.g.value, self.h.value, _t, dt=_dt)
+    self.g.value, self.h.value = self.integral(self.g, self.h, _t, dt=_dt)
     self.h.value += bm.pre2syn(delayed_pre_spikes, self.pre_ids)
     self.post.input += self.g_max * bm.syn2post(self.g, self.post_ids, self.post.num)
 
@@ -137,7 +161,32 @@ class DualExpCOBA(DualExpCUBA):
 
   **Model Examples**
 
-  - `Simple illustrated example <../synapses/dual_exp_coba.ipynb>`_
+  .. plot::
+    :include-source: True
+
+    >>> import brainpy as bp
+    >>> import brainmodels
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> neu1 = brainmodels.neurons.HH(1)
+    >>> neu2 = brainmodels.neurons.HH(1)
+    >>> syn1 = brainmodels.synapses.DualExpCOBA(neu1, neu2, bp.connect.All2All(), E=0.)
+    >>> net = bp.Network(pre=neu1, syn=syn1, post=neu2)
+    >>>
+    >>> runner = bp.StructRunner(net, inputs=[('pre.input', 5.)], monitors=['pre.V', 'post.V', 'syn.g', 'syn.h'])
+    >>> runner.run(150.)
+    >>>
+    >>> fig, gs = bp.visualize.get_figure(2, 1, 3, 8)
+    >>> fig.add_subplot(gs[0, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['pre.V'], label='pre-V')
+    >>> plt.plot(runner.mon.ts, runner.mon['post.V'], label='post-V')
+    >>> plt.legend()
+    >>>
+    >>> fig.add_subplot(gs[1, 0])
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.g'], label='g')
+    >>> plt.plot(runner.mon.ts, runner.mon['syn.h'], label='h')
+    >>> plt.legend()
+    >>> plt.show()
 
 
   **Model Parameters**
@@ -171,27 +220,19 @@ class DualExpCOBA(DualExpCUBA):
 
   """
   def __init__(self, pre, post, conn, delay=0., g_max=1., tau_decay=10.0, tau_rise=1.,
-               E=0., method='exponential_euler', **kwargs):
+               E=0., method='exp_auto', name=None):
     super(DualExpCOBA, self).__init__(pre, post, conn, delay=delay, g_max=g_max,
                                       tau_decay=tau_decay, tau_rise=tau_rise,
-                                      method=method, **kwargs)
+                                      method=method, name=name)
+    self.check_post_attrs('V')
 
+    # parameters
     self.E = E
 
-  def numpy_update(self, _t, _dt):
-    self.pre_spike.push(self.pre.spike)
-    pre_spike = self.pre_spike.pull()
-
-    self.g[:], self.h[:] = self.integral(self.g, self.h, _t, dt=_dt)
-    for i in range(self.num):
-      pre_id, post_id = self.pre_ids[i], self.post_ids[i]
-      self.h[i] += pre_spike[pre_id]
-      self.post.input[post_id] += self.g_max * self.g[i] * (self.E - self.post.V[post_id])
-
-  def jax_update(self, _t, _dt):
+  def update(self, _t, _dt):
     self.pre_spike.push(self.pre.spike)
     delayed_pre_spikes = self.pre_spike.pull()
-    self.g.value, self.h.value = self.integral(self.g.value, self.h.value, _t, dt=_dt)
+    self.g.value, self.h.value = self.integral(self.g, self.h, _t, dt=_dt)
     self.h.value += bm.pre2syn(delayed_pre_spikes, self.pre_ids)
     post_g = bm.syn2post(self.g, self.post_ids, self.post.num)
     self.post.input += self.g_max * post_g * (self.E - self.post.V)

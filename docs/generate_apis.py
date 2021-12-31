@@ -43,10 +43,10 @@ def write(module_name, filename, header=None):
 def generate():
   write(module_name='brainmodels.neurons', filename='apis/neurons.rst')
   write(module_name='brainmodels.synapses', filename='apis/synapses.rst')
-  write(module_name='brainmodels.channels.Na', filename='apis/channels.Na.rst', header='Na')
-  write(module_name='brainmodels.channels.K', filename='apis/channels.K.rst', header='K')
-  write(module_name='brainmodels.channels.Ca', filename='apis/channels.Ca.rst', header='Ca')
-  write(module_name='brainmodels.channels.IH', filename='apis/channels.IH.rst', header='IH')
-  write(module_name='brainmodels.channels.KCa', filename='apis/channels.KCa.rst', header='KCa')
-  write(module_name='brainmodels.channels.other', filename='apis/channels.other.rst', header='Other')
+  # write(module_name='brainmodels.channels.Na', filename='apis/channels.Na.rst', header='Na')
+  # write(module_name='brainmodels.channels.K', filename='apis/channels.K.rst', header='K')
+  # write(module_name='brainmodels.channels.Ca', filename='apis/channels.Ca.rst', header='Ca')
+  # write(module_name='brainmodels.channels.IH', filename='apis/channels.IH.rst', header='IH')
+  # write(module_name='brainmodels.channels.KCa', filename='apis/channels.KCa.rst', header='KCa')
+  # write(module_name='brainmodels.channels.other', filename='apis/channels.other.rst', header='Other')
 
