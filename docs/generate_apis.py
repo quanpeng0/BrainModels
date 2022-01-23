@@ -44,9 +44,9 @@ def generate():
   write(module_name='brainmodels.neurons', filename='apis/neurons.rst')
   write(module_name='brainmodels.synapses', filename='apis/synapses.rst')
   write(module_name='brainmodels.channels.Na_channels', filename='apis/channels.Na.rst', header='Na')
-  write(module_name='brainmodels.channels.K', filename='apis/channels.K.rst', header='K')
-  write(module_name='brainmodels.channels.Ca_channels_channels', filename='apis/channels.Ca.rst', header='Ca')
-  write(module_name='brainmodels.channels.IH_channels', filename='apis/channels.IH.rst', header='IH')
+  write(module_name='brainmodels.channels.K_channels', filename='apis/channels.K.rst', header='K')
+  write(module_name='brainmodels.channels.Ca_channels', filename='apis/channels.Ca.rst', header='Ca')
+  write(module_name='brainmodels.channels.Ih_channels', filename='apis/channels.IH.rst', header='IH')
   write(module_name='brainmodels.channels.KCa_channels', filename='apis/channels.KCa.rst', header='KCa')
   write(module_name='brainmodels.channels.other_channels', filename='apis/channels.other.rst', header='Other')
 
