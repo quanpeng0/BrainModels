@@ -29,7 +29,7 @@ setup(
     packages=find_packages(),
     python_requires='>=3.6',
     install_requires=[
-        'brain-py',
+        'brain-py>=1.1.3, <2.0.0',
     ],
     url='https://github.com/PKU-NIP-Lab/BrainModels',
     keywords='computational neuroscience, '
